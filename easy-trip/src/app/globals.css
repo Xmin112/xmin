@@ -1,45 +1,26 @@
 @import "tailwindcss";
 
 /* ==============================
-   Easy Trip 暗色设计系统
-   参考：Linear / Vercel / Arc
+   Easy Trip — iOS 浅色设计系统
    ============================== */
 
 @theme inline {
-  /* 背景层级 — 太空深蓝调 */
-  --color-bg-base: #050510;
-  --color-bg-layer: #0a0a1e;
-  --color-bg-card: #111128;
-  --color-bg-glass: rgba(255, 255, 255, 0.03);
-
-  /* 文字层级 */
-  --color-text-primary: #eceded;
-  --color-text-secondary: #9898a0;
-  --color-text-muted: #5c5c66;
-
-  /* Accent 色 */
-  --color-accent: #ff6b6b;        /* 珊瑚粉 — 主品牌色 */
-  --color-accent-warm: #ffb347;   /* 暖橙 — 高亮/tag */
-  --color-accent-green: #4ecdc4;  /* 绿 — 成功状态 */
-  --color-accent-purple: #a78bfa; /* 紫 — AI 状态 */
-
-  /* 玻璃边框 */
-  --color-glass-border: rgba(255, 255, 255, 0.08);
-  --color-glass-border-hover: rgba(255, 255, 255, 0.14);
-
-  /* 字体 */
+  --color-bg-base: #F5F0EC;
+  --color-bg-card: #ffffff;
+  --color-text-primary: #2D221E;
+  --color-text-secondary: #8B7E74;
+  --color-text-muted: #B8A99A;
+  --color-accent: #FF6B6B;
+  --color-accent-warm: #FF8C42;
+  --color-accent-green: #4ECDC4;
+  --color-accent-purple: #A78BFA;
+  --color-glass-border: rgba(0,0,0,0.06);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-/* ==============================
-   全局基础
-   ============================== */
-
-html,
-body {
+html, body {
   height: 100%;
-  overflow: hidden; /* 聊天页面不需要滚动，内部区域自己滚 */
+  overflow: hidden;
 }
 
 body {
@@ -50,70 +31,44 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 噪点纹理叠加 */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  background-size: 256px 256px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ==============================
-   工具类
-   ============================== */
-
-/* 玻璃面板 */
+/* 玻璃面板 — 浅色 iOS 风 */
 .glass {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .glass-elevated {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* 自定义滚动条 */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+/* 滚动条 */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0,0,0,0.1);
   border-radius: 9999px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+/* 消息入场 */
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* 消息入场动画 */
-@keyframes message-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* 地球过渡淡出 */
+@keyframes globe-enter {
+  from { transform: scale(1); filter: blur(0); opacity: 1; }
+  to { transform: scale(3); filter: blur(8px); opacity: 0; }
 }
