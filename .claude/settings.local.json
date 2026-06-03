@@ -8,7 +8,11 @@
       "Bash(mkdir -p __TRACKED_VAR__/.claude/skills/find-skills)",
       "WebSearch",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.huxiu.com)"
+      "WebFetch(domain:www.huxiu.com)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "WebFetch(domain:dev.to)"
     ]
   }
 }
