@@ -135,15 +135,17 @@ export function ChatContainer({ onRouteGenerated }: ChatContainerProps) {
 
         {/* AI 思考中动画 */}
         {isLoading && (
-          <div className="flex items-center gap-1.5 mb-4 ml-1">
-            <div className="flex gap-1">
-              <span className="w-2 h-2 rounded-full bg-accent-purple animate-bounce [animation-delay:0ms]" />
-              <span className="w-2 h-2 rounded-full bg-accent-purple animate-bounce [animation-delay:150ms]" />
-              <span className="w-2 h-2 rounded-full bg-accent-purple animate-bounce [animation-delay:300ms]" />
+          <div className="mb-4 ml-2">
+            <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-xl border border-black/5 rounded-2xl px-4 py-2.5 shadow-sm">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#FF6B6B] animate-bounce [animation-delay:0ms]" />
+                <span className="w-2 h-2 rounded-full bg-[#FF6B6B] animate-bounce [animation-delay:150ms]" />
+                <span className="w-2 h-2 rounded-full bg-[#FF6B6B] animate-bounce [animation-delay:300ms]" />
+              </div>
+              <span className="text-xs text-[#B8A99A]">
+                {stage === "searching" ? "小E正在帮你搜罗好地方..." : "小E思考中..."}
+              </span>
             </div>
-            <span className="text-xs text-text-muted ml-2">
-              {stage === "searching" ? "正在搜索最火的地点..." : "小E思考中..."}
-            </span>
           </div>
         )}
       </div>

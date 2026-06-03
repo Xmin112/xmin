@@ -60,27 +60,34 @@ export default function Home() {
         >
           {/* 品牌 */}
           <div className="text-center">
-            <p className="text-[#B8A99A] text-sm tracking-[0.3em] uppercase mb-4">
+            <p className="text-[#B8A99A] text-xs tracking-[0.35em] uppercase mb-5">
               AI Travel Planner
             </p>
-            <h1 className="text-6xl md:text-8xl font-bold text-[#2D221E] tracking-tight">
+            <h1 className="text-6xl md:text-7xl font-bold text-[#2D221E] tracking-[-0.02em] leading-none">
               Easy Trip
             </h1>
           </div>
 
-          {/* 按钮 */}
+          {/* 按钮 — 参考 KidSuper 的 playful + Vita 的克制 */}
           <button
             onClick={handleStart}
-            className="mt-16 px-12 py-4 rounded-full bg-[#2D221E] text-white text-lg font-medium
-                       shadow-lg shadow-[#2D221E]/10 hover:shadow-xl hover:shadow-[#2D221E]/15
-                       transition-all duration-500 hover:scale-[1.04] active:scale-[0.97]
-                       cursor-pointer"
+            className="group relative mt-14 px-10 py-3.5 rounded-full bg-[#2D221E] text-white text-base font-medium
+                       shadow-lg shadow-[#2D221E]/8
+                       transition-all duration-500 ease-out
+                       hover:scale-[1.03] hover:shadow-xl hover:shadow-[#2D221E]/12
+                       active:scale-[0.97] cursor-pointer overflow-hidden"
           >
-            开始旅程
+            <span className="relative z-10 transition-opacity duration-300 group-hover:opacity-0">
+              开始旅程
+            </span>
+            <span className="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                             bg-gradient-to-r from-[#FF6B6B] via-[#FF8C42] to-[#FFB347] bg-clip-text text-transparent">
+              开始旅程
+            </span>
           </button>
 
           {/* 底部说明 */}
-          <p className="mt-8 text-[#B8A99A] text-sm">
+          <p className="mt-8 text-[#B8A99A] text-sm tracking-wide">
             告诉 AI 你想去哪，它帮你规划最美路线
           </p>
         </div>
