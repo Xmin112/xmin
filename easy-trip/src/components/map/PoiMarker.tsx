@@ -23,7 +23,7 @@ export function PoiMarker({ stops, map }: PoiMarkerProps) {
     // 添加新标记
     stops.forEach((stop) => {
       const { place, order } = stop;
-      const el = createMarkerElement(order, place.name, place.category);
+      const el = createMarkerElement(order, place.category);
 
       const marker = new maplibregl.Marker({
         element: el,
@@ -46,43 +46,56 @@ export function PoiMarker({ stops, map }: PoiMarkerProps) {
 }
 
 /** 创建手绘风标记 DOM 元素 */
-function createMarkerElement(order: number, name: string, category: string): HTMLDivElement {
-  const el = document.createElement("div");
-  el.className = "flex flex-col items-center";
-  el.style.cssText = "cursor: pointer;";
+function createMarkerElement(order: number, category: string): HTMLDivElement {
+  const outer = document.createElement("div");
+  outer.style.cssText = "cursor: pointer; display: flex; flex-direction: column; align-items: center;";
 
   const emoji = getCategoryEmoji(category);
 
-  el.innerHTML = `
-    <div style="
-      width: 32px; height: 32px;
-      background: white;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 3px rgba(255,107,107,0.3);
-      transition: transform 0.2s;
+  // 内层 wrapper — hover 效果只作用在这里，不影响 MapLibre 的定位 transform
+  outer.innerHTML = `
+    <div class="marker-inner" style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     ">
-      <span style="font-size: 14px;">${emoji}</span>
+      <div style="
+        width: 34px; height: 34px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.18), 0 0 0 3px rgba(255,107,107,0.35);
+      ">
+        <span style="font-size: 15px; line-height: 1;">${emoji}</span>
+      </div>
+      <span style="
+        display: block;
+        margin-top: 3px;
+        font-size: 9px;
+        font-weight: 700;
+        color: #4A3728;
+        background: rgba(255,255,255,0.92);
+        padding: 2px 6px;
+        border-radius: 8px;
+        white-space: nowrap;
+        letter-spacing: 0.3px;
+      ">${order}</span>
     </div>
-    <span style="
-      display: block; margin-top: 2px;
-      font-size: 9px; font-weight: 600;
-      color: #4A3728;
-      background: rgba(255,255,255,0.9);
-      padding: 1px 5px; border-radius: 6px;
-      white-space: nowrap;
-    ">${order}</span>
   `;
 
-  el.addEventListener("mouseenter", () => {
-    el.style.transform = "scale(1.15)";
-  });
-  el.addEventListener("mouseleave", () => {
-    el.style.transform = "scale(1)";
-  });
+  // 用 CSS :hover 而不是 JS 事件，避免覆盖 MapLibre transform
+  const style = document.createElement("style");
+  style.textContent = `
+    .marker-inner:hover {
+      transform: scale(1.2);
+    }
+  `;
+  outer.appendChild(style);
 
-  return el;
+  return outer;
 }
 
 /** 分类 → emoji 映射 */
