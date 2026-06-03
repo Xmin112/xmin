@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx skills *)",
+      "Bash(npm --version)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(mkdir -p \"D:/new cc/.claude/skills/find-skills\")",
+      "Bash(mkdir -p __TRACKED_VAR__/.claude/skills/find-skills)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.huxiu.com)"
+    ]
+  }
+}
