@@ -6,11 +6,11 @@
    ============================== */
 
 @theme inline {
-  /* 背景层级 */
-  --color-bg-base: #0a0a0b;
-  --color-bg-layer: #111114;
-  --color-bg-card: #1a1a1e;
-  --color-bg-glass: rgba(255, 255, 255, 0.04);
+  /* 背景层级 — 太空深蓝调 */
+  --color-bg-base: #050510;
+  --color-bg-layer: #0a0a1e;
+  --color-bg-card: #111128;
+  --color-bg-glass: rgba(255, 255, 255, 0.03);
 
   /* 文字层级 */
   --color-text-primary: #eceded;
