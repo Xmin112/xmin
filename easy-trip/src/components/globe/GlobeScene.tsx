@@ -2,95 +2,128 @@
 
 import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { GeoPoint } from "@/types/route";
 
 interface GlobeSceneProps {
   targetLocation?: GeoPoint | null;
-  interactive?: boolean;
-  compact?: boolean;
+  /** 目的地国家主题色 */
+  accentColor?: string;
 }
 
-/** 轻量透明地球 — 适配浅色背景 */
-export function GlobeScene({
-  targetLocation,
-  interactive = true,
-  compact = false,
-}: GlobeSceneProps) {
+export function GlobeScene({ targetLocation, accentColor = "#FF6B6B" }: GlobeSceneProps) {
   return (
     <Canvas
-      camera={{ position: [0, 0.3, 2.3], fov: 40 }}
+      camera={{ position: [0, 0.2, 2.6], fov: 38 }}
       gl={{ antialias: true, alpha: true }}
       style={{ background: "transparent" }}
     >
-      <ambientLight intensity={1.4} />
-      <directionalLight position={[5, 5, 5]} intensity={1.0} />
-      <directionalLight position={[-3, 1, -3]} intensity={0.4} />
+      <ambientLight intensity={1.6} />
+      <directionalLight position={[5, 5, 5]} intensity={1.2} />
+      <directionalLight position={[-3, 1, -3]} intensity={0.5} color={accentColor} />
 
-      <GlobeMesh targetLocation={targetLocation} />
-
-      {!compact && (
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          autoRotate={!targetLocation}
-          autoRotateSpeed={0.4}
-          minPolarAngle={Math.PI / 2.5}
-          maxPolarAngle={Math.PI / 1.8}
-        />
-      )}
+      <GlobeMesh targetLocation={targetLocation} accentColor={accentColor} />
     </Canvas>
   );
 }
 
-/** 浅色地球 — 白底风格 */
-function GlobeMesh({ targetLocation }: { targetLocation?: GeoPoint | null }) {
+/** lat/lng → 3D 球面坐标 */
+function latLngToVec3(lat: number, lng: number, radius: number): THREE.Vector3 {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = lng * (Math.PI / 180);
+  return new THREE.Vector3(
+    -radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
+}
+
+function GlobeMesh({
+  targetLocation,
+  accentColor,
+}: {
+  targetLocation?: GeoPoint | null;
+  accentColor: string;
+}) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
+  const cityGroupRef = useRef<THREE.Group>(null);
   const { camera } = useThree();
+  const prevTarget = useRef<string | null>(null);
 
-  // 干净的淡色地球纹理
+  // 白色地球纹理
   const earthTexture = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 1024;
     canvas.height = 512;
     const ctx = canvas.getContext("2d")!;
 
-    // 淡奶油底色
-    ctx.fillStyle = "#F5F0E8";
+    // 纯白底
+    ctx.fillStyle = "#FAFAFA";
     ctx.fillRect(0, 0, 1024, 512);
 
-    // 浅色大陆
-    ctx.fillStyle = "#E8E0D0";
-    ctx.strokeStyle = "#D5C8B5";
-    ctx.lineWidth = 1;
+    // 浅灰大陆
+    ctx.fillStyle = "#E8E8ED";
+    ctx.strokeStyle = "#DCDCE0";
+    ctx.lineWidth = 0.8;
 
-    drawCleanContinents(ctx);
+    drawContinents(ctx);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    return texture;
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
   }, []);
 
-  // 飞向目标
+  // 城市 3D 模型
+  const cityBuildings = useMemo(() => {
+    if (!targetLocation) return null;
+
+    const { lat, lng } = targetLocation;
+    const pos = latLngToVec3(lat, lng, 1.015);
+    const normal = pos.clone().normalize();
+
+    // 随机生成建筑群
+    const buildings: Array<{ w: number; h: number; d: number; offset: THREE.Vector3 }> = [];
+    for (let i = 0; i < 25; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 0.008 + Math.random() * 0.035;
+      const perpX = new THREE.Vector3(-normal.z, 0, normal.x).normalize();
+      const perpY = new THREE.Vector3().crossVectors(normal, perpX).normalize();
+
+      const offset = perpX
+        .clone()
+        .multiplyScalar(Math.cos(angle) * dist)
+        .add(perpY.clone().multiplyScalar(Math.sin(angle) * dist));
+
+      buildings.push({
+        w: 0.002 + Math.random() * 0.006,
+        h: 0.005 + Math.random() * 0.03,
+        d: 0.002 + Math.random() * 0.006,
+        offset,
+      });
+    }
+
+    return { pos, normal, buildings };
+  }, [targetLocation]);
+
+  // 相机飞到目标
   useEffect(() => {
     if (!targetLocation || !groupRef.current) return;
 
-    const { lat, lng } = targetLocation;
-    const phi = (90 - lat) * (Math.PI / 180);
-    const theta = lng * (Math.PI / 180);
+    const key = `${targetLocation.lat},${targetLocation.lng}`;
+    // 避免重复飞行
+    if (prevTarget.current === key) return;
+    prevTarget.current = key;
 
-    const targetPos = new THREE.Vector3().setFromSphericalCoords(3, phi, -theta);
-
+    const targetPos = latLngToVec3(targetLocation.lat, targetLocation.lng, 1.6);
     const startPos = camera.position.clone();
     const startTime = Date.now();
-    const duration = 1600;
+    const duration = 2000;
 
     function animate() {
       const elapsed = Date.now() - startTime;
       const t = Math.min(elapsed / duration, 1);
-      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
       camera.position.lerpVectors(startPos, targetPos, ease);
       camera.lookAt(0, 0, 0);
@@ -100,34 +133,101 @@ function GlobeMesh({ targetLocation }: { targetLocation?: GeoPoint | null }) {
     animate();
   }, [targetLocation, camera]);
 
+  // 建筑浮现动画
+  useEffect(() => {
+    if (!cityGroupRef.current || !cityBuildings) return;
+
+    // 重置：所有建筑 scaleY = 0
+    cityGroupRef.current.children.forEach((child) => {
+      child.scale.set(1, 0, 1);
+    });
+
+    // 依次弹出
+    const children = cityGroupRef.current.children;
+    children.forEach((child, i) => {
+      const delay = i * 40;
+      const startTime = Date.now() + delay;
+      const duration = 600;
+
+      function popUp() {
+        const elapsed = Date.now() - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        // easeOutBack
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        const ease = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+
+        child.scale.set(1, ease, 1);
+
+        if (t < 1) requestAnimationFrame(popUp);
+      }
+
+      setTimeout(popUp, delay);
+    });
+  }, [cityBuildings]);
+
+  // 地球自转
   useFrame((_, delta) => {
     if (meshRef.current && !targetLocation) {
-      meshRef.current.rotation.y += delta * 0.12;
+      meshRef.current.rotation.y += delta * 0.1;
     }
   });
 
   return (
     <group ref={groupRef}>
+      {/* 地球球体 */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[1, 72, 72]} />
-        <meshStandardMaterial map={earthTexture} roughness={0.6} metalness={0} />
+        <sphereGeometry args={[1, 80, 80]} />
+        <meshStandardMaterial
+          map={earthTexture}
+          roughness={0.55}
+          metalness={0.02}
+        />
       </mesh>
-      {/* 大气圈 — 柔和光晕 */}
+
+      {/* 大气光晕 */}
       <mesh>
-        <sphereGeometry args={[1.03, 64, 64]} />
+        <sphereGeometry args={[1.025, 64, 64]} />
         <meshBasicMaterial
-          color="#C8D8E8"
+          color={accentColor}
           transparent
-          opacity={0.12}
+          opacity={0.08}
           side={THREE.BackSide}
         />
       </mesh>
+
+      {/* 城市 3D 建筑群 */}
+      {cityBuildings && (
+        <group
+          ref={cityGroupRef}
+          position={cityBuildings.pos.toArray()}
+          quaternion={
+            new THREE.Quaternion().setFromUnitVectors(
+              new THREE.Vector3(0, 1, 0),
+              cityBuildings.normal
+            )
+          }
+        >
+          {cityBuildings.buildings.map((b, i) => (
+            <mesh key={i} position={b.offset.toArray()}>
+              <boxGeometry args={[b.w, b.h, b.d]} />
+              <meshStandardMaterial
+                color={accentColor}
+                roughness={0.3}
+                metalness={0.15}
+                transparent
+                opacity={0.85}
+              />
+            </mesh>
+          ))}
+        </group>
+      )}
     </group>
   );
 }
 
-/** 干净的大陆绘制 */
-function drawCleanContinents(ctx: CanvasRenderingContext2D) {
+/** 简化的世界大陆 */
+function drawContinents(ctx: CanvasRenderingContext2D) {
   const shapes = [
     { x: 150, y: 80, w: 180, h: 130, rx: 60, ry: 50, rot: -0.2 },
     { x: 120, y: 60, w: 140, h: 80, rx: 50, ry: 35, rot: -0.1 },
