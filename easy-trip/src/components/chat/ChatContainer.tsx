@@ -25,7 +25,11 @@ const WELCOME_MSG: Message = {
   ],
 };
 
-export function ChatContainer() {
+interface ChatContainerProps {
+  onRouteGenerated?: (route: Route) => void;
+}
+
+export function ChatContainer({ onRouteGenerated }: ChatContainerProps) {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MSG]);
   const [stage, setStage] = useState<ChatStage>("greeting");
   const [isLoading, setIsLoading] = useState(false);
@@ -84,6 +88,11 @@ export function ChatContainer() {
 
       setMessages((prev) => [...prev, aiMsg]);
       setStage(data.stage ?? "done");
+
+      // 通知外部地图更新
+      if (data.route && onRouteGenerated) {
+        onRouteGenerated(data.route);
+      }
     } catch (err) {
       const aiMsg: Message = {
         id: msgId(),

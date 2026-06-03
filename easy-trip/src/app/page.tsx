@@ -1,9 +1,20 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import type { Route } from "@/types/place";
 import { ChatContainer } from "@/components/chat/ChatContainer";
+import { RouteMap } from "@/components/map/RouteMap";
 
 export default function Home() {
+  const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
+
+  const handleRouteGenerated = useCallback((route: Route) => {
+    setCurrentRoute(route);
+  }, []);
+
   return (
     <div className="h-full flex flex-col relative z-[1]">
-      {/* 顶部导航 — 极简品牌栏 */}
+      {/* 顶部导航 */}
       <header className="flex-shrink-0 glass border-b border-white/5 px-5 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <span className="text-xl">🏝️</span>
@@ -22,25 +33,31 @@ export default function Home() {
       <main className="flex-1 flex min-h-0">
         {/* 左栏：聊天区 */}
         <div className="flex-1 min-w-0 flex flex-col lg:border-r border-white/5">
-          <ChatContainer />
+          <ChatContainer onRouteGenerated={handleRouteGenerated} />
         </div>
 
-        {/* 右栏：地图预览区（桌面端可见） */}
-        <aside className="hidden lg:flex w-[40%] flex-col items-center justify-center p-6 relative overflow-hidden">
-          {/* 背景装饰 */}
+        {/* 右栏：地图 */}
+        <aside className="hidden lg:flex w-[40%] flex-col p-3 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.03] via-transparent to-accent-purple/[0.03]" />
 
-          {/* 空状态 */}
-          <div className="relative z-[1] text-center max-w-xs">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-3xl glass-elevated flex items-center justify-center">
-              <span className="text-4xl">🗺️</span>
-            </div>
-            <h2 className="text-lg font-semibold text-text-primary mb-2">
-              路线将会出现在这里
-            </h2>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              跟小E聊完，你的手绘风格路线图会在右边实时显示
-            </p>
+          <div className="relative z-[1] w-full h-full rounded-2xl overflow-hidden glass">
+            {currentRoute ? (
+              <RouteMap route={currentRoute} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center max-w-xs px-6">
+                  <div className="w-20 h-20 mx-auto mb-5 rounded-2xl glass-elevated flex items-center justify-center">
+                    <span className="text-3xl">🗺️</span>
+                  </div>
+                  <h2 className="text-base font-semibold text-text-primary mb-2">
+                    路线将会画在这里
+                  </h2>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    跟小E聊完行程，手绘风格的路线图会自动出现在右边
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </aside>
       </main>
