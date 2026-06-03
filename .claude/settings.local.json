@@ -13,7 +13,9 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "WebFetch(domain:dev.to)",
-      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --use-npm)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --use-npm)",
+      "Bash(cd *)",
+      "Bash(timeout *)"
     ]
   }
 }

@@ -1,11 +1,12 @@
 /**
  * DeepSeek API 封装
  *
- * API 兼容 OpenAI 格式，只需改 baseURL 和 apiKey
+ * API 兼容 OpenAI 格式
+ * 文档：https://api-docs.deepseek.com/
  */
 
 const DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1";
-const DEEPSEEK_MODEL = "deepseek-chat"; // DeepSeek V4
+const DEEPSEEK_MODEL = "deepseek-v4-pro";
 
 interface ChatParams {
   messages: { role: "system" | "user" | "assistant"; content: string }[];
@@ -34,15 +35,8 @@ export async function deepseekChat(params: ChatParams): Promise<ChatResult> {
       model: DEEPSEEK_MODEL,
       messages: params.messages,
       stream: false,
-      // 开启联网搜索
-      tools: [
-        {
-          type: "web_search",
-          web_search: {
-            enable: true,
-          },
-        },
-      ],
+      temperature: 0.7,
+      max_tokens: 4096,
     }),
   });
 
