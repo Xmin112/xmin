@@ -206,10 +206,20 @@ let lastScroll=0;
 
 window.addEventListener('wheel',(e)=>{
   e.preventDefault();
-  targetProgress=Math.max(0,Math.min(1,targetProgress+e.deltaY*0.0008));
+  targetProgress=Math.max(0,Math.min(1,targetProgress+e.deltaY*0.004));
   scrollVelocity=Math.abs(e.deltaY);
   lastScroll=performance.now();
 },{passive:false});
+// Click fallback — click anywhere to advance
+window.addEventListener('click',()=>{
+  targetProgress=Math.min(1,targetProgress+0.04);
+  scrollVelocity=40;lastScroll=performance.now();
+});
+// Keyboard fallback — arrow keys
+window.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight'){targetProgress=Math.min(1,targetProgress+0.03);scrollVelocity=40;lastScroll=performance.now();}
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft'){targetProgress=Math.max(0,targetProgress-0.03);scrollVelocity=40;lastScroll=performance.now();}
+});
 
 // Touch
 let touchStart=0;
@@ -217,7 +227,7 @@ window.addEventListener('touchstart',e=>{touchStart=e.touches[0].clientY;});
 window.addEventListener('touchmove',e=>{
   e.preventDefault();
   const dy=touchStart-e.touches[0].clientY;
-  targetProgress=Math.max(0,Math.min(1,targetProgress+dy*0.002));
+  targetProgress=Math.max(0,Math.min(1,targetProgress+dy*0.006));
   scrollVelocity=Math.abs(dy);
   lastScroll=performance.now();
   touchStart=e.touches[0].clientY;
