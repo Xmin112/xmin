@@ -16,10 +16,13 @@ body::after{content:'';position:fixed;inset:0;z-index:50;pointer-events:none;opa
 /* ═══ HIDDEN SVG FILTERS ═══ */
 svg.filters{position:absolute;width:0;height:0}
 
-/* CURSOR */
-#cursor{position:fixed;width:36px;height:36px;border:1px solid rgba(0,0,0,.12);border-radius:50%;pointer-events:none;z-index:200;transform:translate(-50%,-50%);transition:width .35s var(--c),height .35s var(--c),border-color .35s var(--c)}
-#cursor.hover{width:72px;height:72px;border-color:rgba(196,30,58,.35)}
-#cursor .in{position:absolute;inset:5px;border-radius:50%;background:rgba(0,0,0,.03);opacity:0;transition:opacity .3s var(--c)}
+/* ═══ SCROLL PROGRESS ═══ */
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--t);z-index:300;transition:width .2s linear}
+
+/* CURSOR — refined */
+#cursor{position:fixed;width:32px;height:32px;border:1px solid rgba(0,0,0,.1);border-radius:50%;pointer-events:none;z-index:200;transform:translate(-50%,-50%);transition:width .4s var(--c),height .4s var(--c),border-color .4s var(--c),background .4s var(--c);mix-blend-mode:normal}
+#cursor.hover{width:64px;height:64px;border-color:rgba(196,30,58,.3);background:rgba(196,30,58,.03)}
+#cursor .in{position:absolute;inset:4px;border-radius:50%;background:rgba(0,0,0,.02);opacity:0;transition:opacity .4s var(--c)}
 #cursor.hover .in{opacity:1}
 
 /* NAV */
@@ -71,16 +74,17 @@ nav.hide{transform:translateX(-50%) translateY(-150%);opacity:0}
 #lb-prev{left:24px}#lb-next{right:24px}
 #lb-prev:hover,#lb-next:hover{background:rgba(0,0,0,.07)}
 
-/* CARDS */
-.content{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:160px}
-.card-o{border-radius:1.5rem;padding:1.5px;background:linear-gradient(135deg,rgba(0,0,0,.04),rgba(0,0,0,.02));border:1px solid rgba(0,0,0,.05);transition:transform .35s var(--c),box-shadow .35s var(--c)}
-.card-o:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.04)}
-.card-i{padding:40px 36px;background:var(--bg);border-radius:calc(1.5rem - 1.5px);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 1px 3px rgba(0,0,0,.02)}
-.card-i h3{font-size:15px;font-weight:600;letter-spacing:-.01em;margin-bottom:14px;color:var(--t)}
-.card-i p{font-size:12px;line-height:1.9;color:var(--g);font-weight:400}
-.card-i .qt{font-family:'Space Mono',monospace;font-size:11px;line-height:1.7;color:rgba(0,0,0,.4);border-left:2px solid rgba(196,30,58,.2);padding-left:14px;margin-top:14px}
-.card-i .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
-.card-i .tags span{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.08em;padding:4px 10px;border:1px solid rgba(0,0,0,.05);border-radius:14px;color:rgba(0,0,0,.35);background:rgba(0,0,0,.01)}
+/* CARDS — refined Double-Bezel */
+.content{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-bottom:160px}
+.card-o{border-radius:1.75rem;padding:1.5px;background:linear-gradient(135deg,rgba(0,0,0,.045),rgba(0,0,0,.015));border:1px solid rgba(0,0,0,.04);transition:transform .4s var(--c),box-shadow .4s var(--c)}
+.card-o:hover{transform:translateY(-3px);box-shadow:0 1px 2px rgba(0,0,0,.02),0 12px 40px rgba(0,0,0,.05)}
+.card-i{padding:44px 40px;background:linear-gradient(180deg,#FAFAFA,#F7F7F7);border-radius:calc(1.75rem - 1.5px);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 1px 2px rgba(0,0,0,.02)}
+.card-i h3{font-size:16px;font-weight:600;letter-spacing:-.01em;margin-bottom:16px;color:var(--t)}
+.card-i p{font-size:13px;line-height:1.85;color:var(--g);font-weight:400}
+.card-i .qt{font-family:'Space Mono',monospace;font-size:11px;line-height:1.7;color:rgba(0,0,0,.4);border-left:2px solid rgba(196,30,58,.2);padding-left:16px;margin-top:16px}
+.card-i .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.card-i .tags span{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.08em;padding:5px 12px;border:1px solid rgba(0,0,0,.05);border-radius:16px;color:rgba(0,0,0,.35);background:rgba(0,0,0,.01);transition:all .3s var(--c)}
+.card-i .tags span:hover{border-color:rgba(196,30,58,.15);color:var(--r)}
 
 /* TIMELINE */
 .timeline{overflow-x:auto;overflow-y:hidden;padding:40px 0 80px;border-top:1px solid rgba(0,0,0,.03);border-bottom:1px solid rgba(0,0,0,.03);cursor:grab}
@@ -127,6 +131,7 @@ footer a{color:inherit}
 </head>
 <body>
 <svg class="filters" aria-hidden="true"><defs><filter id="grain" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3"/><feDisplacementMap in="SourceGraphic" scale="30" xChannelSelector="R"/></filter></defs></svg>
+<div id="progress"></div>
 <div id="cursor"><div class="in"></div></div>
 <nav id="nav">BALENCIAGA · 2015–2025</nav>
 <canvas id="atmo-canvas"></canvas>
