@@ -6,162 +6,219 @@
 <title>BALENCIAGA</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--black:#0A0A0A;--white:#F5F5F5;--grey:#8C8C8C;--light-grey:#E5E5E5}
+:root{--black:#0A0A0A;--white:#F5F5F5;--grey:#8C8C8C;--b:1px solid rgba(0,0,0,.06)}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--white);color:var(--black);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
-/* Navigation — ultra minimal, fixed */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:24px 32px;display:flex;justify-content:space-between;align-items:center;mix-blend-mode:difference;color:var(--white);
-  transition:transform .5s cubic-bezier(.32,.72,0,1)}
-nav.hide{transform:translateY(-100%)}
-nav .logo{font-size:18px;font-weight:800;letter-spacing:-.01em;text-transform:uppercase}
-nav .menu{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;cursor:pointer}
-/* Hero */
-.hero{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;animation:heroReveal 1.6s cubic-bezier(.32,.72,0,1) .3s forwards}
-@keyframes heroReveal{from{opacity:0;transform:scale(1.05)}to{opacity:1;transform:scale(1)}}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.4) 0%,transparent 50%);z-index:2}
-.hero-text{position:relative;z-index:3;text-align:center;color:var(--white)}
-.hero-text h1{font-size:clamp(48px,10vw,160px);font-weight:800;letter-spacing:-.03em;line-height:.9;text-transform:uppercase;
-  opacity:0;animation:fadeUp .9s cubic-bezier(.32,.72,0,1) .7s forwards}
-.hero-text p{font-size:14px;font-weight:400;letter-spacing:.25em;text-transform:uppercase;margin-top:20px;
-  opacity:0;animation:fadeUp .7s cubic-bezier(.32,.72,0,1) 1.1s forwards}
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-/* Sections */
-section{padding:80px 32px}
-.section-label{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);margin-bottom:40px}
-/* Product Grid */
-.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.product-grid img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.32,.72,0,1);cursor:pointer}
-.product-grid img:hover{transform:scale(1.03)}
-/* Featured — large full-width */
-.featured{width:100%;padding:40px 32px}
-.featured img{width:100%;max-height:80vh;object-fit:cover;display:block}
-/* Editorial split */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;min-height:80vh}
-.split .text{padding:60px}
-.split .text h2{font-size:clamp(32px,5vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1.1;text-transform:uppercase}
-.split .text p{font-size:14px;color:var(--grey);line-height:1.8;margin-top:24px;max-width:400px}
-.split img{width:100%;height:100%;object-fit:cover}
+/* §6 film grain — fixed only */
+body::after{content:'';position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* §5A Nav — Fluid Island pill */
+nav{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:24px;
+  background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.08);border-radius:40px;padding:10px 28px;
+  transition:transform .5s cubic-bezier(.32,.72,0,1),opacity .5s cubic-bezier(.32,.72,0,1)}
+nav.hide{transform:translateX(-50%) translateY(-120%);opacity:0}
+nav a{font-size:11px;font-weight:600;color:rgba(255,255,255,.8);text-decoration:none;letter-spacing:.12em;text-transform:uppercase;
+  transition:color .3s cubic-bezier(.32,.72,0,1)}
+nav a:hover{color:#fff}
+nav .logo{font-size:14px;font-weight:800;letter-spacing:-.01em;color:#fff}
+
+/* §4C py-24 minimum */
+section{padding:96px 40px}
+@media(min-width:768px){section{padding:120px 64px}}
+
+/* §4C Eyebrow badge */
+.eyebrow{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--grey);
+  border:1px solid rgba(0,0,0,.08);border-radius:40px;padding:6px 14px;margin-bottom:28px}
+
+/* HERO — §4A Double-Bezel */
+.hero{min-height:100dvh;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg img{width:100%;height:100%;object-fit:cover;will-change:transform}
+/* §5 hero entrance — GSAP timeline */
+.hero-frame{position:relative;z-index:2;margin:0 auto;max-width:1400px;width:100%;padding:0 40px}
+.hero-inner{text-align:center;padding:80px 60px;
+  background:rgba(10,10,10,.7);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  border:1px solid rgba(255,255,255,.06);border-radius:2.5rem}
+.hero-inner h1{font-size:clamp(44px,10vw,140px);font-weight:800;letter-spacing:-.04em;line-height:.9;color:#fff;text-transform:uppercase}
+.hero-inner .sub{font-size:13px;font-weight:500;letter-spacing:.25em;color:rgba(255,255,255,.6);text-transform:uppercase;margin-top:20px}
+.hero-scroll{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:3;
+  font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+
+/* Product grid — 4 columns */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+/* §5 hover physics */
+.grid .item{position:relative;overflow:hidden;aspect-ratio:3/4;cursor:pointer}
+.grid .item img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .7s cubic-bezier(.32,.72,0,1);will-change:transform}
+.grid .item:hover img{transform:scale(1.04)}
+
+/* §3 Editorial Split layout */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:stretch;min-height:80dvh}
+.split .text{display:flex;flex-direction:column;justify-content:center;padding:80px}
+.split .text h2{font-size:clamp(28px,4vw,56px);font-weight:700;letter-spacing:-.03em;line-height:1.05;text-transform:uppercase}
+.split .text p{font-size:14px;color:var(--grey);line-height:1.9;margin-top:24px;max-width:380px;font-weight:400}
+.split .img{overflow:hidden}
+.split .img img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .8s cubic-bezier(.32,.72,0,1)}
+.split .img:hover img{transform:scale(1.03)}
+
 /* Marquee */
-.marquee{overflow:hidden;padding:40px 0;border-top:1px solid var(--light-grey);border-bottom:1px solid var(--light-grey)}
-.marquee-inner{display:flex;gap:40px;animation:marquee 30s linear infinite}
-.marquee span{font-size:14px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;color:var(--grey)}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee{overflow:hidden;padding:32px 0;border-top:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)}
+.marquee-inner{display:flex;gap:36px;animation:marq 28s linear infinite}
+.marquee span{font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;color:var(--grey)}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* §5 Scroll reveal — blur+fade-up */
+.reveal{opacity:0;transform:translateY(36px);filter:blur(3px);
+  transition:opacity .85s cubic-bezier(.32,.72,0,1),transform .85s cubic-bezier(.32,.72,0,1),filter .85s cubic-bezier(.32,.72,0,1)}
+.reveal.visible{opacity:1;transform:translateY(0);filter:blur(0)}
+
+/* Featured full-bleed */
+.featured{width:100%;overflow:hidden}
+.featured img{width:100%;height:75dvh;object-fit:cover;display:block;
+  transition:transform .8s cubic-bezier(.32,.72,0,1)}
+.featured img:hover{transform:scale(1.02)}
+
 /* Footer */
-footer{padding:60px 32px;text-align:center;color:var(--grey);font-size:11px;letter-spacing:.15em;text-transform:uppercase}
+footer{padding:80px 40px;text-align:center}
+footer p{font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--grey)}
 footer a{color:var(--black);text-decoration:none;font-weight:700}
-/* Scroll reveal */
-.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s cubic-bezier(.32,.72,0,1),transform .8s cubic-bezier(.32,.72,0,1)}
-.reveal.visible{opacity:1;transform:translateY(0)}
+
 /* Deerflow */
-#deerflow{position:fixed;bottom:16px;right:20px;z-index:200;font-size:10px;font-weight:500;color:rgba(0,0,0,.25);text-decoration:none;letter-spacing:.08em;transition:opacity .3s;mix-blend-mode:difference;color:rgba(255,255,255,.3)}
-#deerflow:hover{opacity:.8}
+#df{position:fixed;bottom:16px;right:20px;z-index:200;font-size:9px;font-weight:500;color:rgba(255,255,255,.3);text-decoration:none;letter-spacing:.06em;
+  mix-blend-mode:difference;transition:opacity .3s}
+#df:hover{opacity:.8}
+
+/* Mobile collapse §3 universal override */
 @media(max-width:768px){
-  .product-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .grid{grid-template-columns:repeat(2,1fr);gap:8px}
   .split{grid-template-columns:1fr;min-height:auto}
-  .split .text{padding:30px 0}
-  nav{padding:16px 20px}
-  section{padding:40px 16px}
+  .split .text{padding:48px 24px}
+  .split .img{aspect-ratio:4/3}
+  section{padding:56px 20px}
+  .hero-inner{padding:48px 28px}
+  .hero-inner h1{font-size:clamp(36px,14vw,80px)}
+  nav{padding:8px 20px;gap:16px;top:16px}
+  nav a{font-size:10px}
 }
 </style>
 </head>
 <body>
-<nav id="nav"><span class="logo">BALENCIAGA</span><span class="menu">Menu</span></nav>
+<!-- §5A Nav — floating pill -->
+<nav id="nav">
+  <span class="logo">BALENCIAGA</span>
+  <a href="#">Women</a><a href="#">Men</a><a href="#">Bags</a><a href="#">Shoes</a>
+</nav>
 
-<!-- Hero -->
-<section class="hero">
-  <img src="https://balenciaga.dam.kering.com/asset/a7402ba5-62b4-484e-ab23-9f7e53b279a6/Thumbnail/THUMBNAIL_872640WMRTN1000_X.jpg" alt="Balenciaga" loading="eager">
-  <div class="hero-overlay"></div>
-  <div class="hero-text">
-    <h1>Winter 25</h1>
-    <p>Collection</p>
+<!-- ═══ HERO — §4A Double-Bezel ═══ -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <img src="https://balenciaga.dam.kering.com/asset/a7402ba5-62b4-484e-ab23-9f7e53b279a6/Thumbnail/THUMBNAIL_872640WMRTN1000_X.jpg" alt="Balenciaga" id="hero-img" loading="eager">
   </div>
+  <div class="hero-frame"><div class="hero-inner" id="hero-card">
+    <h1 id="hero-title">Winter 25</h1>
+    <p class="sub" id="hero-sub">Collection</p>
+  </div></div>
+  <span class="hero-scroll">Scroll</span>
 </section>
 
-<!-- Featured Products -->
+<!-- ═══ PRODUCT GRID ═══ -->
 <section>
-  <p class="section-label reveal">Featured</p>
-  <div class="product-grid">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/9d795c3a-04ec-4a0a-b196-f75241f2d9e7/Thumbnail/Thumbnail_865849WTRS21011_X.jpg" alt="Product" loading="lazy" style="transition-delay:0s">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/edac2e9e-77b0-45bd-99ac-daccc7938736/Thumbnail/THUMBNAIL_NEW_772774W3RBT1000_F.jpg" alt="Product" loading="lazy" style="transition-delay:.1s">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/6bafb434-16ca-4603-8acd-3c96d4451d7d/Thumbnail/Thumbnail_NEW_3XL_734731W3XL11010.jpg" alt="Product" loading="lazy" style="transition-delay:.2s">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/cf8fe069-7c01-47b4-923a-ccfe30090fc7/eCom/THUMBNAIL_A0024NW1WM81089_X.jpg" alt="Product" loading="lazy" style="transition-delay:.3s">
+  <span class="eyebrow reveal">Featured</span>
+  <div class="grid">
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/9d795c3a-04ec-4a0a-b196-f75241f2d9e7/Thumbnail/Thumbnail_865849WTRS21011_X.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/edac2e9e-77b0-45bd-99ac-daccc7938736/Thumbnail/THUMBNAIL_NEW_772774W3RBT1000_F.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/6bafb434-16ca-4603-8acd-3c96d4451d7d/Thumbnail/Thumbnail_NEW_3XL_734731W3XL11010.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/cf8fe069-7c01-47b4-923a-ccfe30090fc7/eCom/THUMBNAIL_A0024NW1WM81089_X.jpg" alt="Product" loading="lazy"></div>
   </div>
 </section>
 
-<!-- Editorial Split -->
+<!-- ═══ EDITORIAL SPLIT ═══ -->
 <section class="split">
   <div class="text reveal">
+    <span class="eyebrow">Iconic</span>
     <h2>The<br>Hourglass<br>Reimagined</h2>
-    <p>Sharp tailoring meets sculptural volume. The iconic hourglass silhouette returns in refined leather, precision-cut to architectural perfection.</p>
+    <p>Sharp tailoring meets sculptural volume. The iconic hourglass silhouette returns in refined leather, precision-cut to architectural perfection. Each piece is a study in contradiction — soft yet structured, classic yet irreverent.</p>
   </div>
-  <img class="reveal" src="https://balenciaga.dam.kering.com/asset/d39cf996-11e7-4343-bb0d-6cc4446a5d81/Thumbnail/THUMBNAIL_NEW_HOURGLASS_5935461LRGM1000_X.jpg" alt="Hourglass" loading="lazy">
+  <div class="img reveal"><img src="https://balenciaga.dam.kering.com/asset/d39cf996-11e7-4343-bb0d-6cc4446a5d81/Thumbnail/THUMBNAIL_NEW_HOURGLASS_5935461LRGM1000_X.jpg" alt="Hourglass" loading="lazy"></div>
 </section>
 
-<!-- Full-width Featured -->
+<!-- ═══ FULL-BLEED FEATURED ═══ -->
 <section class="featured reveal">
   <img src="https://balenciaga.dam.kering.com/asset/19811231-5859-40ec-9e50-06f445af4abf/Thumbnail/Thumbnail_869545WCDH11080_F.jpg" alt="Featured" loading="lazy">
 </section>
 
-<!-- More Products -->
+<!-- ═══ GRID 2 ═══ -->
 <section>
-  <div class="product-grid">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/2d3263a3-ff19-4fdf-865c-e44835570b5d/Thumbnail/Thumbnail_870111W0WM01000_F.jpg" alt="Product" loading="lazy">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/3694da7b-17da-401f-8331-e596addc55fa/Thumbnail/Thumbnail__825596WB9A1101088_X.jpg" alt="Product" loading="lazy">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/f98e42fa-fde5-47e4-b630-3225837d0d73/Thumbnail/Thumbnail_8657602ACJ51000_X.jpg" alt="Product" loading="lazy">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/415da001-435f-4964-a355-1fc0161ac7ed/Thumbnail/THUMBNAIL_NEW_RODEO_7897722AA4V1000_F.jpg" alt="Product" loading="lazy">
+  <div class="grid">
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/2d3263a3-ff19-4fdf-865c-e44835570b5d/Thumbnail/Thumbnail_870111W0WM01000_F.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/3694da7b-17da-401f-8331-e596addc55fa/Thumbnail/Thumbnail__825596WB9A1101088_X.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/f98e42fa-fde5-47e4-b630-3225837d0d73/Thumbnail/Thumbnail_8657602ACJ51000_X.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/415da001-435f-4964-a355-1fc0161ac7ed/Thumbnail/THUMBNAIL_NEW_RODEO_7897722AA4V1000_F.jpg" alt="Product" loading="lazy"></div>
   </div>
 </section>
 
-<!-- Marquee -->
-<section class="marquee">
-  <div class="marquee-inner">
-    <span>Luxury</span><span>·</span><span>Prêt-à-Porter</span><span>·</span><span>Accessories</span><span>·</span><span>Shoes</span><span>·</span><span>Bags</span><span>·</span>
-    <span>Luxury</span><span>·</span><span>Prêt-à-Porter</span><span>·</span><span>Accessories</span><span>·</span><span>Shoes</span><span>·</span><span>Bags</span><span>·</span>
-  </div>
-</section>
+<!-- ═══ MARQUEE ═══ -->
+<section class="marquee"><div class="marquee-inner">
+  <span>Luxury</span><span>·</span><span>Prêt-à-Porter</span><span>·</span><span>Accessories</span><span>·</span><span>Shoes</span><span>·</span><span>Bags</span><span>·</span>
+  <span>Luxury</span><span>·</span><span>Prêt-à-Porter</span><span>·</span><span>Accessories</span><span>·</span><span>Shoes</span><span>·</span><span>Bags</span><span>·</span>
+</div></section>
 
-<!-- Second Editorial -->
+<!-- ═══ EDITORIAL SPLIT 2 ═══ -->
 <section class="split">
-  <img class="reveal" src="https://balenciaga.dam.kering.com/asset/8183913f-4118-47ae-ba55-0bdf21b3b0f5/Thumbnail/Thumbnail_le_7__8681022ACJZ1053_F.jpg" alt="Le 7" loading="lazy">
+  <div class="img reveal"><img src="https://balenciaga.dam.kering.com/asset/8183913f-4118-47ae-ba55-0bdf21b3b0f5/Thumbnail/Thumbnail_le_7__8681022ACJZ1053_F.jpg" alt="Le 7" loading="lazy"></div>
   <div class="text reveal">
+    <span class="eyebrow">New</span>
     <h2>Le<br>Collection</h2>
     <p>An exploration of form and function. Each piece is a study in contradiction — soft yet structured, classic yet irreverent.</p>
   </div>
 </section>
 
-<!-- Final Grid -->
+<!-- ═══ FINAL GRID ═══ -->
 <section>
-  <div class="product-grid">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/8fb595bc-bfb1-4f2e-94d5-e0dca4459ac3/Thumbnail/Thumbnail_BOLERO_8685852ACJS1000_F.jpg" alt="Product" loading="lazy">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/014289fa-7e17-41fd-8cb7-9c0dc7aea508/Thumbnail/Thumbnail_CLICCA_8686722ACLM1000_F.jpg" alt="Product" loading="lazy">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/2cab190a-254c-47f0-9a87-680c478942a1/Thumbnail/THUMBNAIL_NEW_BELAIR_8456132AB9D1000_F.jpg" alt="Product" loading="lazy">
-    <img class="reveal" src="https://balenciaga.dam.kering.com/asset/9a827007-79d3-4285-9fdf-e9b86cc5ee8a/Thumbnail/THUMBNAIL_NEW_CAGOLE_6713091VG9Y1000_F.jpg" alt="Product" loading="lazy">
+  <div class="grid">
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/8fb595bc-bfb1-4f2e-94d5-e0dca4459ac3/Thumbnail/Thumbnail_BOLERO_8685852ACJS1000_F.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/014289fa-7e17-41fd-8cb7-9c0dc7aea508/Thumbnail/Thumbnail_CLICCA_8686722ACLM1000_F.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/2cab190a-254c-47f0-9a87-680c478942a1/Thumbnail/THUMBNAIL_NEW_BELAIR_8456132AB9D1000_F.jpg" alt="Product" loading="lazy"></div>
+    <div class="item reveal"><img src="https://balenciaga.dam.kering.com/asset/9a827007-79d3-4285-9fdf-e9b86cc5ee8a/Thumbnail/THUMBNAIL_NEW_CAGOLE_6713091VG9Y1000_F.jpg" alt="Product" loading="lazy"></div>
   </div>
 </section>
 
-<footer>
-  <p>BALENCIAGA — <a href="https://deerflow.tech" target="_blank">✦ Deerflow</a></p>
-</footer>
-<a id="deerflow" href="https://deerflow.tech" target="_blank">DF</a>
+<footer><p>BALENCIAGA — <a href="https://deerflow.tech" target="_blank">✦ Deerflow</a></p></footer>
+<a id="df" href="https://deerflow.tech" target="_blank">DF</a>
 
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script>
-// Scroll reveal — IntersectionObserver, per high-end-visual-design §5C
-const observer=new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})
-},{threshold:.15});
-document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+// ═══ §5 GSAP Timeline: Hero entrance ═══
+const tl=gsap.timeline({defaults:{ease:"power3.out"}});
+tl.from('#hero-img',{scale:1.08,opacity:0,duration:1.5},0);
+tl.from('#hero-card',{y:60,opacity:0,duration:.9},.4);
+tl.from('#hero-title',{y:30,opacity:0,duration:.8},.6);
+tl.from('#hero-sub',{y:20,opacity:0,duration:.6},.8);
 
-// Nav hide on scroll
-let lastScroll=0;
+// ═══ §5C Scroll reveal: IntersectionObserver (NOT scroll event) ═══
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})
+},{threshold:.12,rootMargin:'40px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ═══ Nav hide on scroll, per §5 ═══
+let last=0;
 window.addEventListener('scroll',()=>{
-  const nav=document.getElementById('nav');
-  const current=window.scrollY;
-  if(current>lastScroll&&current>200)nav.classList.add('hide');
+  const nav=document.getElementById('nav'),cur=window.scrollY;
+  if(cur>last&&cur>300)nav.classList.add('hide');
   else nav.classList.remove('hide');
-  lastScroll=current;
+  last=cur;
 },{passive:true});
+
+// ═══ Reduced motion ═══
+if(matchMedia('(prefers-reduced-motion:reduce)').matches){
+  gsap.globalTimeline.timeScale(0);
+  document.querySelectorAll('.reveal').forEach(el=>{el.style.opacity='1';el.style.transform='none';el.style.filter='none'});
+}
 </script>
 </body>
 </html>
