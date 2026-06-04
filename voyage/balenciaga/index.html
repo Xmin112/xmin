@@ -10,6 +10,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:'Syne',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden;background:#060606;color:#F0EDEB}
+/* §6 grain — fixed only */
 body::after{content:'';position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.022;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
@@ -19,58 +20,85 @@ body::after{content:'';position:fixed;inset:0;z-index:50;pointer-events:none;opa
 #intro .stamp{font-family:'Space Mono',monospace;font-size:11px;font-weight:400;letter-spacing:.18em;color:#C41E3A;text-transform:uppercase;margin-top:20px}
 #intro .prose{font-size:14px;color:rgba(255,255,255,.38);line-height:1.9;max-width:520px;text-align:center;margin-top:36px;font-weight:400}
 
-/* ═══ SHOW BLOCK ═══ */
-.show{padding:0;position:relative}
-.show-header{display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:0;padding:120px 56px 48px;position:sticky;top:0;z-index:5;pointer-events:none}
-.show-header .meta{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase}
-.show-header h2{font-size:clamp(32px,5vw,64px);font-weight:700;line-height:.94;letter-spacing:-.03em;text-transform:uppercase}
-.show-header .desc{font-size:13px;line-height:1.8;color:rgba(255,255,255,.45)}
+/* ═══ SHOW — full-bleed section ═══ */
+.show{padding:160px 0 0;position:relative}
+/* Header — NOT sticky, appears as hero then fades */
+.show-hero{min-height:60dvh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 56px 48px;opacity:1;transition:opacity .6s var(--c)}
+.show-hero .num{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px}
+.show-hero h2{font-size:clamp(34px,6vw,72px);font-weight:700;line-height:.92;letter-spacing:-.03em;text-transform:uppercase;max-width:700px}
+.show-hero .precis{font-size:14px;line-height:1.8;color:rgba(255,255,255,.42);max-width:500px;margin-top:20px;font-weight:400}
 
-/* ═══ GALLERY ═══ */
-.gallery{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:12px;padding:0 56px 80px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
-.gallery::-webkit-scrollbar{height:2px}.gallery::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
-.gallery img{height:65vh;width:auto;min-width:280px;object-fit:cover;display:block;scroll-snap-align:start;
-  opacity:0;transform:scale(.95);transition:opacity .8s var(--c),transform .8s var(--c)}
-.gallery img.visible{opacity:1;transform:scale(1)}
-.gallery img:nth-child(2){transition-delay:.08s}.gallery img:nth-child(3){transition-delay:.16s}
-.gallery img:nth-child(4){transition-delay:.24s}.gallery img:nth-child(5){transition-delay:.32s}
+/* ═══ GALLERY — horizontal scroll ═══ */
+.gallery{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:0 56px 60px;scroll-snap-type:x mandatory}
+.gallery::-webkit-scrollbar{height:2px}.gallery::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08)}
+/* §5 img: parallax via translateY + blur reveal */
+.gallery .img-wrap{flex-shrink:0;scroll-snap-align:start;overflow:hidden;border-radius:8px;
+  opacity:0;filter:blur(6px);transform:translateY(30px);
+  transition:opacity .9s var(--c),filter .9s var(--c),transform .9s var(--c)}
+.gallery .img-wrap.visible{opacity:1;filter:blur(0);transform:translateY(0)}
+.gallery .img-wrap:nth-child(2){transition-delay:.06s}.gallery .img-wrap:nth-child(3){transition-delay:.12s}
+.gallery .img-wrap:nth-child(4){transition-delay:.18s}.gallery .img-wrap:nth-child(5){transition-delay:.24s}
+.gallery img{height:60vh;width:auto;min-width:260px;object-fit:cover;display:block;
+  transition:transform .5s var(--c);will-change:transform}
+/* §5 hover: magnetic tilt */
+.gallery .img-wrap:hover img{transform:scale(1.04)}
 
-/* ═══ CONTENT BLOCK ═══ */
-.content{padding:40px 56px 120px;display:grid;grid-template-columns:1fr 1fr;gap:48px}
-.content .col h3{font-size:16px;font-weight:600;letter-spacing:-.01em;margin-bottom:12px}
-.content .col p{font-size:12px;line-height:2;color:rgba(255,255,255,.45);font-weight:400}
-.content .col .quote{font-family:'Space Mono',monospace;font-size:12px;line-height:1.7;color:rgba(255,255,255,.35);border-left:2px solid rgba(196,30,58,.4);padding-left:16px;margin-top:20px}
-.content .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
-.content .tags span{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;padding:5px 10px;border:1px solid rgba(255,255,255,.08);border-radius:20px;color:rgba(255,255,255,.4)}
+/* ═══ DOUBLE-BEZEL CONTENT CARD ═══ */
+.body-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 56px 160px}
+/* §4A outer shell */
+.card-outer{padding:1.5px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);border-radius:1.5rem}
+/* §4A inner core */
+.card-inner{padding:40px 36px;background:rgba(6,6,6,.55);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-radius:calc(1.5rem - 1.5px);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.card-inner h3{font-size:16px;font-weight:600;letter-spacing:-.01em;margin-bottom:14px}
+.card-inner p{font-size:12px;line-height:2;color:rgba(255,255,255,.42);font-weight:400}
+.card-inner .qt{font-family:'Space Mono',monospace;font-size:11px;line-height:1.7;color:rgba(255,255,255,.3);border-left:2px solid rgba(196,30,58,.35);padding-left:14px;margin-top:16px}
+.card-inner .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:16px}
+.card-inner .tags span{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;padding:4px 10px;border:1px solid rgba(255,255,255,.06);border-radius:16px;color:rgba(255,255,255,.32)}
 
-/* ═══ ATMOSPHERE OVERLAY ═══ */
-.atmo{position:sticky;top:0;left:0;right:0;height:0;pointer-events:none;z-index:0}
-.atmo div{position:absolute;inset:0;height:100dvh}
+/* ═══ ERA COMPARISON ═══ */
+.era{min-height:80dvh;display:grid;grid-template-columns:1fr 1fr;padding:120px 56px;gap:0}
+.era .col{padding:60px 40px;display:flex;flex-direction:column;justify-content:center}
+.era .col h3{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;color:#C41E3A;text-transform:uppercase;margin-bottom:12px}
+.era .col h2{font-size:clamp(24px,4vw,44px);font-weight:700;line-height:1;letter-spacing:-.02em;text-transform:uppercase;margin-bottom:16px}
+.era .col p{font-size:12px;line-height:2;color:rgba(255,255,255,.42);max-width:360px}
+.era .col .stat{font-family:'Space Mono',monospace;font-size:40px;font-weight:700;color:rgba(255,255,255,.06);line-height:1;margin-bottom:8px}
 
-/* ═══ FOOTER ═══ */
-footer{padding:160px 40px;text-align:center;position:relative;z-index:2}
+/* ═══ EPILOGUE ═══ */
+.epilogue{min-height:100dvh;display:flex;align-items:center;padding:120px 56px;position:relative}
+.epi-card{padding:2px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:2rem;max-width:700px}
+.epi-inner{padding:56px 48px;background:rgba(6,6,6,.6);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  border-radius:calc(2rem - 2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.epi-inner .lbl{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:#C41E3A;text-transform:uppercase;margin-bottom:14px}
+.epi-inner h2{font-size:clamp(28px,5vw,56px);font-weight:700;line-height:.95;letter-spacing:-.03em;text-transform:uppercase;margin-bottom:18px}
+.epi-inner p{font-size:13px;line-height:2;color:rgba(255,255,255,.4);max-width:500px;font-weight:400}
+.epi-inner .next{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-top:20px;padding:8px 16px;border:1px solid rgba(255,255,255,.06);border-radius:20px;display:inline-block}
+
+footer{padding:120px 40px;text-align:center;position:relative;z-index:2}
 footer .big{font-size:clamp(28px,6vw,56px);font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
-footer .sm{font-size:11px;color:rgba(255,255,255,.25);font-family:'Space Mono',monospace;letter-spacing:.1em}
+footer .sm{font-size:10px;color:rgba(255,255,255,.2);font-family:'Space Mono',monospace;letter-spacing:.1em}
 footer a{color:inherit}
 
-/* ═══ Scroll reveal ═══ */
-.reveal-text{opacity:0;transform:translateY(20px);transition:opacity .8s var(--c),transform .8s var(--c)}
-.reveal-text.visible{opacity:1;transform:translateY(0)}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .85s var(--c),transform .85s var(--c)}
+.reveal.visible{opacity:1;transform:translateY(0)}
 
-#df{position:fixed;bottom:14px;right:20px;z-index:200;font-size:9px;color:rgba(255,255,255,.12);text-decoration:none;letter-spacing:.06em;transition:opacity .3s}#df:hover{opacity:.7}
+#df{position:fixed;bottom:14px;right:20px;z-index:200;font-size:9px;color:rgba(255,255,255,.1);text-decoration:none;letter-spacing:.06em;transition:opacity .3s}#df:hover{opacity:.7}
 
 /* Dot nav */
-#dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
-#dots span{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.12);transition:all .4s var(--c);cursor:pointer}
+#dots{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+#dots span{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.1);transition:all .4s var(--c);cursor:pointer}
 #dots span.active{background:#C41E3A;transform:scale(1.5)}
 
 @media(max-width:768px){
-  .show-header{grid-template-columns:1fr;padding:80px 24px 32px;gap:20px}
-  .gallery{padding:0 24px 48px;gap:8px}
-  .gallery img{height:50vh;min-width:200px}
-  .content{grid-template-columns:1fr;padding:24px 24px 80px;gap:32px}
+  .show-hero{padding:0 24px 32px}
+  .gallery{padding:0 24px 40px;gap:6px}
+  .gallery img{height:44vh;min-width:180px}
+  .body-grid{grid-template-columns:1fr;padding:0 24px 80px}
+  .era{grid-template-columns:1fr;padding:60px 24px}
+  .era .col{padding:30px 0}
+  .epilogue{padding:80px 24px}
+  .epi-inner{padding:36px 24px}
   #intro{padding:24px}
-  #dots{right:8px}
 }
 </style>
 </head>
@@ -81,127 +109,212 @@ footer a{color:inherit}
 <section id="intro">
   <div style="opacity:0" id="i1"><h1 id="ih1">Ten Years<br>of Demna</h1></div>
   <div style="opacity:0" id="i2"><p class="stamp">BALENCIAGA · 2015 — 2025</p></div>
-  <div style="opacity:0" id="i3"><p class="prose">在 Demna Gvasalia 到来之前，这家百年时装屋正在逐渐被遗忘。十年后，Balenciaga 是地球上被讨论最多的奢侈品牌——不是因为它最贵，而是因为它最危险。以下是十大秀场，按年份排列。每一场都不是"好看的衣服"，而是一个社会实验。</p></div>
+  <div style="opacity:0" id="i3"><p class="prose">一个格鲁吉亚难民把巴黎最古板的时装屋变成了全球最具争议的创意实验室。以下是七个不可复制的秀场——每一场都是社会实验，每一件衣服都是宣言。</p></div>
 </section>
 
-<!-- ═══ SHOW 1: FW16 DEBUT ═══ -->
+<!-- ═══ SHOW 1: FW16 ═══ -->
 <section class="show" id="s1">
-  <div class="show-header reveal-text">
-    <div><p class="meta" style="color:#8C8C8C">01 · Fall/Winter 2016</p><h2>The Debut</h2></div>
-    <p class="desc">Demna 的第一场 Balenciaga 秀。Cristóbal 的茧型轮廓被塞进羽绒服和 oversize 夹克里。首排编辑面面相觑——天才还是疯子？同季，Bernie Sanders 竞选 logo 印满男装。从第一秒，他就拒绝被归类。</p>
+  <div class="show-hero reveal" data-show="1">
+    <p class="num" style="color:#8C8C8C">01 · Fall / Winter 2016</p>
+    <h2>The Debut That<br>Broke Everything</h2>
+    <p class="precis">Demna Gvasalia 的第一场Balenciaga秀。他把 Cristóbal 1950年代的茧型轮廓塞进了羽绒服和滑雪夹克。首排编辑们面面相觑——这是玩笑还是天才？答案是<em>两者都是</em>。</p>
   </div>
-  <div class="gallery">
-    <img src="https://assets.vogue.com/photos/6224f85e562415ab5a00cf88/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="FW16-1">
-    <img src="https://assets.vogue.com/photos/65e487d1fbaff921594a8cdf/master/w_1600,c_limit/00001-balenciaga-fall-2024-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="FW16-2">
-    <img src="https://assets.vogue.com/photos/6224f85e66663588c303c9c0/master/w_1600,c_limit/00002-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="FW16-3">
+  <div class="gallery" data-show="1">
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f85e562415ab5a00cf88/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="FW16-1"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/65e487d1fbaff921594a8cdf/master/w_1600,c_limit/00001-balenciaga-fall-2024-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="FW16-2"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f85e66663588c303c9c0/master/w_1600,c_limit/00002-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="FW16-3"></div>
   </div>
-  <div class="content reveal-text">
-    <div class="col"><h3>Cocoon 2.0</h3><p>1950 年代 Cristóbal Balenciaga 发明了茧型轮廓——一件像蚕茧般包裹身体的大衣。66 年后，Demna 用羽绒服和滑雪夹克重新诠释了这个形态。不是致敬——是翻译。他证明了形式可以跨越时间，只需要换一种语言。</p></div>
-    <div class="col"><h3>政治从 Day 1 开始</h3><p>Bernie Sanders 2016 竞选 logo 被直接印在男装上。不是恶搞，不是讽刺。设计师本人拒绝解释——他只是说"我只是觉得应该这样做"。这场秀确立了未来十年的基调：T 台可以是任何东西。</p></div>
+  <div class="body-grid reveal">
+    <div class="card-outer"><div class="card-inner">
+      <h3>Cocoon 2.0 · 跨越 66 年的对话</h3>
+      <p>1950年代，Cristóbal Balenciaga 发明了茧型轮廓——用一块布料包裹身体，彻底抛弃腰线。整个行业说他疯了。十年后，所有人都在抄袭他。2016年，Demna 用羽绒服和 oversize 滑雪夹克重新诠释了这个廓形。不是致敬——是翻译。他证明了形式可以跨越时间，只需要换一种语言。</p>
+      <div class="qt">"当你理解了 Cristóbal，你就会理解我做的每一件事。我们不是在设计衣服——我们在设计穿衣服的<em>人</em>。"<br>—— Demna, 2016</div>
+    </div></div>
+    <div class="card-outer"><div class="card-inner">
+      <h3>Bernie Sanders · 政治从第一天开始</h3>
+      <p>2016 美国总统大选季。Demna 把 Bernie Sanders 的竞选 logo 直接印在了整季男装上。他没有征求 Sanders 团队的同意——事后 Sanders 本人发推说"我支持"。大选、民粹主义、街头政治——这些不应该出现在奢侈品 T 台上。但 Demna 的 Balenciaga 从第一秒就拒绝选择"安全"。</p>
+      <div class="tags"><span>Cocoon Silhouette</span><span>Bernie Sanders</span><span>Political Fashion</span><span>Oversize</span></div>
+    </div></div>
   </div>
 </section>
 
 <!-- ═══ SHOW 2: SS17 ═══ -->
 <section class="show" id="s2">
-  <div class="show-header reveal-text">
-    <div><p class="meta" style="color:#4A90D9">02 · Spring/Summer 2017</p><h2>The $2,000<br>IKEA Bag</h2></div>
-    <p class="desc">一只长得跟 IKEA Frakta 几乎一模一样的包，售价 ¥12,000。全世界媒体炸了。IKEA 做了个广告："摇一摇，沙沙响——正品 IKEA，¥5.99。"同年，Triple S 老爹鞋诞生，永远改变了球鞋产业。</p>
+  <div class="show-hero reveal">
+    <p class="num" style="color:#4A90D9">02 · Spring / Summer 2017</p>
+    <h2>The $2,000<br>IKEA Bag</h2>
+    <p class="precis">一只长得跟 IKEA Frakta 几乎一模一样的包——售价 ¥12,000。全世界媒体炸了。IKEA 做了个广告回应："摇一摇——如果发出沙沙声，那就是真的。¥5.99。" Triple S 老爹鞋也在这一年诞生，它将永远改变球鞋产业。</p>
   </div>
   <div class="gallery">
-    <img src="https://assets.vogue.com/photos/6224f86156b2479b9afd2e99/master/w_1600,c_limit/00004-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SS17-1">
-    <img src="https://assets.vogue.com/photos/6224f8618943cfda0491c0d7/master/w_1600,c_limit/00005-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SS17-2">
-    <img src="https://assets.vogue.com/photos/6224f8622e6b31ae91659459/master/w_1600,c_limit/00007-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SS17-3">
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f86156b2479b9afd2e99/master/w_1600,c_limit/00004-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SS17-1"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f8618943cfda0491c0d7/master/w_1600,c_limit/00005-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SS17-2"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f8622e6b31ae91659459/master/w_1600,c_limit/00007-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SS17-3"></div>
   </div>
-  <div class="content reveal-text">
-    <div class="col"><h3>奢侈品就是消费主义的镜子</h3><p>Arena Tote、¥7,000 的薯片袋包、¥12,000 的 IKEA 袋——Demna 反复追问同一个问题：<em>价值到底是什么？</em>当一件日常物品被贴上 Balenciaga 标签后翻了几千倍，它是变贵了，还是让你看清了奢侈品定价的荒诞？</p><div class="quote">"如果你因为一只 IKEA 包卖 ¥12,000 而愤怒，那你应该同样愤怒于一只普通的牛皮包卖 ¥30,000——它们的成本差异其实没那么大。"</div></div>
-    <div class="col"><h3>Triple S：丑鞋革命</h3><p>2017 年，没有人觉得"老爹鞋"是时髦的。但 Triple S 改变了人们对鞋的认知——笨重、大底、三层结构，像被压缩的工业废料。它成了过去十年最有影响力的鞋款设计，没有之一。今天的 Balenciaga 鞋履帝国从这里开始。</p><div class="tags"><span>Triple S</span><span>Arena Tote</span><span>Pantashoes</span><span>Ugly Chic</span></div></div>
+  <div class="body-grid reveal">
+    <div class="card-outer"><div class="card-inner">
+      <h3>奢侈品就是消费主义的镜子</h3>
+      <p>Arena Tote（¥12,000 的 IKEA 袋）。薯片袋包（¥7,000）。购物袋包（¥9,000）。Demna 反复追问同一个问题：<em>价值到底是什么？</em>当一件日常物品贴上了 Balenciaga 标签后价格翻了几千倍，它变贵了——还是让你看清了奢侈品定价的荒诞本质？</p>
+      <div class="qt">"如果你因为一只IKEA包卖¥12,000而愤怒，那你应该同样愤怒于一只普通牛皮包卖¥30,000——它们的成本差异其实没那么大。"</div>
+    </div></div>
+    <div class="card-outer"><div class="card-inner">
+      <h3>Triple S · 丑鞋革命</h3>
+      <p>2017年没人觉得"老爹鞋"是时髦的。但 Triple S 三層结构的大底、厚重的体积感，像被压缩的工业废料一样美。它成了过去十年最有影响力的鞋款——今天每一个奢侈品牌都有一条"ugly sneaker"产品线。它改变了人们对鞋的认知：<em>丑可以是美。笨重可以是高级。</em></p>
+      <div class="tags"><span>Triple S</span><span>Arena Tote</span><span>Pantashoes</span><span>Ugly Chic</span><span>Consumerism</span></div>
+    </div></div>
   </div>
 </section>
 
 <!-- ═══ SHOW 3: FW21 COUTURE ═══ -->
 <section class="show" id="s3">
-  <div class="show-header reveal-text">
-    <div><p class="meta" style="color:#C8A45C">03 · Fall/Winter 2021 Couture</p><h2>53 Years<br>of Silence</h2></div>
-    <p class="desc">Balenciaga 在 1968 年关闭了高定线。53 年后，Demna 在一个全黑的沙龙里让它复活——没有音乐，没有灯光变化，模特沉默行走，举着老式号码牌。像无声拍卖会，像葬礼，也像一场重逢。前排坐着 Naomi Campbell、Dua Lipa 和 Cardi B，没人敢出声。</p>
+  <div class="show-hero reveal">
+    <p class="num" style="color:#C8A45C">03 · Fall / Winter 2021 · Haute Couture</p>
+    <h2>53 Years<br>of Silence</h2>
+    <p class="precis">Cristóbal Balenciaga 在1968年关闭了高定线。53年后，Demna 在一个全黑的沙龙里让它复活——没有音乐，没有灯光变化，模特沉默行走，举着老式号码牌。像无声拍卖会，像葬礼，也像一场重逢。前排坐着 Naomi Campbell、Dua Lipa、Cardi B——没有人敢出声。</p>
   </div>
   <div class="gallery">
-    <img src="https://assets.vogue.com/photos/6224f8650c75bb354d918226/master/w_1600,c_limit/00008-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="C21-1">
-    <img src="https://assets.vogue.com/photos/6224f9a18b9ca19052b55683/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="C21-2">
-    <img src="https://assets.vogue.com/photos/65196ed19d1fbae5cedc8924/master/w_1600,c_limit/00001-balenciaga-spring-2024-ready-to-wear-credit-brand.jpg" loading="lazy" alt="C21-3">
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f8650c75bb354d918226/master/w_1600,c_limit/00008-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="C21-1"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f9a18b9ca19052b55683/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="C21-2"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/65196ed19d1fbae5cedc8924/master/w_1600,c_limit/00001-balenciaga-spring-2024-ready-to-wear-credit-brand.jpg" loading="lazy" alt="C21-3"></div>
   </div>
-  <div class="content reveal-text">
-    <div class="col"><h3>高定不是博物馆，是街道</h3><p>Demna 坚持把高定带出宫殿。锡箔纸裙、金色沙漏礼服、连帽衫用定制西装的精度裁剪——这些都是关于巴黎街道的宣言，不是凡尔赛宫。他为 <em>真实的人</em> 做高定，不是为档案室。</p></div>
-    <div class="col"><h3>明星超模全来了</h3><p>Naomi Campbell 一身黑色雕塑裙。Dua Lipa 穿着解构西装。Cardi B 坐在前排，表情敬畏。这不仅仅是时装秀——这是巴黎最贵的门票，而坐在那里的人都明白自己正在见证一个历史时刻。</p><div class="tags"><span>Haute Couture</span><span>Silent Salon</span><span>Naomi</span><span>Dua Lipa</span></div></div>
+  <div class="body-grid reveal">
+    <div class="card-outer"><div class="card-inner">
+      <h3>高定不在宫殿，在街上</h3>
+      <p>Demna 坚持把高定带出凡尔赛。锡箔纸裙——像包午餐三明治的锡纸，但用丝绸和金属线织成。金色沙漏礼服——对 Cristóbal 经典廓形的直接引用。连帽衫用定制西装的精度裁剪——高定最伟大的革命不是改了形式，是改了受众。<em>真实的人</em>可以穿高定。</p>
+    </div></div>
+    <div class="card-outer"><div class="card-inner">
+      <h3>明星超模集体朝圣</h3>
+      <p>Naomi Campbell 一身黑色雕塑裙。Dua Lipa 穿着解构西装。Cardi B 坐在前排，表情敬畏。这不仅仅是时装秀——这是巴黎最贵的门票，而坐在那里的人都明白自己正在见证一个历史时刻。他们不是在"看秀"，他们是在<em>参与</em>一场仪式。</p>
+      <div class="tags"><span>Haute Couture</span><span>Silent Salon</span><span>Naomi</span><span>Dua Lipa</span><span>Cardi B</span></div>
+    </div></div>
   </div>
 </section>
 
 <!-- ═══ SHOW 4: FW22 SNOW ═══ -->
 <section class="show" id="s4">
-  <div class="show-header reveal-text">
-    <div><p class="meta" style="color:#A0C8F0">04 · Fall/Winter 2022</p><h2>Blizzard.</h2></div>
-    <p class="desc">一座巨大的玻璃穹顶。人造暴风雪。模特在风雪中蹒跚，Bella Hadid 裹着黑色连帽衫穿过漫天大雪——这一刻成了这个十年最不可磨灭的时尚影像。秀前，Demna 用乌克兰语读了一首诗。他自己曾是战争难民。</p>
+  <div class="show-hero reveal">
+    <p class="num" style="color:#A0C8F0">04 · Fall / Winter 2022</p>
+    <h2>Blizzard.</h2>
+    <p class="precis">一座巨大的玻璃穹顶。人造暴风雪。模特在风雪中蹒跚前行。Bella Hadid 裹着黑色连帽衫穿过漫天大雪的画面——这十年最不可磨灭的时尚影像。秀前，Demna 用乌克兰语读了一首诗。他自己曾是战争难民，12岁从阿布哈兹战区逃出来。</p>
   </div>
   <div class="gallery">
-    <img src="https://assets.vogue.com/photos/622f4b3666663588c303ce09/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-1">
-    <img src="https://assets.vogue.com/photos/622f4b3895de8fb5d43805ba/master/w_1600,c_limit/00002-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-2">
-    <img src="https://assets.vogue.com/photos/6224f85ed608f0964f4fd386/master/w_1600,c_limit/00003-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-3">
-    <img src="https://assets.vogue.com/photos/6224f861cb9c17da3b08e234/master/w_1600,c_limit/00006-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-4">
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/622f4b3666663588c303ce09/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-1"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/622f4b3895de8fb5d43805ba/master/w_1600,c_limit/00002-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-2"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f85ed608f0964f4fd386/master/w_1600,c_limit/00003-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-3"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f861cb9c17da3b08e234/master/w_1600,c_limit/00006-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="SNOW-4"></div>
   </div>
-  <div class="content reveal-text">
-    <div class="col"><h3>气候危机还是战争创伤？</h3><p>原本是关于全球变暖的寓言。但在俄罗斯入侵乌克兰后，这场秀有了更深的意义。Demna 1993 年从格鲁吉亚阿布哈兹战区逃出来时才 12 岁。他在后台对团队说：<em>"我个人已经为战争牺牲了太多。我们必须抵抗。"</em></p><div class="quote">"走在这个暴风雪里，我没有感觉到寒冷。我感觉到了记忆。"<br>—— Bella Hadid</div></div>
-    <div class="col"><h3>那个意大利女人</h3><p>Kim Kardashian 穿着一身由 Balenciaga 胶带缠成的紧身衣坐在前排。全场最著名的造型不是台上的模特，而是台下的她。The New York Times 评论说走路时衣服会发出"胶带撕开的吱吱声"——这是时尚史上最 Demna 的时刻之一。</p><div class="tags"><span>Snow Globe</span><span>Bella Hadid</span><span>Ukraine</span><span>Tape Dress</span></div></div>
+  <div class="body-grid reveal">
+    <div class="card-outer"><div class="card-inner">
+      <h3>气候寓言 × 战争创伤</h3>
+      <p>原本是一场关于全球变暖的秀——玻璃穹顶内的末日景观。但在俄罗斯入侵乌克兰后，一切有了更深的意义。Demna 几乎取消了这场秀。最终他决定继续——用一首乌克兰语诗歌开场，给每位嘉宾送了乌克兰国旗色的 T 恤。暴风雪从来不只是暴风雪。</p>
+      <div class="qt">"我12岁那年逃出战区。这场秀是我第一次用时装的方式直面它——不是因为我想，而是因为我没有别的办法。"<br>—— Demna</div>
+    </div></div>
+    <div class="card-outer"><div class="card-inner">
+      <h3>Kim 胶带装 · Bella 走进历史</h3>
+      <p>Kim Kardashian 一身由 Balenciaga 胶带缠成的紧身衣坐在前排——New York Times 描述走路时会发出"胶带撕开的吱吱声"。Bella Hadid 裹着黑色连帽衫在雪中走过——没有任何造型比这一刻更让人记住。时尚界最强大的不是设计师，是<em>画面</em>。</p>
+      <div class="tags"><span>Snow Globe</span><span>Bella Hadid</span><span>Ukraine Poem</span><span>Tape Dress</span><span>Climate</span></div>
+    </div></div>
   </div>
 </section>
 
 <!-- ═══ SHOW 5: SS23 MUD ═══ -->
 <section class="show" id="s5">
-  <div class="show-header reveal-text">
-    <div><p class="meta" style="color:#A08060">05 · Spring/Summer 2023</p><h2>Mud.</h2></div>
-    <p class="desc">厚厚一层湿泥浆铺满秀场。Kanye West 开场。工业噪音。模特艰难踩着泥浆——一条粉色裙子下摆完全浸透。这不是时装秀，这是恐怖电影，这是战争景观，这是关于<em>在泥泞中继续行走</em>的身体宣言。</p>
+  <div class="show-hero reveal">
+    <p class="num" style="color:#A08060">05 · Spring / Summer 2023</p>
+    <h2>Mud.</h2>
+    <p class="precis">厚厚一层湿泥浆铺满整个秀场。Kanye West 开场。工业噪音轰鸣。模特们的鞋——以及一条漂亮的粉色裙子——全被污泥浸透。这不是时装秀。这是恐怖电影，这是战争景观，这是关于<em>在泥泞中继续行走</em>的身体宣言。</p>
   </div>
   <div class="gallery">
-    <img src="https://assets.vogue.com/photos/6339b79d40b7e0f01ab43e72/master/w_1600,c_limit/00002-balenciaga-spring-2023-ready-to-wear-credit-brand.jpg" loading="lazy" alt="MUD-1">
-    <img src="https://assets.vogue.com/photos/64049322a22768c99d2dd4fa/master/w_1600,c_limit/00001-balenciaga-fall-2023-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="MUD-2">
-    <img src="https://assets.vogue.com/photos/66faf3bcc045716347454b0a/master/w_1600,c_limit/00001-balenciaga-spring-2025-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="MUD-3">
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6339b79d40b7e0f01ab43e72/master/w_1600,c_limit/00002-balenciaga-spring-2023-ready-to-wear-credit-brand.jpg" loading="lazy" alt="MUD-1"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/64049322a22768c99d2dd4fa/master/w_1600,c_limit/00001-balenciaga-fall-2023-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="MUD-2"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/66faf3bcc045716347454b0a/master/w_1600,c_limit/00001-balenciaga-spring-2025-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="MUD-3"></div>
   </div>
-  <div class="content reveal-text">
-    <div class="col"><h3>"我讨厌时尚，我喜欢衣服"</h3><p>这是 Demna 最著名的矛盾修辞。泥浆秀是对这句话最极端的诠释——衣服是脏的、泥泞的、被环境改造的。但这些衣服美得惊人。一条被泥水浸透的粉色薄纱裙，比任何在红毯上完美无暇的礼服都让人印象深刻。</p></div>
-    <div class="col"><h3>前排不知道该鼓掌还是沉默</h3><p>没有几个时装秀会让观众产生这种困惑。这不是娱乐，这是宣言。在这个流行"静奢"和"老钱风"的时代，Demna 用泥巴搞了一场反叛。他是对的：在真实的世界里，美好的事物总会沾上泥。</p><div class="tags"><span>Kanye Opening</span><span>Industrial Noise</span><span>Pink Dress</span><span>Anti-Luxury</span></div></div>
+  <div class="body-grid reveal">
+    <div class="card-outer"><div class="card-inner">
+      <h3>"Anti-Luxury" 的终极实验</h3>
+      <p>在"静奢"和"老钱风"流行的同一年，Demna 用泥巴搞了一场彻底的叛乱。他讨厌"时尚"这个词——但热爱衣服本身。这场秀将衣服浸入污泥——不是为了毁掉它们，而是为了证明<em>真正的美不怕脏</em>。那条粉色纱裙被泥水浸透的样子，比任何红毯上的完美礼服都让人记忆深刻。</p>
+    </div></div>
+    <div class="card-outer"><div class="card-inner">
+      <h3>Kanye 开场 · 工业噪音</h3>
+      <p>Ye（Kanye West）穿着 oversized 黑色皮夹克走在最前面。整场配乐——没有旋律，只有金属撞击、低频轰鸣和工业电子噪音——像机器在崩溃，也像心跳。观众坐在黑暗中，不知道该鼓掌还是沉默。而 Demna 要的就是这个。</p>
+      <div class="tags"><span>Kanye West</span><span>Industrial Noise</span><span>Anti-Luxury</span><span>Pink Dress</span></div>
+    </div></div>
   </div>
 </section>
 
 <!-- ═══ SHOW 6: SS24 LA ═══ -->
 <section class="show" id="s6">
-  <div class="show-header reveal-text">
-    <div><p class="meta" style="color:#C080D0">06 · Spring/Summer 2024</p><h2>Hollywood<br>Boulevard</h2></div>
-    <p class="desc">洛杉矶一条封闭的棕榈树街道。Juicy Couture 丝绒运动服和红毯礼服走在同一个 T 台上。Cardi B 裹着巨大的蓝色皮草出现。Demna 在调侃 Tinseltown 的荒诞——在 LA，每个人同时活在电影里和现实中。</p>
+  <div class="show-hero reveal">
+    <p class="num" style="color:#C080D0">06 · Spring / Summer 2024</p>
+    <h2>Hollywood<br>Boulevard</h2>
+    <p class="precis">洛杉矶一条封闭的棕榈树街道。Juicy Couture 丝绒运动服和红毯礼服走在同一个 T 台上。Cardi B 裹着巨大的蓝色皮草出现，像从好莱坞黄金时代穿越来的外星人。Demna 在调侃 Tinseltown 的荒诞——在 LA，每个人同时活在电影里和现实中。</p>
   </div>
   <div class="gallery">
-    <img src="https://assets.vogue.com/photos/65196ed19d1fbae5cedc8924/master/w_1600,c_limit/00001-balenciaga-spring-2024-ready-to-wear-credit-brand.jpg" loading="lazy" alt="LA-1">
-    <img src="https://assets.vogue.com/photos/65e487d1fbaff921594a8cdf/master/w_1600,c_limit/00001-balenciaga-fall-2024-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="LA-2">
-    <img src="https://assets.vogue.com/photos/64049322a22768c99d2dd4fa/master/w_1600,c_limit/00001-balenciaga-fall-2023-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="LA-3">
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/65196ed19d1fbae5cedc8924/master/w_1600,c_limit/00001-balenciaga-spring-2024-ready-to-wear-credit-brand.jpg" loading="lazy" alt="LA-1"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/65e487d1fbaff921594a8cdf/master/w_1600,c_limit/00001-balenciaga-fall-2024-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="LA-2"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/64049322a22768c99d2dd4fa/master/w_1600,c_limit/00001-balenciaga-fall-2023-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="LA-3"></div>
   </div>
-  <div class="content reveal-text">
-    <div class="col"><h3>Tinseltown 的荒诞</h3><p>在 LA，现实和虚构没有边界。这条 T 台上，2000 年代的 Juicy Couture 丝绒套装和红毯上的礼服同样真实。Demna 的巴黎视角看穿了好莱坞：每个人都在表演，所以表演本身就是真实的。</p></div>
-    <div class="col"><h3>Cardi B 的蓝色怪物</h3><p>一件巨大的蓝色人造皮草大衣像外星生物一样裹着 Cardi B。不需要知道这件衣服多少钱——只需要知道它不可能被忽视。这和 Kim 的胶带装一样：Balenciaga 的病毒式传播不是偶然，是精确计算。</p><div class="tags"><span>Cardi B</span><span>Juicy Couture</span><span>10XL Sneaker</span><span>Palm Trees</span></div></div>
+  <div class="body-grid reveal">
+    <div class="card-outer"><div class="card-inner">
+      <h3>Tinseltown 的荒诞诗</h3>
+      <p>在 LA，现实和虚构从来就没有边界。Demna 的巴黎视角看穿了好莱坞的本质：每个人都在表演，所以表演本身就是最真实的东西。Juicy Couture 丝绒运动套装——2000年代的标志——和红毯晚礼服走在同一条棕榈树大道上。它们<em>同样</em>是 LA 的一部分。</p>
+    </div></div>
+    <div class="card-outer"><div class="card-inner">
+      <h3>Cardi B 的蓝色怪物</h3>
+      <p>一件巨大的蓝色人造皮草大衣像外星生物一样裹着 Cardi B。不需要问价格——只需要被它吞噬视线。10XL 运动鞋也在这一季亮相——比 Triple S 更大，更不合理的比例。Demna 仍在追问同一个问题：<em>多"大"才算够了？</em>答案是：永远不够。</p>
+      <div class="tags"><span>Cardi B</span><span>Juicy Couture</span><span>10XL Sneaker</span><span>Palm Trees</span><span>Hollywood</span></div>
+    </div></div>
   </div>
 </section>
 
 <!-- ═══ SHOW 7: FW25 FINALE ═══ -->
 <section class="show" id="s7">
-  <div class="show-header reveal-text">
-    <div><p class="meta" style="color:#D4A840">07 · Fall/Winter 2025 Couture</p><h2>Goodbye,<br>Demna.</h2></div>
-    <p class="desc">Avenue George V 原始沙龙。Sade 的 "No Ordinary Love" 第一次被批准用于时装秀。Kim 扮成伊丽莎白·泰勒，戴着真钻石耳环。Naomi 穿着玛丽莲·梦露般的裙装。Isabelle Huppert 一身束腰裤装。还有史上第一双高定球鞋。Demna 走出来谢幕，全场起立。</p>
+  <div class="show-hero reveal">
+    <p class="num" style="color:#D4A840">07 · Fall / Winter 2025 · Haute Couture</p>
+    <h2>Goodbye,<br>Demna.</h2>
+    <p class="precis">Avenue George V 的原始沙龙。Sade 的 "No Ordinary Love" 第一次被批准用于时装秀——也是最后一次。Kim Kardashian 扮成伊丽莎白·泰勒，戴着真正的百万美元钻石耳环。Naomi Campbell 穿着玛丽莲·梦露般的水晶柱裙。Isabelle Huppert 束腰裤装。还有史上第一双高定球鞋。Demna 第一次也是最后一次走出来谢幕。全场起立。</p>
   </div>
   <div class="gallery">
-    <img src="https://assets.vogue.com/photos/66faf3bcc045716347454b0a/master/w_1600,c_limit/00001-balenciaga-spring-2025-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="FNL-1">
-    <img src="https://assets.vogue.com/photos/65196ed19d1fbae5cedc8924/master/w_1600,c_limit/00001-balenciaga-spring-2024-ready-to-wear-credit-brand.jpg" loading="lazy" alt="FNL-2">
-    <img src="https://assets.vogue.com/photos/6224f9a18b9ca19052b55683/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="FNL-3">
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/66faf3bcc045716347454b0a/master/w_1600,c_limit/00001-balenciaga-spring-2025-ready-to-wear-credit-gorunway.jpg" loading="lazy" alt="FNL-1"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/65196ed19d1fbae5cedc8924/master/w_1600,c_limit/00001-balenciaga-spring-2024-ready-to-wear-credit-brand.jpg" loading="lazy" alt="FNL-2"></div>
+    <div class="img-wrap"><img src="https://assets.vogue.com/photos/6224f9a18b9ca19052b55683/master/w_1600,c_limit/00001-balenciaga-fall-2022-ready-to-wear-paris-credit-brand.jpg" loading="lazy" alt="FNL-3"></div>
   </div>
-  <div class="content reveal-text">
-    <div class="col"><h3>Sade 的第一次也是最后一场秀</h3><p>Sade Adu 从来不授权她的音乐用于商业——直到 Balenciaga 来敲门。"No Ordinary Love" 在所有人起立鼓掌时响起。没有人想到会哭，但很多人都哭了。不是因为悲伤——是因为你意识到自己亲眼目睹了一个时代的结束。</p><div class="quote">"巴黎是我又爱又恨的地方。我想向<em>真实的</em>巴黎致敬——街上的巴黎，不是明信片上的。"<br>—— Demna，后台</div></div>
-    <div class="col"><h3>十年，这些画面不会消失</h3><p>暴风雪。泥浆。胶衣人在纽交所。The Simpsons。¥12,000 的 IKEA 袋。53 年后复活的高定。Kim 的蒙面造型。Bella 在风雪中。Triple S 改变了全世界的鞋。Demna 去 Gucci，Piccioli 接手。一个时代。无数不可复制的瞬间。</p><div class="tags"><span>Sade</span><span>Naomi Campbell</span><span>Kim as Liz Taylor</span><span>First Couture Sneaker</span><span>Standing Ovation</span></div></div>
+  <div class="body-grid reveal">
+    <div class="card-outer"><div class="card-inner">
+      <h3>Sade 的歌 · 所有人的眼泪</h3>
+      <p>Sade Adu 从来不授权音乐商用。对 Balenciaga 点头是一个例外——"No Ordinary Love" 在所有人起立鼓掌时响起。Kim Kardashian 扮成伊丽莎白·泰勒，戴着 Lorraine Schwartz 的百万美元钻石耳环——这不是 Cosplay，这是关于明星、身份、和永远扮演自己的人。</p>
+      <div class="qt">"巴黎是我又爱又恨的地方。我想向<em>真实的</em>巴黎致敬——街上的巴黎，不是明信片上的。"<br>—— Demna, 最后一季后台</div>
+    </div></div>
+    <div class="card-outer"><div class="card-inner">
+      <h3>史上第一双高定球鞋 · 完美收尾</h3>
+      <p>Demna 不可能安静离开。高定球鞋——拒绝"高定必须是优雅高跟鞋"的规则到最后一秒。Naomi Campbell 穿着水晶柱裙走过，Isabelle Huppert 穿着束腰裤装。时尚界最叛逆的十年，以一场完美的起立鼓掌结束。没有人想让他走——但这就是 Demna 风格：<em>在最辉煌的时候离开。</em></p>
+      <div class="tags"><span>Sade</span><span>Kim as Liz Taylor</span><span>Naomi</span><span>Huppert</span><span>First Couture Sneaker</span></div>
+    </div></div>
   </div>
+</section>
+
+<!-- ═══ ERA COMPARISON ═══ -->
+<section class="era">
+  <div class="col reveal" style="border-right:1px solid rgba(255,255,255,.03)">
+    <h3>1997 — 2012</h3>
+    <span class="stat">15</span><h2>Nicolas<br>Ghesquière</h2>
+    <p>把 Balenciaga 从濒临关闭的边缘拉回来。未来主义的建筑线条、Lariat 机车包、wedge sneaker 提前十年预言了丑鞋时代。他奠定了一个世纪的视觉语言——后来者只是站在他的肩膀上。</p>
+  </div>
+  <div class="col reveal">
+    <h3>2015 — 2025</h3>
+    <span class="stat">10</span><h2>Demna<br>Gvasalia</h2>
+    <p>把 T 台变成社会实验场。复活高定线、发明老爹鞋品类、把日常垃圾变成奢侈品——不是单纯的营销策略，而是对消费主义的持续拷问。十年，$2B+ 的品牌价值，和永远改变时尚的二十个不可复制时刻。</p>
+  </div>
+</section>
+
+<!-- ═══ EPILOGUE ═══ -->
+<section class="epilogue reveal">
+  <div class="epi-card"><div class="epi-inner">
+    <p class="lbl">Epilogue · 2025</p>
+    <h2>Demna → Gucci.<br>Pierpaolo Piccioli<br>→ Balenciaga.</h2>
+    <p>Demna 离开 Balenciaga 去 Gucci。Pierpaolo Piccioli——Valentino 前创意总监，以极致浪漫主义和超凡工艺闻名——接手这座时装屋。这是两个完全不同的世界：Demna 是反叛，Piccioli 是诗意。Balenciaga 的下一章将用 Piccioli 的语言书写——而 Demna 在 Gucci 面对的将是另一场豪赌。</p>
+    <p>但那些不可复制的画面——暴风雪中的 Bella、泥浆里的粉裙、纽交所的胶衣人、沉默高定沙龙里举着号码牌的模特——<em>这些永远不会消失。</em></p>
+    <span class="next">The story continues</span>
+  </div></div>
 </section>
 
 <footer><div class="big">BALENCIAGA</div><p class="sm">2015—2025 · Demna Gvasalia · 7 Shows · Infinite Moments · <a href="https://deerflow.tech" target="_blank">✦ Deerflow</a></p></footer>
@@ -216,17 +329,26 @@ tl.from('#ih1',{y:80,opacity:0,duration:1.5},'<');
 tl.to('#i2',{opacity:1,duration:.8},1.4);
 tl.to('#i3',{opacity:1,duration:1},1.9);
 
-/* IntersectionObserver — gallery images */
-const galleryObs=new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');galleryObs.unobserve(e.target)}})
-},{threshold:.2,rootMargin:'60px'});
-document.querySelectorAll('.gallery img').forEach(el=>galleryObs.observe(el));
+/* §5C IntersectionObserver — image blur reveal */
+const imgObs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');imgObs.unobserve(e.target)}})
+},{threshold:.18,rootMargin:'60px'});
+document.querySelectorAll('.gallery .img-wrap').forEach(el=>imgObs.observe(el));
 
-/* IntersectionObserver — content blocks */
+/* §5C text reveal */
 const txtObs=new IntersectionObserver((entries)=>{
   entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');txtObs.unobserve(e.target)}})
 },{threshold:.08,rootMargin:'40px'});
-document.querySelectorAll('.reveal-text').forEach(el=>txtObs.observe(el));
+document.querySelectorAll('.reveal').forEach(el=>txtObs.observe(el));
+
+/* §5 IMAGE PARALLAX — gentle translateY on scroll */
+window.addEventListener('scroll',()=>{
+  document.querySelectorAll('.gallery .img-wrap').forEach(el=>{
+    const rect=el.getBoundingClientRect();
+    const p=(rect.top+rect.height/2)/innerHeight-.5;
+    const img=el.querySelector('img');if(img)img.style.transform=`translateY(${-p*20}px)`;
+  });
+},{passive:true});
 
 /* Dot nav */
 const shows=document.querySelectorAll('.show');
@@ -244,13 +366,14 @@ const dotObs=new IntersectionObserver((entries)=>{
       dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
     }
   })
-},{threshold:.3});
+},{threshold:.25});
 shows.forEach(el=>dotObs.observe(el));
 dots[0]?.classList.add('active');
 
+/* §6 */
 if(matchMedia('(prefers-reduced-motion:reduce)').matches){
   gsap.globalTimeline.timeScale(0);
-  document.querySelectorAll('.reveal-text,.gallery img').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+  document.querySelectorAll('.reveal,.gallery .img-wrap').forEach(el=>{el.style.opacity='1';el.style.transform='none';el.style.filter='none'});
   document.querySelectorAll('#intro [style*="opacity:0"]').forEach(el=>{el.style.opacity='1'});
 }
 </script>
