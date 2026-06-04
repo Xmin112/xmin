@@ -13,6 +13,12 @@
       "skillPath": "skills/soft-skill/SKILL.md",
       "computedHash": "f730e4132775f13eea19e3dc39afc6bb453cfc0498872b127ad8f0d47cfd802d"
     },
+    "scroll-experience": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/scroll-experience/SKILL.md",
+      "computedHash": "aec5ceb7847b4833989da279f21a1743e41086a7e47398f54e9996efb3ed8c99"
+    },
     "using-superpowers": {
       "source": "obra/superpowers",
       "sourceType": "github",
