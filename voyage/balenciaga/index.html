@@ -270,7 +270,7 @@ const txtObs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isInt
 document.querySelectorAll('.reveal').forEach(el=>txtObs.observe(el));
 window.addEventListener('scroll',()=>{document.querySelectorAll('.gallery img').forEach(img=>{const rect=img.getBoundingClientRect();img.style.transform=`translateY(${-(rect.top+rect.height/2)/innerHeight*14+.5*14}px)`})},{passive:true});
 document.querySelectorAll('.timeline .yr').forEach(yr=>yr.addEventListener('click',()=>{const t=yr.dataset.target;if(t)document.getElementById(t)?.scrollIntoView({behavior:'smooth'})}));
-let last=0;window.addEventListener('scroll',()=>{const nav=document.getElementById('nav'),cur=window.scrollY;if(cur>last&&cur>500)nav.classList.add('hide');else nav.classList.remove('hide');last=cur},{passive:true});
+let last=0;window.addEventListener('scroll',()=>{const nav=document.getElementById('nav'),cur=window.scrollY;if(cur>last&&cur>500)nav.classList.add('hide');else nav.classList.remove('hide');last=cur;const h=document.documentElement.scrollHeight-innerHeight;document.getElementById('progress').style.width=h>0?Math.round(cur/h*100)+'%':'0%'},{passive:true});
 if(matchMedia('(prefers-reduced-motion:reduce)').matches){gsap.globalTimeline.timeScale(0);cursor.style.display='none';document.querySelectorAll('.reveal,.gallery .iw').forEach(el=>{el.style.opacity='1';el.style.transform='none';el.style.filter='none'});document.querySelectorAll('#intro [style*="opacity:0"]').forEach(el=>{el.style.opacity='1'})}
 </script>
 </body>
