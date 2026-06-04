@@ -3,33 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ATMOS Replica</title>
+<title>ATMOS — A Flight Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1a1a2e;}
+:root{--bg:#0d0d1a;}
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Courier New',monospace;}
-canvas{display:block;position:fixed;inset:0;}
-#grain{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0.06;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
-#vignette{position:fixed;inset:0;pointer-events:none;z-index:9;
-  background:radial-gradient(ellipse at center,transparent 50%,rgba(10,10,30,0.5) 100%);}
-#title{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;pointer-events:none;transition:opacity 0.5s;}
-#title h1{font-size:clamp(48px,12vw,120px);font-weight:300;color:#e8e0f0;letter-spacing:0.15em;text-transform:uppercase;}
-#title p{font-size:14px;color:#a0a0c0;letter-spacing:0.3em;margin-top:8px;}
-#title .scroll-hint{font-size:11px;color:#606080;letter-spacing:0.2em;margin-top:40px;animation:pulse 3s ease-in-out infinite;}
-#credit{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;pointer-events:none;font-size:10px;color:#606080;letter-spacing:0.2em;transition:opacity 0.5s;}
-@keyframes pulse{0%,100%{opacity:0.3;}50%{opacity:1;}}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Space Mono',monospace;font-weight:400;}
+canvas{display:block;position:fixed;inset:0;z-index:0;}
+/* Film grain — fixed overlay, z-index disciplined */
+#grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0.045;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+/* Vignette */
+#vignette{position:fixed;inset:0;pointer-events:none;z-index:49;
+  background:radial-gradient(ellipse at center,transparent 45%,rgba(8,8,24,0.55) 100%);}
+/* Double-bezel title card */
+#title-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;pointer-events:none;transition:opacity 0.7s cubic-bezier(0.32,0.72,0,1);}
+#title-card{text-align:center;}
+#title-card h1{font-size:clamp(56px,14vw,140px);font-weight:400;color:rgba(240,235,255,0.92);letter-spacing:0.18em;text-transform:uppercase;margin:0;}
+#title-card .byline{font-size:11px;color:rgba(180,175,200,0.6);letter-spacing:0.35em;margin-top:6px;text-transform:uppercase;}
+#title-card .hint{font-size:10px;color:rgba(120,115,140,0.45);letter-spacing:0.28em;margin-top:48px;text-transform:uppercase;animation:breathe 3.5s cubic-bezier(0.45,0,0.55,1) infinite;}
+@keyframes breathe{0%,100%{opacity:0.25;}50%{opacity:0.7;}}
+/* Scroll progress indicator — minimal line */
+#progress{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:60;pointer-events:none;
+  width:80px;height:1px;background:rgba(255,255,255,0.08);transition:opacity 0.7s cubic-bezier(0.32,0.72,0,1);}
+#progress-bar{height:100%;width:0%;background:rgba(255,255,255,0.3);transition:width 0.4s cubic-bezier(0.32,0.72,0,1);}
+#credit{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:60;pointer-events:none;
+  font-size:9px;color:rgba(180,175,200,0.3);letter-spacing:0.25em;text-transform:uppercase;transition:opacity 0.7s cubic-bezier(0.32,0.72,0,1);}
 </style>
 </head>
 <body>
 <div id="grain"></div>
 <div id="vignette"></div>
-<div id="title">
-  <h1>ATMOS</h1>
-  <p>by Leeroy</p>
-  <span class="scroll-hint">SCROLL TO BEGIN THE JOURNEY</span>
+<div id="title-wrap">
+  <div id="title-card">
+    <h1>ATMOS</h1>
+    <p class="byline">A Flight Experience</p>
+    <p class="hint">Scroll to begin</p>
+  </div>
 </div>
-<div id="credit">Replica — Original by Leeroy Lab</div>
+<div id="progress"><div id="progress-bar"></div></div>
+<div id="credit">Leeroy Lab</div>
 
 <script type="importmap">
 {"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}
@@ -39,268 +52,210 @@ import * as THREE from 'three';
 
 // ═══ SCENE ═══
 const scene=new THREE.Scene();
-scene.background=new THREE.Color('#1a1a2e');
+scene.background=new THREE.Color('#0d0d1a');
 
 // ═══ CAMERA ═══
-const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.5,200);
-camera.position.set(0,3,12);
+const camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.3,180);
+camera.position.set(0,4,14);
 
 // ═══ RENDERER ═══
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
-document.body.prepend(renderer.domElement);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+document.body.appendChild(renderer.domElement);
 
-// ═══ SKY SPHERE (inward-facing, Perlin noise gradient) ═══
-const skyGeo=new THREE.SphereGeometry(50,64,64);
-const skyShader=new THREE.ShaderMaterial({
-  uniforms:{
-    uTime:{value:0},
-    uColor1:{value:new THREE.Color('#4a6fa5')}, // deep blue
-    uColor2:{value:new THREE.Color('#c9a8d4')}, // lavender
-    uColor3:{value:new THREE.Color('#f0d8c0')}, // warm peach
-    uColor4:{value:new THREE.Color('#e8e8f0')}, // light
-  },
-  vertexShader:/*glsl*/`
-    varying vec3 vPos; varying vec2 vUv;
-    void main(){
-      vec4 worldPos=modelMatrix*vec4(position,1.0);
-      vPos=worldPos.xyz; vUv=uv;
-      gl_Position=projectionMatrix*viewMatrix*worldPos;
-    }`,
-  fragmentShader:/*glsl*/`
-    varying vec3 vPos; varying vec2 vUv;
-    uniform float uTime;
-    uniform vec3 uColor1,uColor2,uColor3,uColor4;
-    // Simple 2D noise
+// ═══ SKY SPHERE — inward-facing, animated Perlin gradient ═══
+const skyGeo=new THREE.SphereGeometry(55,72,72);
+const skyMat=new THREE.ShaderMaterial({uniforms:{
+  uTime:{value:0},c1:{value:new THREE.Color('#2a3a5c')},c2:{value:new THREE.Color('#5a4a7c')},
+  c3:{value:new THREE.Color('#c8a8b8')},c4:{value:new THREE.Color('#e8d8d0')}},
+  vertexShader:`varying vec3 vW;varying vec2 vU;void main(){vec4 w=modelMatrix*vec4(position,1.0);vW=w.xyz;vU=uv;gl_Position=projectionMatrix*viewMatrix*w;}`,
+  fragmentShader:`varying vec3 vW;varying vec2 vU;uniform float uTime;uniform vec3 c1,c2,c3,c4;
     float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-    float noise(vec2 p){
-      vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);
-      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
-    }
-    void main(){
-      float h=normalize(vPos).y;
-      float n=noise(vec2(h*3.0+uTime*0.02,vUv.x*5.0+uTime*0.01))*0.3;
-      float t=smoothstep(-0.6,2.0,h+n);
-      vec3 col=mix(uColor1,uColor2,smoothstep(-0.3,0.4,t));
-      col=mix(col,uColor3,smoothstep(0.3,0.8,t));
-      col=mix(col,uColor4,smoothstep(0.7,1.1,t));
-      gl_FragColor=vec4(col,1.0);
-    }`
-});
-const sky=new THREE.Mesh(skyGeo,skyShader);
-sky.material.side=THREE.BackSide;sky.renderOrder=-1;
-scene.add(sky);
+    float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+    void main(){float h=normalize(vW).y;float n=noise(vec2(h*3.5+uTime*0.015,vU.x*4.0+uTime*0.008))*0.25;float t=smoothstep(-0.5,2.2,h+n);vec3 col=mix(c1,c2,smoothstep(-0.2,0.5,t));col=mix(col,c3,smoothstep(0.3,0.85,t));col=mix(col,c4,smoothstep(0.7,1.2,t));gl_FragColor=vec4(col,1.0);}`});
+const sky=new THREE.Mesh(skyGeo,skyMat);
+sky.material.side=THREE.BackSide;sky.renderOrder=-1;scene.add(sky);
 
 // ═══ LIGHTING ═══
-const hemiLight=new THREE.HemisphereLight('#8899cc','#445566',0.8);
-scene.add(hemiLight);
-const dirLight=new THREE.DirectionalLight('#ffe8d0',1.2);
-dirLight.position.set(5,8,3);scene.add(dirLight);
-scene.add(new THREE.AmbientLight('#334466',0.6));
+const hemi=new THREE.HemisphereLight('#8899cc','#3a3a5a',0.7);scene.add(hemi);
+const dir=new THREE.DirectionalLight('#ffe8d0',1.0);dir.position.set(4,8,2);scene.add(dir);
+scene.add(new THREE.AmbientLight('#2a2a4a',0.5));
 
 // ═══ CLOUDS — smooth bubble clusters ═══
-const cloudGroup=new THREE.Group();scene.add(cloudGroup);
-const cloudMat=new THREE.MeshStandardMaterial({color:'#e8e0f8',roughness:0.7,metalness:0});
+const clouds=new THREE.Group();scene.add(clouds);
+const cloudBaseMat=new THREE.MeshStandardMaterial({roughness:0.65,metalness:0});
 
-function createCloud(x,y,z,scale){
+function makeCloud(x,y,z,scale){
   const g=new THREE.Group();
-  const count=8+Math.floor(Math.random()*12);
-  for(let i=0;i<count;i++){
-    const r=0.5+Math.random()*1.5;
-    const s=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),cloudMat.clone());
-    s.material.color.setHSL(0.7+Math.random()*0.15,0.1+Math.random()*0.15,0.75+Math.random()*0.2);
-    s.position.set((Math.random()-0.5)*3,(Math.random()-0.5)*1.5,(Math.random()-0.5)*2.5);
-    s.castShadow=false;g.add(s);
+  const n=6+Math.floor(Math.random()*14);
+  for(let i=0;i<n;i++){
+    const r=0.4+Math.random()*1.6;
+    const m=cloudBaseMat.clone();
+    m.color.setHSL(0.65+Math.random()*0.18,0.08+Math.random()*0.12,0.7+Math.random()*0.25);
+    const s=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m);
+    s.position.set((Math.random()-0.5)*3.5,(Math.random()-0.5)*1.8,(Math.random()-0.5)*3);
+    g.add(s);
   }
-  g.position.set(x,y,z);g.scale.setScalar(scale);
-  cloudGroup.add(g);
+  g.position.set(x,y,z);g.scale.setScalar(scale);clouds.add(g);
   return g;
 }
-
-// Generate clouds along the path
-for(let i=0;i<50;i++){
-  const t=i/50;
-  const x=(Math.random()-0.5)*60;
-  const y=2+Math.random()*12;
-  const z=-10+t*40+(Math.random()-0.5)*20;
-  createCloud(x,y,z,0.5+Math.random()*2.5);
+for(let i=0;i<60;i++){
+  const t=i/60;
+  makeCloud((Math.random()-0.5)*70,1+Math.random()*14,-8+t*48+(Math.random()-0.5)*25,0.4+Math.random()*2.8);
 }
 
-// ═══ PLANE MODEL ═══
+// ═══ PLANE ═══
 const plane=new THREE.Group();
-// Fuselage
-const fuse=new THREE.Mesh(
-  new THREE.CapsuleGeometry(0.3,1.2,8,12),
-  new THREE.MeshStandardMaterial({color:'#e8e0f0',roughness:0.3,metalness:0.4}));
-fuse.rotation.x=Math.PI/2;plane.add(fuse);
-// Wings
-const wing=new THREE.Mesh(
-  new THREE.BoxGeometry(2.5,0.06,0.6),
-  new THREE.MeshStandardMaterial({color:'#d0d0e0',roughness:0.3,metalness:0.3}));
-wing.position.set(0,-0.05,0);plane.add(wing);
-// Tail
-const tail=new THREE.Mesh(
-  new THREE.BoxGeometry(0.6,0.04,0.35),
-  new THREE.MeshStandardMaterial({color:'#d0d0e0',roughness:0.3,metalness:0.3}));
-tail.position.set(0,-0.15,-0.45);plane.add(tail);
-// Vertical stabilizer
-const vstab=new THREE.Mesh(
-  new THREE.BoxGeometry(0.06,0.4,0.35),
-  new THREE.MeshStandardMaterial({color:'#d0d0e0',roughness:0.3,metalness:0.3}));
-vstab.position.set(0,0.2,-0.35);plane.add(vstab);
-plane.position.set(0,3,0);plane.rotation.set(0,0,-0.05);
+const body=new THREE.Mesh(new THREE.CapsuleGeometry(0.28,1.3,8,14),
+  new THREE.MeshStandardMaterial({color:'#e8e0f0',roughness:0.25,metalness:0.45}));
+body.rotation.x=Math.PI/2;plane.add(body);
+const wing=new THREE.Mesh(new THREE.BoxGeometry(2.8,0.05,0.55),
+  new THREE.MeshStandardMaterial({color:'#d5d0e5',roughness:0.25,metalness:0.35}));
+wing.position.set(0,-0.04,0);plane.add(wing);
+const tailH=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.035,0.3),
+  new THREE.MeshStandardMaterial({color:'#d5d0e5',roughness:0.25,metalness:0.35}));
+tailH.position.set(0,-0.12,-0.5);plane.add(tailH);
+const tailV=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.38,0.3),
+  new THREE.MeshStandardMaterial({color:'#d5d0e5',roughness:0.25,metalness:0.35}));
+tailV.position.set(0,0.2,-0.4);plane.add(tailV);
+// Subtle engine glow
+const engineGlow=new THREE.PointLight('#ffe8d0',0.8,3);
+engineGlow.position.set(0,-0.05,-0.55);plane.add(engineGlow);
+plane.position.set(0,3.5,2);plane.rotation.set(0,0,-0.04);
 scene.add(plane);
 
 // ═══ WIND PARTICLES (InstancedMesh) ═══
-const particleCount=800;
-const particleGeo=new THREE.SphereGeometry(0.04,4,2);
-const particleMat=new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:0});
-const particles=new THREE.InstancedMesh(particleGeo,particleMat,particleCount);
+const PCOUNT=1000;
+const pGeo=new THREE.SphereGeometry(0.035,4,2);
+const pMat=new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:0});
+const particles=new THREE.InstancedMesh(pGeo,pMat,PCOUNT);
 const dummy=new THREE.Object3D();
-const particleData=[];
-for(let i=0;i<particleCount;i++){
-  dummy.position.set((Math.random()-0.5)*30,Math.random()*15,(Math.random()-0.5)*30);
+const pData=[];
+for(let i=0;i<PCOUNT;i++){
+  dummy.position.set((Math.random()-0.5)*35,Math.random()*16,(Math.random()-0.5)*35);
   dummy.updateMatrix();particles.setMatrixAt(i,dummy.matrix);
-  particleData.push({speed:0.5+Math.random()*2,baseX:dummy.position.x,baseY:dummy.position.y,baseZ:dummy.position.z});
+  pData.push({spd:0.4+Math.random()*2.2,bx:dummy.position.x,by:dummy.position.y,bz:dummy.position.z});
 }
 scene.add(particles);
 
-// ═══ CATMULL-ROM SPLINE PATH ═══
-const pathPoints=[
-  new THREE.Vector3(0,3,12),new THREE.Vector3(2,5,8),new THREE.Vector3(-3,6,2),
-  new THREE.Vector3(4,4,-5),new THREE.Vector3(-2,7,-12),new THREE.Vector3(3,5,-20),
-  new THREE.Vector3(-4,6,-28),new THREE.Vector3(2,4,-36),new THREE.Vector3(0,5,-44),
-];
-const curve=new THREE.CatmullRomCurve3(pathPoints);
+// ═══ CATMULL-ROM PATH ═══
+const pts=[
+  [0,3.5,14],[3,5.5,9],[-4,7,2],[5,5,-6],[-3,8,-14],
+  [4,6,-22],[-5,7,-30],[3,5,-38],[0,6,-48]
+].map(([x,y,z])=>new THREE.Vector3(x,y,z));
+const curve=new THREE.CatmullRomCurve3(pts);
 
-// ═══ TEXT PANELS (Canvas → Texture) ═══
-const textPanels=[];
-function createTextPanel(text,subtext,t){
-  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128;
-  const ctx=canvas.getContext('2d'); if(!ctx)return;
-  ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='300 36px "Courier New",monospace';
-  ctx.textAlign='center';ctx.fillText(text,256,48);
-  ctx.fillStyle='rgba(200,200,220,0.7)';ctx.font='14px "Courier New",monospace';
-  ctx.fillText(subtext,256,78);
-  const tex=new THREE.CanvasTexture(canvas);tex.minFilter=THREE.LinearFilter;
-  const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide});
-  const panel=new THREE.Mesh(new THREE.PlaneGeometry(6,1.5),mat);
-  const pt=curve.getPointAt(t);panel.position.copy(pt);panel.position.x+=5;
-  panel.lookAt(new THREE.Vector3(pt.x,pt.y,pt.z-1));
-  scene.add(panel);textPanels.push({mesh:panel,t});
-  return panel;
+// ═══ TEXT PANELS (Canvas texture → always face camera) ═══
+const panels=[];
+function makePanel(text,sub,t){
+  const cvs=document.createElement('canvas');cvs.width=512;cvs.height=128;
+  const ctx=cvs.getContext('2d');if(!ctx)return;
+  ctx.fillStyle='rgba(240,235,255,0.92)';ctx.font='400 32px "Space Mono",monospace';ctx.textAlign='center';
+  ctx.fillText(text,256,44);
+  ctx.fillStyle='rgba(180,175,200,0.55)';ctx.font='400 13px "Space Mono",monospace';
+  ctx.fillText(sub,256,74);
+  const tex=new THREE.CanvasTexture(cvs);tex.minFilter=THREE.LinearFilter;
+  const m=new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false});
+  const p=new THREE.Mesh(new THREE.PlaneGeometry(7,1.75),m);
+  const pt=curve.getPointAt(t);p.position.copy(pt).add(new THREE.Vector3(6,1.5,0));
+  scene.add(p);panels.push({mesh:p});return p;
 }
-createTextPanel('DEPARTURE','The journey begins ahead',0.05);
-createTextPanel('ASCENDING','Through the clouds we rise',0.25);
-createTextPanel('DRIFTING','Lost in the endless sky',0.45);
-createTextPanel('DESCENDING','Gently returning to earth',0.7);
-createTextPanel('ARRIVAL','Thank you for flying with us',0.92);
+makePanel('DEPARTURE','The journey begins ahead',0.03);
+makePanel('ASCENDING','Through layered clouds we rise',0.22);
+makePanel('DRIFTING','Lost in the gradient sky',0.44);
+makePanel('DESCENDING','Gently returning to earth',0.7);
+makePanel('ARRIVAL','Thank you for flying with us',0.94);
 
-// ═══ SCROLL HANDLER ═══
-let scrollProgress=0;
-let targetProgress=0;
-let scrollVelocity=0;
-let lastScroll=0;
+// ═══ SCROLL ═══
+let progress=0,target=0,velocity=0,lastScroll=0;
 
-window.addEventListener('wheel',(e)=>{
+window.addEventListener('wheel',e=>{
   e.preventDefault();
-  targetProgress=Math.max(0,Math.min(1,targetProgress+e.deltaY*0.004));
-  scrollVelocity=Math.abs(e.deltaY);
-  lastScroll=performance.now();
+  target=Math.max(0,Math.min(1,target+e.deltaY*0.0035));
+  velocity=Math.abs(e.deltaY);lastScroll=performance.now();
 },{passive:false});
-// Click fallback — click anywhere to advance
-window.addEventListener('click',()=>{
-  targetProgress=Math.min(1,targetProgress+0.04);
-  scrollVelocity=40;lastScroll=performance.now();
-});
-// Keyboard fallback — arrow keys
-window.addEventListener('keydown',(e)=>{
-  if(e.key==='ArrowDown'||e.key==='ArrowRight'){targetProgress=Math.min(1,targetProgress+0.03);scrollVelocity=40;lastScroll=performance.now();}
-  if(e.key==='ArrowUp'||e.key==='ArrowLeft'){targetProgress=Math.max(0,targetProgress-0.03);scrollVelocity=40;lastScroll=performance.now();}
+
+window.addEventListener('click',()=>{target=Math.min(1,target+0.035);velocity=45;lastScroll=performance.now();});
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight'){target=Math.min(1,target+0.025);velocity=45;lastScroll=performance.now();}
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft'){target=Math.max(0,target-0.025);velocity=45;lastScroll=performance.now();}
 });
 
 // Touch
-let touchStart=0;
-window.addEventListener('touchstart',e=>{touchStart=e.touches[0].clientY;});
+let ts=0;
+window.addEventListener('touchstart',e=>{ts=e.touches[0].clientY;},{passive:false});
 window.addEventListener('touchmove',e=>{
   e.preventDefault();
-  const dy=touchStart-e.touches[0].clientY;
-  targetProgress=Math.max(0,Math.min(1,targetProgress+dy*0.006));
-  scrollVelocity=Math.abs(dy);
-  lastScroll=performance.now();
-  touchStart=e.touches[0].clientY;
+  const dy=ts-e.touches[0].clientY;
+  target=Math.max(0,Math.min(1,target+dy*0.0055));
+  velocity=Math.abs(dy);lastScroll=performance.now();ts=e.touches[0].clientY;
 },{passive:false});
 
-// ═══ ANIMATION LOOP ═══
+// ═══ LOOP ═══
 const clock=new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),0.1);
-  const t=performance.now()*0.001;
+  const now=performance.now()*0.001;
 
-  // Smooth scroll progress
-  scrollProgress+=(targetProgress-scrollProgress)*3*dt;
-  // Decay velocity
-  if(t*1000-lastScroll>200)scrollVelocity*=0.9;
+  // Smooth progress — custom cubic-bezier-like lerp
+  const diff=target-progress;
+  progress+=diff*Math.min(4*dt,1);
+  if(now*1000-lastScroll>180)velocity*=0.88;
 
-  // Camera along spline
-  const pt=curve.getPointAt(scrollProgress);
-  const tangent=curve.getTangentAt(scrollProgress).normalize();
-  camera.position.lerp(
-    new THREE.Vector3(pt.x,pt.y+1.5,pt.z+6),
-    2*dt
-  );
-  // Look ahead
-  const lookTarget=pt.clone().add(tangent.clone().multiplyScalar(8));
-  camera.lookAt(lookTarget.x,lookTarget.y+1,lookTarget.z);
+  // Camera along spline — smooth interpolation
+  const pt=curve.getPointAt(progress);
+  const tan=curve.getTangentAt(progress).normalize();
+  const targetCam=new THREE.Vector3(pt.x,pt.y+1.8,pt.z+7);
+  camera.position.lerp(targetCam,2.5*dt);
+  const lookAt=new THREE.Vector3().copy(pt).add(tan.clone().multiplyScalar(10));
+  camera.lookAt(lookAt.x,lookAt.y+1.2,lookAt.z);
 
-  // Plane follows slightly ahead
-  const planePt=curve.getPointAt(Math.min(1,scrollProgress+0.02));
-  plane.position.lerp(new THREE.Vector3(planePt.x,planePt.y+0.5,planePt.z-1.5),3*dt);
-  // Bank the plane
-  const t2=curve.getTangentAt(Math.min(1,scrollProgress+0.02)).normalize();
-  plane.rotation.z+=(t2.x*0.3-plane.rotation.z)*2*dt;
-  plane.rotation.x+=(t2.y*0.15-plane.rotation.x)*2*dt;
+  // Plane ahead of camera
+  const ppt=curve.getPointAt(Math.min(1,progress+0.025));
+  const ptan=curve.getTangentAt(Math.min(1,progress+0.025)).normalize();
+  plane.position.lerp(new THREE.Vector3(ppt.x,ppt.y+0.6,ppt.z-1.8),3.5*dt);
+  plane.rotation.z+=(-ptan.x*0.35-plane.rotation.z)*2.5*dt;
+  plane.rotation.x+=(-ptan.y*0.12-plane.rotation.x)*2*dt;
 
-  // Sky time
-  skyShader.uniforms.uTime.value=t;
+  // Sky shader
+  skyMat.uniforms.uTime.value=now;
 
-  // Hemisphere light follows sky
-  const skyH=0.4+scrollProgress*0.3;
-  hemiLight.color.setHSL(0.6+skyH*0.1,0.3,0.5+skyH*0.3);
-  hemiLight.intensity=0.6+scrollProgress*0.3;
+  // Hemisphere follows mood
+  hemi.color.setHSL(0.62+progress*0.12,0.25,0.48+progress*0.3);
+  hemi.intensity=0.55+progress*0.35;
 
   // Wind particles
-  particleMat.opacity=Math.min(0.6,scrollVelocity*0.002);
-  for(let i=0;i<particleCount;i++){
-    const d=particleData[i];
-    dummy.position.set(d.baseX+(t*10*d.speed)%30-15,d.baseY,d.baseZ+(t*15*d.speed)%30-15);
+  pMat.opacity=Math.min(0.5,velocity*0.0018);
+  for(let i=0;i<PCOUNT;i++){
+    const d=pData[i];
+    dummy.position.set(d.bx+(now*12*d.spd)%35-17.5,d.by,d.bz+(now*18*d.spd)%35-17.5);
     dummy.updateMatrix();particles.setMatrixAt(i,dummy.matrix);
   }
   particles.instanceMatrix.needsUpdate=true;
 
-  // Text panels face camera
-  textPanels.forEach(p=>{p.mesh.lookAt(camera.position);});
-
   // Cloud drift
-  cloudGroup.children.forEach((c,i)=>{
-    c.position.x+=Math.sin(t*0.3+i)*0.003;
-    c.position.y+=Math.cos(t*0.2+i)*0.002;
-  });
+  clouds.children.forEach((c,i)=>{c.position.x+=Math.sin(now*0.25+i)*0.0025;c.position.y+=Math.cos(now*0.18+i)*0.0018;});
 
-  // Title fade
-  const titleEl=document.getElementById('title');
+  // Text panels face camera
+  panels.forEach(p=>{p.mesh.lookAt(camera.position);});
+
+  // UI updates
+  const titleEl=document.getElementById('title-wrap');
   const creditEl=document.getElementById('credit');
-  if(titleEl)titleEl.style.opacity=String(Math.max(0,1-scrollProgress*4));
-  if(creditEl)creditEl.style.opacity=String(Math.min(1,scrollProgress*3));
+  const progressEl=document.getElementById('progress');
+  if(titleEl)titleEl.style.opacity=String(Math.max(0,1-progress*5));
+  if(creditEl)creditEl.style.opacity=String(Math.min(1,progress*4));
+  if(progressEl)progressEl.style.opacity=String(progress>0.02?1:0);
+  const bar=document.getElementById('progress-bar');
+  if(bar)bar.style.width=Math.round(progress*100)+'%';
 
   renderer.render(scene,camera);
 }
 animate();
 
-// ═══ RESIZE ═══
 window.addEventListener('resize',()=>{
   camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
