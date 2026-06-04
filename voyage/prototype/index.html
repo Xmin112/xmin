@@ -4,246 +4,263 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Voyage — 圣水洞</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ground: #F5EDE0; --accent: #FF6B6B; --gold: #FFD93D;
-    --ui-bg: #FFFDF5; --text-1: #4A3728; --text-2: #8B7A68; --text-3: #B8A898;
+    --grass: #C8D8B4; --dirt: #D4C8A8; --bldg-warm: #F2E8D8; --bldg-roof: #C4956A;
+    --accent: #FF6B6B; --gold: #FFD93D; --sky-top: #D4E8F0; --sky-bottom: #F0EDE4;
+    --ui-bg: #FFFDF5; --text-1: #4A3728; --text-2: #8B7A68;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  html,body { width:100%; height:100%; overflow:hidden; background:var(--ground); font-family:'Nunito',sans-serif; cursor:crosshair; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#D4E8F0; font-family:'Fredoka',sans-serif; cursor:crosshair; }
   canvas { display:block; }
   /* 噪点纹理 */
-  body::before {
-    content:''; position:fixed; inset:0; opacity:0.03; z-index:1; pointer-events:none;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-  /* UI */
-  #ui { position:fixed; inset:0; pointer-events:none; z-index:10; }
-  #counter { position:absolute; top:20px; left:50%; transform:translateX(-50%);
-    background:var(--ui-bg); border:1.5px solid #E0D5C5; border-radius:40px; padding:8px 18px;
-    display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:var(--text-1);
-    box-shadow:0 2px 12px rgba(0,0,0,0.04); letter-spacing:0.01em; opacity:0; }
-  #hint { position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
-    background:var(--ui-bg); border:1px solid #E0D5C5; border-radius:20px;
-    padding:10px 20px; font-size:14px; color:var(--text-2); font-weight:600;
-    opacity:0; transition:opacity 0.5s; }
+  body::before { content:''; position:fixed; inset:0; opacity:0.025; z-index:1; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  /* 探索计数 */
+  #counter { position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:10; pointer-events:none;
+    display:flex; align-items:center; gap:6px; padding:8px 18px; border-radius:40px;
+    background:var(--ui-bg); border:1.5px solid #E0D5C5; font-size:15px; font-weight:600; color:var(--text-1);
+    box-shadow:0 2px 12px rgba(0,0,0,0.05); opacity:0; letter-spacing:0.02em; }
   /* 印章 */
   #stamp-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-    background:rgba(245,237,224,0.55); backdrop-filter:blur(6px); z-index:100; cursor:pointer; }
+    background:rgba(200,216,180,0.45); backdrop-filter:blur(8px); z-index:100; cursor:pointer; }
   #stamp-overlay.show { display:flex; }
-  #stamp-card { background:var(--ui-bg); border:2.5px solid var(--gold); border-radius:32px;
-    padding:44px 52px; text-align:center; box-shadow:0 24px 80px rgba(0,0,0,0.12); }
-  #stamp-card .medal { font-size:64px; display:block; margin-bottom:4px; }
-  #stamp-card h2 { font-size:24px; font-weight:800; color:var(--text-1); margin:12px 0 6px; }
-  #stamp-card p { font-size:14px; color:var(--text-2); font-weight:600; }
-  /* 对话框 */
-  #dialog { position:fixed; bottom:130px; left:50%; transform:translateX(-50%);
-    background:var(--ui-bg); border:1.5px solid #E0D5C5; border-radius:16px;
-    padding:14px 22px; max-width:320px; font-size:14px; color:var(--text-1); font-weight:600;
-    cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,0.06); z-index:50; display:none;
-    text-align:center; line-height:1.5; }
+  #stamp-card { background:var(--ui-bg); border:3px solid var(--gold); border-radius:32px;
+    padding:48px 56px; text-align:center; box-shadow:0 24px 80px rgba(0,0,0,0.10); }
+  #stamp-card .medal { font-size:68px; display:block; margin-bottom:8px; }
+  #stamp-card h2 { font-size:26px; font-weight:700; color:var(--text-1); margin:10px 0 4px; letter-spacing:-0.01em; }
+  #stamp-card p { font-size:14px; color:var(--text-2); font-weight:500; }
   /* Deerflow */
   #deerflow { position:fixed; bottom:16px; right:20px; z-index:200; pointer-events:auto;
-    font-size:11px; color:#B8A898; font-weight:600; text-decoration:none; opacity:0.6;
-    transition:opacity 0.3s; }
+    font-size:11px; color:#8B7A6899; font-weight:500; text-decoration:none; opacity:0.5; transition:opacity 0.3s; letter-spacing:0.04em; }
   #deerflow:hover { opacity:1; }
+  /* 加载降级 */
+  #fallback { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:999; background:#D4E8F0; }
+  #fallback.show { display:flex; }
+  #fallback p { font-size:16px; color:var(--text-2); }
+  /* 响应式 */
+  @media (max-width:640px) {
+    #counter { font-size:13px; padding:6px 14px; top:12px; }
+    #stamp-card { padding:32px 28px; }
+    #stamp-card h2 { font-size:20px; }
+  }
 </style>
 </head>
 <body>
-<div id="ui">
-  <div id="counter"><span id="ci">🧭</span><span id="ct">0/4 已探索</span></div>
-  <div id="hint">👆 点击建筑物来探索圣水洞</div>
-</div>
-<div id="dialog"></div>
-<div id="stamp-overlay">
-  <div id="stamp-card">
-    <span class="medal">🏅</span>
-    <h2>获得旅行印章！</h2>
-    <p>「圣水洞探索者」</p>
-    <p style="font-size:12px;margin-top:4px;color:var(--text-3);font-weight:400">集齐了圣水洞全部 4 个探索地点</p>
-  </div>
-</div>
+<div id="counter"><span id="ci">🧭</span><span id="ct">0/4 已探索</span></div>
+<div id="stamp-overlay"><div id="stamp-card">
+  <span class="medal">🏅</span><h2>获得旅行印章！</h2><p>「圣水洞探索者」</p>
+  <p style="font-size:12px;margin-top:4px;color:#B8A898">集齐了圣水洞全部 4 个探索地点</p>
+</div></div>
 <a id="deerflow" href="https://deerflow.tech" target="_blank">✦ Deerflow</a>
+<div id="fallback"><p>正在加载世界…如果长时间无反应，请检查网络连接。</p></div>
 
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"
+  integrity="sha384-" crossorigin="anonymous"
+  onerror="document.getElementById('fallback').classList.add('show')"></script>
 <script type="importmap">
 { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
 </script>
 <script type="module">
 import * as THREE from 'three';
 
+// ══════════════ 错误降级 ══════════════
+try {
+
 // ══════════════ SCENE ══════════════
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#F5EDE0');
-scene.fog = new THREE.Fog('#F5EDE0', 30, 75);
+// 天空色背景 — 有天空感！
+scene.background = new THREE.Color('#D4E8F0');
+scene.fog = new THREE.Fog('#D4E8F0', 30, 70);
 
 // ══════════════ CAMERA ══════════════
-const S = 21;
-const camera = new THREE.OrthographicCamera(-S*(innerWidth/innerHeight), S*(innerWidth/innerHeight), S, -S, 0.1, 120);
-camera.position.set(9, 19, 13);
-camera.lookAt(0, 0, 1);
+const S = 20;
+const a = window.innerWidth / window.innerHeight;
+const camera = new THREE.OrthographicCamera(-S*a, S*a, S, -S, 0.1, 120);
+camera.position.set(8, 18, 12);
+camera.lookAt(0, 0, 0);
 
 // ══════════════ RENDERER ══════════════
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(innerWidth, innerHeight);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
 document.body.prepend(renderer.domElement);
 
 // ══════════════ LIGHTING ══════════════
-const ambient = new THREE.AmbientLight('#FFF5EC', 0.6); scene.add(ambient);
-const sun = new THREE.DirectionalLight('#FFE4CC', 2.2);
-sun.position.set(20, 30, 14); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
-sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30; sun.shadow.bias = -0.0001;
+scene.add(new THREE.AmbientLight('#FFF5EC', 0.55));
+const sun = new THREE.DirectionalLight('#FFE4CC', 2.5);
+sun.position.set(18, 28, 12); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.left=-30; sun.shadow.camera.right=30;
+sun.shadow.camera.top=30; sun.shadow.camera.bottom=-30; sun.shadow.bias=-0.0001;
 scene.add(sun);
-scene.add(new THREE.HemisphereLight('#FFECD2', '#C8B898', 0.5));
+scene.add(new THREE.HemisphereLight('#E8F0FF', '#C8B898', 0.55));
+scene.add(new THREE.AmbientLight('#8899AA', 0.15)); // 微冷补光，模拟天空反射
+
+// ══════════════ SKY PLANE 天空平面 ══════════════
+const skyGeo = new THREE.PlaneGeometry(70, 70);
+const skyMat = new THREE.ShaderMaterial({
+  uniforms: { topColor:{value:new THREE.Color('#A8C8E0')}, bottomColor:{value:new THREE.Color('#E8E0D0')} },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `varying vec2 vUv; uniform vec3 topColor, bottomColor;
+    void main() { gl_FragColor = vec4(mix(bottomColor, topColor, vUv.y), 1.0); }`
+});
+const sky = new THREE.Mesh(skyGeo, skyMat);
+sky.position.set(0, 12, -20); sky.rotation.x = -0.3; sky.renderOrder = -1;
+scene.add(sky);
 
 // ══════════════ GROUND ══════════════
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(60,60),
-  new THREE.MeshStandardMaterial({ color:'#F5EDE0', roughness:0.85 }));
-ground.rotation.x = -Math.PI/2; ground.position.y = -0.08; ground.receiveShadow = true;
-scene.add(ground);
+// 草地色地面
+const groundMat = new THREE.MeshStandardMaterial({ color:'#C8D8B4', roughness:0.8 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(65,65), groundMat);
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.08; ground.receiveShadow = true; scene.add(ground);
 
-// Roads & sidewalks
-const rm = new THREE.MeshStandardMaterial({ color:'#EBE0D0', roughness:0.9 });
-[[-3.5,0,-2,0.8,28],[1.5,0,-2,0.8,28],[-9,0,-7,28,0.7],[-9,0,3,28,0.7],[-9,0,8,28,0.7]]
-  .forEach(([x,y,z,w,d]) => { const r = new THREE.Mesh(new THREE.PlaneGeometry(w,d), rm); r.rotation.x = -Math.PI/2; r.position.set(x,-0.04,z); r.receiveShadow = true; scene.add(r); });
-const sm = new THREE.MeshStandardMaterial({ color:'#F8F2E8', roughness:0.8 });
-[[-6,0,-1.5,3,11],[4,0,-1.5,3,13]].forEach(([x,y,z,w,d]) => { const s = new THREE.Mesh(new THREE.PlaneGeometry(w,d), sm); s.rotation.x = -Math.PI/2; s.position.set(x,-0.06,z); s.receiveShadow = true; scene.add(s); });
+// 中央广场 — 稍亮
+const plaza = new THREE.Mesh(new THREE.PlaneGeometry(7,7),
+  new THREE.MeshStandardMaterial({ color:'#DCD4BE', roughness:0.75 }));
+plaza.rotation.x = -Math.PI/2; plaza.position.set(0, -0.06, 1); plaza.receiveShadow = true; scene.add(plaza);
 
-// ══════════════ BUILDINGS ══════════════
+// 土路
+const pathMat = new THREE.MeshStandardMaterial({ color:'#D4C8A8', roughness:0.85 });
+[[0,-0.05,1,1.2,14],[2,-0.05,-2,0.8,16],[-2,-0.05,-2,0.8,16]].forEach(([x,y,z,w,d]) => {
+  const p = new THREE.Mesh(new THREE.PlaneGeometry(w,d), pathMat);
+  p.rotation.x = -Math.PI/2; p.position.set(x,y,z); p.receiveShadow = true; scene.add(p);
+});
+
+// ══════════════ LANDMARK: 中央大树 ══════════════
+const treeGroup = new THREE.Group(); treeGroup.position.set(0, 0, 1);
+const tTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,3.5,12),
+  new THREE.MeshStandardMaterial({ color:'#8B6B4A', roughness:0.6 }));
+tTrunk.position.y = 1.75; tTrunk.castShadow = true; treeGroup.add(tTrunk);
+[1.6,1.3,1.0].forEach((r,i) => {
+  const c = new THREE.Mesh(new THREE.SphereGeometry(r,14,12),
+    new THREE.MeshStandardMaterial({ color:['#6B9659','#7BA869','#8DBB78'][i], roughness:0.55 }));
+  c.position.set((i-1)*0.6, 3.2+i*1.1, (i-1)*0.3); c.castShadow = true; treeGroup.add(c);
+});
+scene.add(treeGroup);
+
+// ══════════════ BUILDINGS: 围绕广场散布 ══════════════
 const buildings = [];
-const wallC = ['#F8F2EA','#F3EDE3','#EDE6DA','#E8DFCF','#F0E8DC'];
-const roofC = ['#C4A882','#B89878','#A88868','#BBA080'];
+const wallC = ['#F5EDE0','#F0E5D5','#EDE0CF','#E8DBC8','#F2E8D8','#EEE3D0'];
+const roofC = ['#C4956A','#B8855A','#A87850','#BF8C62'];
+const POI_DATA = [
+  { id:'cafe-onion', x:-5, z:-4, w:4.5, d:4, h:5.5, type:'poi', name:'Cafe Onion', emoji:'☕' },
+  { id:'tamburins', x:5, z:-3, w:4, d:3.5, h:7, type:'poi', name:'Tamburins', emoji:'💄' },
+  { id:'daelim', x:4, z:7, w:5.5, d:5, h:6, type:'poi', name:'大林仓库', emoji:'🎨' },
+  { id:'hidden-mural', x:9, z:10, w:2, d:2, h:3, type:'hidden', name:'秘密壁画', emoji:'🌸' },
+];
 
-function addBuilding(id, x, z, w, d, h, type) {
+function addBuilding(id, x, z, w, d, h, type, name, emoji) {
   const g = new THREE.Group(); g.position.set(x, 0, z);
-  g.userData = { id, type, w, d, h, x, z };
-  // Wall
-  const wc = type==='poi'?'#F6E8D8':type==='hidden'?'#FFF8EE':wallC[Math.floor(Math.random()*wallC.length)];
+  g.userData = { id, type, w, d, h, x, z, name, emoji };
+  const wc = type==='poi'?'#FAF0E0':type==='hidden'?'#FFF8EE':wallC[Math.floor(Math.random()*wallC.length)];
+  const rc = type==='poi'?'#D4A080':type==='hidden'?'#E8C878':roofC[Math.floor(Math.random()*roofC.length)];
+
   const wall = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),
-    new THREE.MeshStandardMaterial({ color:wc, roughness:0.6, metalness:0.02,
-      emissive:type==='hidden'?'#FFD93D':'#000', emissiveIntensity:type==='hidden'?0.1:0 }));
-  wall.position.y = h/2; wall.castShadow = true; wall.receiveShadow = true;
-  g.add(wall);
-  // Roof
-  const rc = type==='poi'?'#D4A88C':type==='hidden'?'#E8C878':roofC[Math.floor(Math.random()*roofC.length)];
-  const roof = new THREE.Mesh(new THREE.BoxGeometry(w+0.4,0.5,d+0.4),
-    new THREE.MeshStandardMaterial({ color:rc, roughness:0.5 }));
+    new THREE.MeshStandardMaterial({ color:wc, roughness:0.55, metalness:0.02,
+      emissive:type==='hidden'?'#FFD93D':'#000', emissiveIntensity:type==='hidden'?0.08:0 }));
+  wall.position.y = h/2; wall.castShadow = wall.receiveShadow = true; g.add(wall);
+
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(w+0.5,0.5,d+0.5),
+    new THREE.MeshStandardMaterial({ color:rc, roughness:0.45 }));
   roof.position.y = h+0.25; roof.castShadow = true; g.add(roof);
-  // Pointed roof for POI
+
   if (type==='poi') {
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(w*0.5,0.8,4),
-      new THREE.MeshStandardMaterial({ color:rc, roughness:0.4 }));
-    cone.position.y = h+0.8; cone.rotation.y = Math.PI/4; cone.castShadow = true; g.add(cone);
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(w*0.45,0.7,4),
+      new THREE.MeshStandardMaterial({ color:rc, roughness:0.35 }));
+    cone.position.y = h+0.85; cone.rotation.y = Math.PI/4; cone.castShadow = true; g.add(cone);
   }
-  // Windows
+
   if (type!=='hidden' && h>3) {
     const wm = new THREE.MeshStandardMaterial({ color:'#D5C8B5', roughness:0.4 });
-    [0.3,0.55,0.8].forEach(f => {
-      const win = new THREE.Mesh(new THREE.PlaneGeometry(w*0.55,0.2), wm);
+    [0.25,0.5,0.75].forEach(f => {
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(w*0.5,0.18), wm);
       win.position.set(0, h*f, d/2+0.02); g.add(win);
     });
   }
-  // Flagpole for POI
-  if (type==='poi') {
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.2),
-      new THREE.MeshStandardMaterial({ color:'#5C4A3A', roughness:0.4 }));
-    pole.position.set(0,h+1.3,0); g.add(pole);
-    const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.3),
-      new THREE.MeshStandardMaterial({ color:'#FF6B6B', roughness:0.3, side:THREE.DoubleSide }));
-    flag.position.set(0.25,h+1.7,0); flag.rotation.set(0,0,0.15); g.add(flag);
+
+  if (type==='hidden') {
+    const gl = new THREE.PointLight('#FFD93D', 2, 6); gl.position.y = h+2; g.add(gl);
   }
-  // Hidden glow
-  if (type==='hidden') { const gl = new THREE.PointLight('#FFD93D',1.5,5); gl.position.y=h+2; g.add(gl); }
 
-  // GSAP: 建筑从地面弹出 (设置初始 scaleY=0)
-  g.scale.set(1, 0, 1);
-  scene.add(g);
-  buildings.push(g);
+  g.scale.set(1,0,1); scene.add(g); buildings.push(g);
 }
 
-addBuilding('cafe-onion', -6, -5, 4.5, 4, 5.5, 'poi');
-addBuilding('tamburins', 5, -4, 4, 3.5, 7, 'poi');
-addBuilding('daelim', 4, 7, 5.5, 5, 6, 'poi');
-addBuilding('hidden-mural', 9, 12, 2, 1.8, 3, 'hidden');
-for (let i=0;i<22;i++) {
-  const gx = (i%6)-2.5, gz = Math.floor(i/6)-1.5;
-  addBuilding('b'+i, gx*3.4+(Math.random()-0.5)*1.2, -11+gz*5.5+(Math.random()-0.5)*1.8,
-    1.5+Math.random()*2.5, 2+Math.random()*2.5, 1.8+Math.random()*4.5, 'normal');
+POI_DATA.forEach(p => addBuilding(p.id, p.x, p.z, p.w, p.d, p.h, p.type, p.name, p.emoji));
+// 普通建筑围绕广场
+for (let i=0;i<18;i++) {
+  const angle = (i/18)*Math.PI*2 + Math.random()*0.3;
+  const dist = 6 + Math.random()*6;
+  addBuilding('b'+i, Math.cos(angle)*dist, Math.sin(angle)*dist+2,
+    1.5+Math.random()*2.5, 2+Math.random()*2.5, 2+Math.random()*4.5, 'normal');
 }
 
-// ══════════════ GSAP: 建筑入场 ══════════════
-// (参考 gsap skill: stagger + back.out 弹性回弹)
-const buildTimeline = gsap.timeline({ delay: 0.3 });
+// ══════════════ GSAP 建筑入场 ══════════════
+const enterTL = gsap.timeline({ delay:0.4 });
 buildings.forEach((b, i) => {
-  buildTimeline.to(b.scale, { y: 1, duration: 0.5, ease: "back.out(1.7)" }, i * 0.025);
+  enterTL.to(b.scale, { y:1, duration:0.45, ease:"back.out(1.7)" }, i*0.02);
 });
-// 入场完成后显示 UI
-buildTimeline.call(() => {
-  gsap.to('#counter', { opacity:1, duration:0.4 });
-  gsap.to('#hint', { opacity:1, duration:0.4, delay:0.2 });
+// 树最后出现
+treeGroup.scale.set(1,0,1);
+enterTL.to(treeGroup.scale, { y:1, duration:0.6, ease:"back.out(1.7)" }, "-=0.1");
+enterTL.call(() => {
+  gsap.to('#counter', { opacity:1, duration:0.5, ease:"power2.out" });
 });
 
 // ══════════════ TREES ══════════════
-const treePositions = [[-10,-10],[-10,-6],[-10,10],[10,-8],[10,3],[-6,13],[0,14],[-3,-14],[-8,6],[10,-12],[-11,2],[11,8],[7,-13],[-4,11]];
-treePositions.forEach(([x,z]) => {
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.18,1.4,8),
-    new THREE.MeshStandardMaterial({ color:'#A08568', roughness:0.7 }));
-  trunk.position.set(x,0.7,z); trunk.castShadow = true; scene.add(trunk);
-  const cc = ['#7BA869','#6B9659','#8DBB78'];
-  [[0.7,0,1.6,0],[0.45,0.3,1.3,0.2],[0.4,-0.25,1.4,-0.15]].forEach(([r,ox,oy,oz]) => {
-    const c = new THREE.Mesh(new THREE.SphereGeometry(r,10,8),
-      new THREE.MeshStandardMaterial({ color:cc[Math.floor(Math.random()*3)], roughness:0.6 }));
-    c.position.set(x+ox,oy,z+oz); c.castShadow = true; scene.add(c);
+const swayTargets = [];
+for (let i=0;i<16;i++) {
+  const angle = (i/16)*Math.PI*2; const dist = 10+Math.random()*8;
+  const tx = Math.cos(angle)*dist, tz = Math.sin(angle)*dist+1;
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.14,1.6,8),
+    new THREE.MeshStandardMaterial({ color:'#9B7B5A', roughness:0.7 }));
+  trunk.position.set(tx,0.8,tz); trunk.castShadow = true; scene.add(trunk);
+  [0.65,0.4,0.35].forEach((r,j) => {
+    const crown = new THREE.Mesh(new THREE.SphereGeometry(r,10,8),
+      new THREE.MeshStandardMaterial({ color:['#6B9659','#7BA869','#8DBB78'][j], roughness:0.55 }));
+    crown.position.set(tx+(j-1)*0.25, 1.5+j*0.8, tz+(j-1)*0.2);
+    crown.castShadow = true; crown.userData.originX = tx + (j-1)*0.25;
+    scene.add(crown); swayTargets.push(crown);
   });
-});
-// Bushes
-for (let i=0;i<12;i++) {
-  const b = new THREE.Mesh(new THREE.SphereGeometry(0.35+Math.random()*0.2,8,6),
-    new THREE.MeshStandardMaterial({ color:i%3===0?'#A8C898':'#8DB580', roughness:0.55 }));
-  b.position.set(-9+i*1.8,0.25,-13.5+(i%3)*5); b.castShadow = true; scene.add(b);
 }
 
 // ══════════════ NPCs ══════════════
 const npcs = [];
-function addNPC(x, z, color) {
-  const g = new THREE.Group(); g.position.set(x,0,z);
-  [['cap',0.3,0.7,0.5,color],['sph',0.28,0,1.1,'#FFE8D6']].forEach(([t,r,_,py,c]) => {
-    const m = new THREE.Mesh(t==='cap'?new THREE.CapsuleGeometry(r,0.7,8,12):new THREE.SphereGeometry(r,14,14),
-      new THREE.MeshStandardMaterial({ color:c, roughness:0.5 }));
-    m.position.y = py; if(t==='cap') m.castShadow = true; g.add(m);
-  });
-  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8), new THREE.MeshBasicMaterial({ color:'#FF6B6B' }));
-  dot.position.y = 1.7; g.add(dot);
+function addNPC(x, z, color, name) {
+  const g = new THREE.Group(); g.position.set(x,0,z); g.userData = { name };
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.28,0.65,8,12),
+    new THREE.MeshStandardMaterial({ color, roughness:0.5 }));
+  body.position.y = 0.48; body.castShadow = true; g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.26,14,14),
+    new THREE.MeshStandardMaterial({ color:'#FFE8D6', roughness:0.45 }));
+  head.position.y = 1.05; g.add(head);
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.09,8,8),
+    new THREE.MeshBasicMaterial({ color:'#FF6B6B' }));
+  dot.position.y = 1.6; g.add(dot);
   scene.add(g); npcs.push(g);
 }
-addNPC(-6, -2, '#8B6B4A');
-addNPC(4, 10, '#6B5B4A');
+addNPC(-5.5, -1.5, '#8B6B4A', '小朴');
+addNPC(4.5, 9, '#6B5B4A', '智恩');
 
 // ══════════════ PLAYER ══════════════
-const player = new THREE.Group(); player.position.set(-9, 0, -13);
-const pShadow = new THREE.Mesh(new THREE.CircleGeometry(0.16,16),
+const player = new THREE.Group(); player.position.set(0, 0, 5);
+const pShadow = new THREE.Mesh(new THREE.CircleGeometry(0.15,16),
   new THREE.MeshBasicMaterial({ color:'#000', transparent:true, opacity:0.1 }));
-pShadow.rotation.x = -Math.PI/2; pShadow.position.y = -0.38; player.add(pShadow);
-const pBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.18,0.5,8,12),
+pShadow.rotation.x = -Math.PI/2; pShadow.position.y = -0.36; player.add(pShadow);
+const pBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.16,0.48,8,12),
   new THREE.MeshStandardMaterial({ color:'#FFFDF8', roughness:0.35 }));
-pBody.position.y = 0.2; pBody.castShadow = true; player.add(pBody);
-const bp = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.25,0.12),
+pBody.position.y = 0.18; pBody.castShadow = true; player.add(pBody);
+const bp = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.22,0.1),
   new THREE.MeshStandardMaterial({ color:'#D4A88C', roughness:0.4 }));
-bp.position.set(0,0.35,-0.14); player.add(bp);
-const pHead = new THREE.Mesh(new THREE.SphereGeometry(0.22,14,14),
+bp.position.set(0,0.32,-0.12); player.add(bp);
+const pHead = new THREE.Mesh(new THREE.SphereGeometry(0.2,14,14),
   new THREE.MeshStandardMaterial({ color:'#FFE8D6', roughness:0.4 }));
-pHead.position.y = 0.75; player.add(pHead);
-const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.25,0.08,14),
+pHead.position.y = 0.7; player.add(pHead);
+const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.23,0.07,14),
   new THREE.MeshStandardMaterial({ color:'#FF6B6B', roughness:0.3 }));
-hat.position.y = 0.9; player.add(hat);
+hat.position.y = 0.84; player.add(hat);
 scene.add(player);
 
 // ══════════════ RAYCASTING ══════════════
@@ -251,22 +268,36 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let target = null;
 const discovered = new Set();
+let quickX=null, quickY=null;
 
 function discover(id, bld) {
   if (discovered.has(id)) return;
   discovered.add(id);
   document.getElementById('ct').textContent = `${discovered.size}/4 已探索`;
+  // 粒子爆发
+  if (bld) spawnParticles(bld.position || new THREE.Vector3(bld.userData.x, bld.userData.h||3, bld.userData.z));
+
   if (discovered.size >= 4) {
     document.getElementById('ci').textContent = '🏅';
-    // GSAP: 印章庆祝
     setTimeout(() => {
-      const overlay = document.getElementById('stamp-overlay');
-      overlay.classList.add('show');
-      gsap.from('#stamp-card', { scale:0.6, opacity:0, duration:0.7, ease:"elastic.out(1,0.3)" });
-    }, 700);
+      document.getElementById('stamp-overlay').classList.add('show');
+      gsap.from('#stamp-card', { scale:0.5, opacity:0, duration:0.8, ease:"elastic.out(1,0.3)" });
+    }, 800);
   }
-  if (discovered.size === 1) {
-    gsap.to('#hint', { opacity:0, duration:0.5 });
+}
+
+// 粒子系统
+const particles = [];
+function spawnParticles(pos) {
+  for (let i=0;i<20;i++) {
+    const geo = new THREE.SphereGeometry(0.08,4,4);
+    const mat = new THREE.MeshBasicMaterial({ color:new THREE.Color().setHSL(0.12+Math.random()*0.1, 0.8, 0.5+Math.random()*0.4) });
+    const p = new THREE.Mesh(geo, mat);
+    p.position.copy(pos); p.position.y += 1;
+    p.userData = { vel:new THREE.Vector3((Math.random()-0.5)*3, 2+Math.random()*3, (Math.random()-0.5)*3), life:1 };
+    scene.add(p); particles.push(p);
+    gsap.to(p.userData, { life:0, duration:1+Math.random()*0.5, ease:"power2.out",
+      onComplete:() => { scene.remove(p); geo.dispose(); mat.dispose(); } });
   }
 }
 
@@ -277,94 +308,130 @@ renderer.domElement.addEventListener('click', (e) => {
   mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
   raycaster.setFromCamera(mouse, camera);
 
-  // Buildings
   const bWalls = buildings.map(b => b.children[0]);
   const bHits = raycaster.intersectObjects(bWalls);
   if (bHits.length > 0) {
     const bld = buildings.find(b => b.children[0] === bHits[0].object);
     if (bld?.userData.type !== 'normal') {
-      target = { x: bld.userData.x, z: bld.userData.z + bld.userData.d/2 + 0.6 };
-      setTimeout(() => discover(bld.userData.id, bld), 1400);
+      const info = bld.userData;
+      target = { x:info.x, z:info.z+info.d/2+0.5 };
+      setTimeout(() => discover(info.id, bld), 1300);
       return;
     }
   }
 
-  // NPCs
   const nBodies = npcs.map(n => n.children[0]);
   const nHits = raycaster.intersectObjects(nBodies);
   if (nHits.length > 0) {
-    const idx = npcs.findIndex(n => n.children[0] === nHits[0].object);
+    const idx = npcs.findIndex(n => n.children[0]===nHits[0].object);
     const dialogs = [
-      ["欢迎！☕ 今天的豆子是埃塞俄比亚的。","圣水洞以前全是工厂，现在变成艺术家和咖啡师的乐园了。","往东一直走，尽头的小巷有一面开满花的墙…"],
-      ["大林仓库以前真的堆满了货物！","我喜欢这里——旧的砖墙和新的艺术混在一起。","三个主要地点都逛过了吗？去东边巷子看看？"]
+      ["欢迎！☕ 今天的豆子是埃塞俄比亚的。","圣水洞以前全是工厂，现在是艺术家和咖啡师的乐园。","往东走…有一条开满花的小巷。"],
+      ["大林仓库以前真的堆满了货物！","我喜欢这里——旧的砖墙和新的艺术。","三个主要地点都逛过了？去东边看看？"]
     ];
-    const d = dialogs[idx] || ["你好！"];
-    const msg = d[Math.floor(Math.random()*d.length)];
-    const dialog = document.getElementById('dialog');
-    dialog.textContent = msg + ' (点击关闭)';
-    dialog.style.display = 'block';
-    gsap.fromTo(dialog, { opacity:0, y:10 }, { opacity:1, y:0, duration:0.3, ease:"power2.out" });
+    const d = dialogs[idx]||["你好！"];
+    showDialog(d[Math.floor(Math.random()*d.length)]);
     return;
   }
 
-  // Ground
   const gHits = raycaster.intersectObject(ground);
-  if (gHits.length > 0) {
-    target = { x: gHits[0].point.x, z: gHits[0].point.z };
-    // 地面涟漪 (简单实现：一个小圆环从点击位置扩散)
+  if (gHits.length > 0) { target = { x:gHits[0].point.x, z:gHits[0].point.z }; }
+});
+
+// NPC 对话框（底部浮动）
+function showDialog(text) {
+  let el = document.getElementById('dialog');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'dialog';
+    el.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:var(--ui-bg);border:1.5px solid #E0D5C5;border-radius:16px;padding:14px 22px;max-width:320px;font-family:Fredoka,sans-serif;font-size:14px;color:var(--text-1);font-weight:500;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.06);z-index:50;text-align:center;line-height:1.5;';
+    el.addEventListener('click', ()=>{ gsap.to(el,{opacity:0,y:10,duration:0.25,ease:"power2.in",onComplete:()=>el.remove()}); });
+    document.body.appendChild(el);
   }
-});
+  el.textContent = text + ' (点击关闭)';
+  gsap.fromTo(el, {opacity:0,y:10}, {opacity:1,y:0,duration:0.3,ease:"power2.out"});
+}
 
-// Close dialog
-document.getElementById('dialog').addEventListener('click', function() {
-  gsap.to(this, { opacity:0, y:10, duration:0.25, ease:"power2.in",
-    onComplete: () => { this.style.display = 'none'; } });
-});
-
-// Close stamp
-document.getElementById('stamp-overlay').addEventListener('click', function() {
+// 印章弹窗关闭
+document.getElementById('stamp-overlay').addEventListener('click', function(){
   gsap.to('#stamp-card', { scale:0.8, opacity:0, duration:0.3, ease:"power2.in",
-    onComplete: () => { this.classList.remove('show'); } });
+    onComplete:()=>this.classList.remove('show') });
 });
+
+// ══════════════ 键盘控制 ══════════════
+const keys = {};
+window.addEventListener('keydown', e => { keys[e.key] = true; });
+window.addEventListener('keyup', e => { keys[e.key] = false; });
 
 // ══════════════ ANIMATION LOOP ══════════════
-let quickX = null, quickY = null;
 const clock = new THREE.Clock();
-
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.1);
 
-  // Player movement with GSAP quickTo
-  if (target) {
-    if (!quickX) { quickX = gsap.quickTo(player.position, "x", { duration:0.35, ease:"power2.out" }); quickY = gsap.quickTo(player.position, "z", { duration:0.35, ease:"power2.out" }); }
-    const dx = target.x - player.position.x;
-    const dz = target.z - player.position.z;
-    const dist = Math.sqrt(dx*dx + dz*dz);
-    if (dist < 0.3) { target = null; player.position.y = 0; quickX = quickY = null; }
-    else {
-      quickX(target.x);
-      quickY(target.z);
-      player.position.y = Math.abs(Math.sin(Date.now()*0.015)) * 0.07;
-      player.rotation.y = Math.atan2(dx, dz);
-    }
+  // 键盘移动
+  const moveSpeed = 5;
+  if (keys['ArrowUp'] || keys['w']) { target = null; player.position.z -= moveSpeed*dt; player.rotation.y = Math.PI; }
+  if (keys['ArrowDown'] || keys['s']) { target = null; player.position.z += moveSpeed*dt; player.rotation.y = 0; }
+  if (keys['ArrowLeft'] || keys['a']) { target = null; player.position.x -= moveSpeed*dt; player.rotation.y = Math.PI/2; }
+  if (keys['ArrowRight'] || keys['d']) { target = null; player.position.x += moveSpeed*dt; player.rotation.y = -Math.PI/2; }
+  const keyMoving = keys['ArrowUp']||keys['ArrowDown']||keys['ArrowLeft']||keys['ArrowRight']||keys['w']||keys['a']||keys['s']||keys['d'];
+  if (keyMoving) player.position.y = Math.abs(Math.sin(Date.now()*0.015))*0.06;
+
+  // 点击移动
+  if (target && !keyMoving) {
+    if (!quickX) { quickX = gsap.quickTo(player.position,"x",{duration:0.3,ease:"power2.out"}); quickY = gsap.quickTo(player.position,"z",{duration:0.3,ease:"power2.out"}); }
+    const dx = target.x-player.position.x, dz = target.z-player.position.z;
+    const dist = Math.sqrt(dx*dx+dz*dz);
+    if (dist < 0.25) { target = null; player.position.y = 0; quickX = quickY = null; }
+    else { quickX(target.x); quickY(target.z); player.position.y = Math.abs(Math.sin(Date.now()*0.016))*0.06; player.rotation.y = Math.atan2(dx,dz); }
   }
 
-  // GSAP: 世界呼吸 — 太阳微动
-  sun.position.x = 20 + Math.sin(Date.now()*0.0004) * 1.5;
-  sun.position.z = 14 + Math.cos(Date.now()*0.0004) * 1.5;
+  // 树冠微摇
+  swayTargets.forEach((c,i) => {
+    c.position.x = c.userData.originX + Math.sin(Date.now()*0.002+i)*0.06;
+    c.position.z += Math.cos(Date.now()*0.0025+i)*0.04;
+  });
+
+  // NPC 呼吸
+  npcs.forEach((n,i) => { n.position.y = Math.sin(Date.now()*0.003+i)*0.04; });
+
+  // 粒子更新
+  particles.forEach(p => {
+    p.position.x += p.userData.vel.x * dt;
+    p.position.y += p.userData.vel.y * dt;
+    p.position.z += p.userData.vel.z * dt;
+    p.userData.vel.y -= 2 * dt;
+    p.material.opacity = p.userData.life;
+  });
+
+  // 太阳微动
+  sun.position.x = 18 + Math.sin(Date.now()*0.00035)*2;
+  sun.position.z = 12 + Math.cos(Date.now()*0.00035)*2;
 
   renderer.render(scene, camera);
 }
 animate();
 
+// ═════════════= RESIZE ══════════════
 window.addEventListener('resize', () => {
-  const a = innerWidth/innerHeight;
-  camera.left = -S*a; camera.right = S*a;
+  const aa = window.innerWidth/window.innerHeight;
+  camera.left = -S*aa; camera.right = S*aa;
   camera.top = S; camera.bottom = -S;
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// ══════════════ 无障碍 ══════════════
+const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+if (mq.matches) {
+  // 跳过入场动画
+  buildings.forEach(b => { b.scale.set(1,1,1); });
+  gsap.to('#counter', { opacity:1, duration:0.1 });
+}
+
+} catch(err) {
+  console.error('Voyage 初始化失败:', err);
+  document.getElementById('fallback').classList.add('show');
+}
 </script>
 </body>
 </html>
