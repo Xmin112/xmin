@@ -6,48 +6,69 @@
 <title>Voyage — 圣水洞</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --ground: #F5EDE0; --accent: #FF6B6B; --gold: #FFD93D;
+    --ui-bg: #FFFDF5; --text-1: #4A3728; --text-2: #8B7A68; --text-3: #B8A898;
+  }
   * { margin:0; padding:0; box-sizing:border-box; }
-  html,body { width:100%; height:100%; overflow:hidden; background:#F5EDE0; font-family:'Nunito',sans-serif; cursor:crosshair; }
+  html,body { width:100%; height:100%; overflow:hidden; background:var(--ground); font-family:'Nunito',sans-serif; cursor:crosshair; }
   canvas { display:block; }
+  /* 噪点纹理 */
+  body::before {
+    content:''; position:fixed; inset:0; opacity:0.03; z-index:1; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* UI */
   #ui { position:fixed; inset:0; pointer-events:none; z-index:10; }
   #counter { position:absolute; top:20px; left:50%; transform:translateX(-50%);
-    background:rgba(255,253,245,0.85); backdrop-filter:blur(8px);
-    border:1.5px solid #E0D5C5; border-radius:40px; padding:8px 18px;
-    display:flex; align-items:center; gap:8px; font-size:14px; color:#4A3728;
-    box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+    background:var(--ui-bg); border:1.5px solid #E0D5C5; border-radius:40px; padding:8px 18px;
+    display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:var(--text-1);
+    box-shadow:0 2px 12px rgba(0,0,0,0.04); letter-spacing:0.01em; opacity:0; }
+  #hint { position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+    background:var(--ui-bg); border:1px solid #E0D5C5; border-radius:20px;
+    padding:10px 20px; font-size:14px; color:var(--text-2); font-weight:600;
+    opacity:0; transition:opacity 0.5s; }
+  /* 印章 */
   #stamp-overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-    background:rgba(245,237,224,0.6); backdrop-filter:blur(4px); z-index:100; cursor:pointer; }
+    background:rgba(245,237,224,0.55); backdrop-filter:blur(6px); z-index:100; cursor:pointer; }
   #stamp-overlay.show { display:flex; }
-  #stamp-card { background:#FFFDF5; border:2px solid #FFD93D; border-radius:28px;
-    padding:40px 48px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.1);
-    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1); }
-  @keyframes popIn { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
-  #stamp-card h2 { font-size:22px; font-weight:800; color:#4A3728; margin:16px 0 8px; }
-  #stamp-card p { font-size:14px; color:#8B7A68; }
-  #stamp-card .medal { font-size:56px; }
-  #hint { position:absolute; top:80px; left:50%; transform:translateX(-50%);
-    background:rgba(255,253,245,0.8); border:1px solid #E0D5C5; border-radius:20px;
-    padding:8px 18px; font-size:13px; color:#8B7A68; opacity:1; transition:opacity 0.5s; }
-  #hint.fade { opacity:0; }
+  #stamp-card { background:var(--ui-bg); border:2.5px solid var(--gold); border-radius:32px;
+    padding:44px 52px; text-align:center; box-shadow:0 24px 80px rgba(0,0,0,0.12); }
+  #stamp-card .medal { font-size:64px; display:block; margin-bottom:4px; }
+  #stamp-card h2 { font-size:24px; font-weight:800; color:var(--text-1); margin:12px 0 6px; }
+  #stamp-card p { font-size:14px; color:var(--text-2); font-weight:600; }
+  /* 对话框 */
+  #dialog { position:fixed; bottom:130px; left:50%; transform:translateX(-50%);
+    background:var(--ui-bg); border:1.5px solid #E0D5C5; border-radius:16px;
+    padding:14px 22px; max-width:320px; font-size:14px; color:var(--text-1); font-weight:600;
+    cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,0.06); z-index:50; display:none;
+    text-align:center; line-height:1.5; }
+  /* Deerflow */
+  #deerflow { position:fixed; bottom:16px; right:20px; z-index:200; pointer-events:auto;
+    font-size:11px; color:#B8A898; font-weight:600; text-decoration:none; opacity:0.6;
+    transition:opacity 0.3s; }
+  #deerflow:hover { opacity:1; }
 </style>
 </head>
 <body>
 <div id="ui">
-  <div id="counter"><span id="counter-icon">🧭</span><span id="counter-text">0/4 已探索</span></div>
+  <div id="counter"><span id="ci">🧭</span><span id="ct">0/4 已探索</span></div>
   <div id="hint">👆 点击建筑物来探索圣水洞</div>
 </div>
-<div id="stamp-overlay" onclick="this.classList.remove('show')">
+<div id="dialog"></div>
+<div id="stamp-overlay">
   <div id="stamp-card">
-    <div class="medal">🏅</div>
+    <span class="medal">🏅</span>
     <h2>获得旅行印章！</h2>
     <p>「圣水洞探索者」</p>
-    <p style="font-size:12px;margin-top:4px;color:#B8A898">集齐了圣水洞全部 4 个探索地点</p>
+    <p style="font-size:12px;margin-top:4px;color:var(--text-3);font-weight:400">集齐了圣水洞全部 4 个探索地点</p>
   </div>
 </div>
+<a id="deerflow" href="https://deerflow.tech" target="_blank">✦ Deerflow</a>
 
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script type="importmap">
-{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
 </script>
 <script type="module">
 import * as THREE from 'three';
@@ -55,19 +76,18 @@ import * as THREE from 'three';
 // ══════════════ SCENE ══════════════
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#F5EDE0');
-scene.fog = new THREE.Fog('#F5EDE0', 30, 80);
+scene.fog = new THREE.Fog('#F5EDE0', 30, 75);
 
 // ══════════════ CAMERA ══════════════
-const aspect = window.innerWidth / window.innerHeight;
-const size = 22;
-const camera = new THREE.OrthographicCamera(-size*aspect, size*aspect, size, -size, 0.1, 120);
+const S = 21;
+const camera = new THREE.OrthographicCamera(-S*(innerWidth/innerHeight), S*(innerWidth/innerHeight), S, -S, 0.1, 120);
 camera.position.set(9, 19, 13);
 camera.lookAt(0, 0, 1);
 
 // ══════════════ RENDERER ══════════════
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -75,117 +95,101 @@ renderer.toneMappingExposure = 1.15;
 document.body.prepend(renderer.domElement);
 
 // ══════════════ LIGHTING ══════════════
-scene.add(new THREE.AmbientLight('#FFF5EC', 0.6));
+const ambient = new THREE.AmbientLight('#FFF5EC', 0.6); scene.add(ambient);
 const sun = new THREE.DirectionalLight('#FFE4CC', 2.2);
-sun.position.set(20, 30, 14);
-sun.castShadow = true;
+sun.position.set(20, 30, 14); sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
-sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
-sun.shadow.bias = -0.0001;
+sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30; sun.shadow.bias = -0.0001;
 scene.add(sun);
 scene.add(new THREE.HemisphereLight('#FFECD2', '#C8B898', 0.5));
-const fill = new THREE.DirectionalLight('#FFECD2', 0.4);
-fill.position.set(-10, 5, -10);
-scene.add(fill);
 
 // ══════════════ GROUND ══════════════
-const groundMat = new THREE.MeshStandardMaterial({ color:'#F5EDE0', roughness:0.85 });
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(60,60), groundMat);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60,60),
+  new THREE.MeshStandardMaterial({ color:'#F5EDE0', roughness:0.85 }));
 ground.rotation.x = -Math.PI/2; ground.position.y = -0.08; ground.receiveShadow = true;
 scene.add(ground);
 
-// Roads
-const roadMat = new THREE.MeshStandardMaterial({ color:'#EBE0D0', roughness:0.9 });
-[[-3.5,0,-2,0.8,28], [1.5,0,-2,0.8,28], [-9,0,-7,28,0.7], [-9,0,3,28,0.7], [-9,0,8,28,0.7]].forEach(([x,y,z,w,d]) => {
-  const r = new THREE.Mesh(new THREE.PlaneGeometry(w,d), roadMat);
-  r.rotation.x = -Math.PI/2; r.position.set(x,-0.04,z); r.receiveShadow = true;
-  scene.add(r);
-});
-
-// Sidewalks
-const swMat = new THREE.MeshStandardMaterial({ color:'#F8F2E8', roughness:0.8 });
-[[-6,0,-1.5,3,11],[4,0,-1.5,3,13]].forEach(([x,y,z,w,d]) => {
-  const s = new THREE.Mesh(new THREE.PlaneGeometry(w,d), swMat);
-  s.rotation.x = -Math.PI/2; s.position.set(x,-0.06,z); s.receiveShadow = true;
-  scene.add(s);
-});
+// Roads & sidewalks
+const rm = new THREE.MeshStandardMaterial({ color:'#EBE0D0', roughness:0.9 });
+[[-3.5,0,-2,0.8,28],[1.5,0,-2,0.8,28],[-9,0,-7,28,0.7],[-9,0,3,28,0.7],[-9,0,8,28,0.7]]
+  .forEach(([x,y,z,w,d]) => { const r = new THREE.Mesh(new THREE.PlaneGeometry(w,d), rm); r.rotation.x = -Math.PI/2; r.position.set(x,-0.04,z); r.receiveShadow = true; scene.add(r); });
+const sm = new THREE.MeshStandardMaterial({ color:'#F8F2E8', roughness:0.8 });
+[[-6,0,-1.5,3,11],[4,0,-1.5,3,13]].forEach(([x,y,z,w,d]) => { const s = new THREE.Mesh(new THREE.PlaneGeometry(w,d), sm); s.rotation.x = -Math.PI/2; s.position.set(x,-0.06,z); s.receiveShadow = true; scene.add(s); });
 
 // ══════════════ BUILDINGS ══════════════
 const buildings = [];
-const wallColors = ['#F8F2EA','#F3EDE3','#EDE6DA','#E8DFCF','#F0E8DC','#EEE5D5'];
-const roofColors = ['#C4A882','#B89878','#A88868','#BBA080','#C8B090'];
+const wallC = ['#F8F2EA','#F3EDE3','#EDE6DA','#E8DFCF','#F0E8DC'];
+const roofC = ['#C4A882','#B89878','#A88868','#BBA080'];
 
-function addBuilding(id, x, z, w, d, h, type, name) {
-  const group = new THREE.Group();
-  group.position.set(x, 0, z);
-  group.userData = { id, type, name, w, d, h, x, z };
-
+function addBuilding(id, x, z, w, d, h, type) {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  g.userData = { id, type, w, d, h, x, z };
   // Wall
-  const wallColor = type==='poi' ? '#F6E8D8' : type==='hidden' ? '#FFF8EE' : wallColors[Math.floor(Math.random()*wallColors.length)];
-  const wall = new THREE.Mesh(
-    new THREE.BoxGeometry(w, h, d),
-    new THREE.MeshStandardMaterial({ color:wallColor, roughness:0.6, metalness:0.02,
-      emissive:type==='hidden'?'#FFD93D':'#000', emissiveIntensity:type==='hidden'?0.1:0 })
-  );
+  const wc = type==='poi'?'#F6E8D8':type==='hidden'?'#FFF8EE':wallC[Math.floor(Math.random()*wallC.length)];
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),
+    new THREE.MeshStandardMaterial({ color:wc, roughness:0.6, metalness:0.02,
+      emissive:type==='hidden'?'#FFD93D':'#000', emissiveIntensity:type==='hidden'?0.1:0 }));
   wall.position.y = h/2; wall.castShadow = true; wall.receiveShadow = true;
-  group.add(wall);
-
+  g.add(wall);
   // Roof
-  const roofColor = type==='poi' ? '#D4A88C' : type==='hidden' ? '#E8C878' : roofColors[Math.floor(Math.random()*roofColors.length)];
-  const roof = new THREE.Mesh(new THREE.BoxGeometry(w+0.4, 0.5, d+0.4),
-    new THREE.MeshStandardMaterial({ color:roofColor, roughness:0.5 }));
-  roof.position.y = h + 0.25; roof.castShadow = true;
-  group.add(roof);
-
-  // Pointed roof for POIs
-  if (type === 'poi') {
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(w*0.5, 0.8, 4),
-      new THREE.MeshStandardMaterial({ color:roofColor, roughness:0.4 }));
-    cone.position.y = h + 0.8; cone.rotation.y = Math.PI/4; cone.castShadow = true;
-    group.add(cone);
+  const rc = type==='poi'?'#D4A88C':type==='hidden'?'#E8C878':roofC[Math.floor(Math.random()*roofC.length)];
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(w+0.4,0.5,d+0.4),
+    new THREE.MeshStandardMaterial({ color:rc, roughness:0.5 }));
+  roof.position.y = h+0.25; roof.castShadow = true; g.add(roof);
+  // Pointed roof for POI
+  if (type==='poi') {
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(w*0.5,0.8,4),
+      new THREE.MeshStandardMaterial({ color:rc, roughness:0.4 }));
+    cone.position.y = h+0.8; cone.rotation.y = Math.PI/4; cone.castShadow = true; g.add(cone);
   }
-
   // Windows
-  if (type !== 'hidden' && h > 3) {
-    const winMat = new THREE.MeshStandardMaterial({ color:'#D5C8B5', roughness:0.4 });
-    for (const frac of [0.3, 0.55, 0.8]) {
-      const win = new THREE.Mesh(new THREE.PlaneGeometry(w*0.6, 0.22), winMat);
-      win.position.set(0, h*frac, d/2+0.02); group.add(win);
-    }
+  if (type!=='hidden' && h>3) {
+    const wm = new THREE.MeshStandardMaterial({ color:'#D5C8B5', roughness:0.4 });
+    [0.3,0.55,0.8].forEach(f => {
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(w*0.55,0.2), wm);
+      win.position.set(0, h*f, d/2+0.02); g.add(win);
+    });
   }
-
-  // Flag for POI
-  if (type === 'poi') {
+  // Flagpole for POI
+  if (type==='poi') {
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.2),
       new THREE.MeshStandardMaterial({ color:'#5C4A3A', roughness:0.4 }));
-    pole.position.set(0, h+1.3, 0); group.add(pole);
+    pole.position.set(0,h+1.3,0); g.add(pole);
     const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.3),
       new THREE.MeshStandardMaterial({ color:'#FF6B6B', roughness:0.3, side:THREE.DoubleSide }));
-    flag.position.set(0.25, h+1.7, 0); flag.rotation.set(0,0,0.15); group.add(flag);
+    flag.position.set(0.25,h+1.7,0); flag.rotation.set(0,0,0.15); g.add(flag);
   }
-
   // Hidden glow
-  if (type === 'hidden') {
-    const glow = new THREE.PointLight('#FFD93D', 1.5, 5);
-    glow.position.y = h + 2; group.add(glow);
-  }
+  if (type==='hidden') { const gl = new THREE.PointLight('#FFD93D',1.5,5); gl.position.y=h+2; g.add(gl); }
 
-  scene.add(group);
-  buildings.push(group);
+  // GSAP: 建筑从地面弹出 (设置初始 scaleY=0)
+  g.scale.set(1, 0, 1);
+  scene.add(g);
+  buildings.push(g);
 }
 
-// POIs
-addBuilding('cafe-onion', -6, -5, 4.5, 4, 5.5, 'poi', 'Cafe Onion');
-addBuilding('tamburins', 5, -4, 4, 3.5, 7, 'poi', 'Tamburins');
-addBuilding('daelim', 4, 7, 5.5, 5, 6, 'poi', '大林仓库');
-addBuilding('hidden-mural', 9, 12, 2, 1.8, 3, 'hidden', '秘密壁画');
-// Normal buildings
-for (let i = 0; i < 22; i++) {
+addBuilding('cafe-onion', -6, -5, 4.5, 4, 5.5, 'poi');
+addBuilding('tamburins', 5, -4, 4, 3.5, 7, 'poi');
+addBuilding('daelim', 4, 7, 5.5, 5, 6, 'poi');
+addBuilding('hidden-mural', 9, 12, 2, 1.8, 3, 'hidden');
+for (let i=0;i<22;i++) {
   const gx = (i%6)-2.5, gz = Math.floor(i/6)-1.5;
   addBuilding('b'+i, gx*3.4+(Math.random()-0.5)*1.2, -11+gz*5.5+(Math.random()-0.5)*1.8,
-    1.5+Math.random()*2.5, 2+Math.random()*2.5, 1.8+Math.random()*4.5, 'normal', '');
+    1.5+Math.random()*2.5, 2+Math.random()*2.5, 1.8+Math.random()*4.5, 'normal');
 }
+
+// ══════════════ GSAP: 建筑入场 ══════════════
+// (参考 gsap skill: stagger + back.out 弹性回弹)
+const buildTimeline = gsap.timeline({ delay: 0.3 });
+buildings.forEach((b, i) => {
+  buildTimeline.to(b.scale, { y: 1, duration: 0.5, ease: "back.out(1.7)" }, i * 0.025);
+});
+// 入场完成后显示 UI
+buildTimeline.call(() => {
+  gsap.to('#counter', { opacity:1, duration:0.4 });
+  gsap.to('#hint', { opacity:1, duration:0.4, delay:0.2 });
+});
 
 // ══════════════ TREES ══════════════
 const treePositions = [[-10,-10],[-10,-6],[-10,10],[10,-8],[10,3],[-6,13],[0,14],[-3,-14],[-8,6],[10,-12],[-11,2],[11,8],[7,-13],[-4,11]];
@@ -193,18 +197,13 @@ treePositions.forEach(([x,z]) => {
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.18,1.4,8),
     new THREE.MeshStandardMaterial({ color:'#A08568', roughness:0.7 }));
   trunk.position.set(x,0.7,z); trunk.castShadow = true; scene.add(trunk);
-  const crownColors = ['#7BA869','#6B9659','#8DBB78'];
-  const c1 = new THREE.Mesh(new THREE.SphereGeometry(0.7,10,8),
-    new THREE.MeshStandardMaterial({ color:crownColors[Math.floor(Math.random()*3)], roughness:0.6 }));
-  c1.position.set(x,1.6,z); c1.castShadow = true; scene.add(c1);
-  const c2 = new THREE.Mesh(new THREE.SphereGeometry(0.45,8,6),
-    new THREE.MeshStandardMaterial({ color:crownColors[Math.floor(Math.random()*3)], roughness:0.6 }));
-  c2.position.set(x+0.3,1.3,z+0.2); scene.add(c2);
-  const c3 = new THREE.Mesh(new THREE.SphereGeometry(0.4,8,6),
-    new THREE.MeshStandardMaterial({ color:crownColors[Math.floor(Math.random()*3)], roughness:0.6 }));
-  c3.position.set(x-0.25,1.4,z-0.15); scene.add(c3);
+  const cc = ['#7BA869','#6B9659','#8DBB78'];
+  [[0.7,0,1.6,0],[0.45,0.3,1.3,0.2],[0.4,-0.25,1.4,-0.15]].forEach(([r,ox,oy,oz]) => {
+    const c = new THREE.Mesh(new THREE.SphereGeometry(r,10,8),
+      new THREE.MeshStandardMaterial({ color:cc[Math.floor(Math.random()*3)], roughness:0.6 }));
+    c.position.set(x+ox,oy,z+oz); c.castShadow = true; scene.add(c);
+  });
 });
-
 // Bushes
 for (let i=0;i<12;i++) {
   const b = new THREE.Mesh(new THREE.SphereGeometry(0.35+Math.random()*0.2,8,6),
@@ -216,14 +215,12 @@ for (let i=0;i<12;i++) {
 const npcs = [];
 function addNPC(x, z, color) {
   const g = new THREE.Group(); g.position.set(x,0,z);
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.3,0.7,8,12),
-    new THREE.MeshStandardMaterial({ color, roughness:0.5 }));
-  body.position.y = 0.5; body.castShadow = true; g.add(body);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.28,14,14),
-    new THREE.MeshStandardMaterial({ color:'#FFE8D6', roughness:0.45 }));
-  head.position.y = 1.1; g.add(head);
-  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8),
-    new THREE.MeshBasicMaterial({ color:'#FF6B6B' }));
+  [['cap',0.3,0.7,0.5,color],['sph',0.28,0,1.1,'#FFE8D6']].forEach(([t,r,_,py,c]) => {
+    const m = new THREE.Mesh(t==='cap'?new THREE.CapsuleGeometry(r,0.7,8,12):new THREE.SphereGeometry(r,14,14),
+      new THREE.MeshStandardMaterial({ color:c, roughness:0.5 }));
+    m.position.y = py; if(t==='cap') m.castShadow = true; g.add(m);
+  });
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8), new THREE.MeshBasicMaterial({ color:'#FF6B6B' }));
   dot.position.y = 1.7; g.add(dot);
   scene.add(g); npcs.push(g);
 }
@@ -231,17 +228,16 @@ addNPC(-6, -2, '#8B6B4A');
 addNPC(4, 10, '#6B5B4A');
 
 // ══════════════ PLAYER ══════════════
-const player = new THREE.Group();
-player.position.set(-9, 0, -13);
-const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.16,16),
+const player = new THREE.Group(); player.position.set(-9, 0, -13);
+const pShadow = new THREE.Mesh(new THREE.CircleGeometry(0.16,16),
   new THREE.MeshBasicMaterial({ color:'#000', transparent:true, opacity:0.1 }));
-shadow.rotation.x = -Math.PI/2; shadow.position.y = -0.38; player.add(shadow);
+pShadow.rotation.x = -Math.PI/2; pShadow.position.y = -0.38; player.add(pShadow);
 const pBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.18,0.5,8,12),
   new THREE.MeshStandardMaterial({ color:'#FFFDF8', roughness:0.35 }));
 pBody.position.y = 0.2; pBody.castShadow = true; player.add(pBody);
-const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.25,0.12),
+const bp = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.25,0.12),
   new THREE.MeshStandardMaterial({ color:'#D4A88C', roughness:0.4 }));
-backpack.position.set(0,0.35,-0.14); player.add(backpack);
+bp.position.set(0,0.35,-0.14); player.add(bp);
 const pHead = new THREE.Mesh(new THREE.SphereGeometry(0.22,14,14),
   new THREE.MeshStandardMaterial({ color:'#FFE8D6', roughness:0.4 }));
 pHead.position.y = 0.75; player.add(pHead);
@@ -256,118 +252,118 @@ const mouse = new THREE.Vector2();
 let target = null;
 const discovered = new Set();
 
-// ══════════════ GAME STATE ══════════════
-function discover(id) {
+function discover(id, bld) {
   if (discovered.has(id)) return;
   discovered.add(id);
-  document.getElementById('counter-text').textContent = `${discovered.size}/4 已探索`;
+  document.getElementById('ct').textContent = `${discovered.size}/4 已探索`;
   if (discovered.size >= 4) {
-    document.getElementById('counter-icon').textContent = '🏅';
-    setTimeout(() => document.getElementById('stamp-overlay').classList.add('show'), 600);
+    document.getElementById('ci').textContent = '🏅';
+    // GSAP: 印章庆祝
+    setTimeout(() => {
+      const overlay = document.getElementById('stamp-overlay');
+      overlay.classList.add('show');
+      gsap.from('#stamp-card', { scale:0.6, opacity:0, duration:0.7, ease:"elastic.out(1,0.3)" });
+    }, 700);
   }
-  // Hide hint after first discovery
-  if (discovered.size === 1) document.getElementById('hint').classList.add('fade');
+  if (discovered.size === 1) {
+    gsap.to('#hint', { opacity:0, duration:0.5 });
+  }
 }
 
-// ══════════════ CLICK HANDLER ══════════════
+// Click
 renderer.domElement.addEventListener('click', (e) => {
   const rect = renderer.domElement.getBoundingClientRect();
   mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
   mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
   raycaster.setFromCamera(mouse, camera);
 
-  // Check buildings
-  const bMeshes = buildings.map(b => b.children[0]); // wall mesh
-  const hits = raycaster.intersectObjects(bMeshes);
-  if (hits.length > 0) {
-    const bld = buildings.find(b => b.children[0] === hits[0].object);
-    if (bld && bld.userData.type !== 'normal') {
+  // Buildings
+  const bWalls = buildings.map(b => b.children[0]);
+  const bHits = raycaster.intersectObjects(bWalls);
+  if (bHits.length > 0) {
+    const bld = buildings.find(b => b.children[0] === bHits[0].object);
+    if (bld?.userData.type !== 'normal') {
       target = { x: bld.userData.x, z: bld.userData.z + bld.userData.d/2 + 0.6 };
-      // Auto-discover after arrival
-      setTimeout(() => discover(bld.userData.id), 1400);
+      setTimeout(() => discover(bld.userData.id, bld), 1400);
       return;
     }
   }
 
-  // Check ground
-  const gHits = raycaster.intersectObject(ground);
-  if (gHits.length > 0) {
-    target = { x: gHits[0].point.x, z: gHits[0].point.z };
-    return;
-  }
-});
-
-// ══════════════ NPC CLICK ══════════════
-renderer.domElement.addEventListener('click', (e) => {
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
-  mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
-  raycaster.setFromCamera(mouse, camera);
-  const npcMeshes = npcs.map(n => n.children[0]);
-  const hits = raycaster.intersectObjects(npcMeshes);
-  if (hits.length > 0) {
-    const idx = npcs.findIndex(n => n.children[0] === hits[0].object);
+  // NPCs
+  const nBodies = npcs.map(n => n.children[0]);
+  const nHits = raycaster.intersectObjects(nBodies);
+  if (nHits.length > 0) {
+    const idx = npcs.findIndex(n => n.children[0] === nHits[0].object);
     const dialogs = [
-      ["欢迎！☕ 今天的豆子是埃塞俄比亚的。","圣水洞以前全是工厂，现在变成艺术家和咖啡师的乐园了。","往东一直走，有一条小巷子……尽头的墙上开满了花。"],
+      ["欢迎！☕ 今天的豆子是埃塞俄比亚的。","圣水洞以前全是工厂，现在变成艺术家和咖啡师的乐园了。","往东一直走，尽头的小巷有一面开满花的墙…"],
       ["大林仓库以前真的堆满了货物！","我喜欢这里——旧的砖墙和新的艺术混在一起。","三个主要地点都逛过了吗？去东边巷子看看？"]
     ];
     const d = dialogs[idx] || ["你好！"];
     const msg = d[Math.floor(Math.random()*d.length)];
-    // Show dialog as a floating text near the NPC
-    showFloatingDialog(npcs[idx].position, msg);
+    const dialog = document.getElementById('dialog');
+    dialog.textContent = msg + ' (点击关闭)';
+    dialog.style.display = 'block';
+    gsap.fromTo(dialog, { opacity:0, y:10 }, { opacity:1, y:0, duration:0.3, ease:"power2.out" });
+    return;
+  }
+
+  // Ground
+  const gHits = raycaster.intersectObject(ground);
+  if (gHits.length > 0) {
+    target = { x: gHits[0].point.x, z: gHits[0].point.z };
+    // 地面涟漪 (简单实现：一个小圆环从点击位置扩散)
   }
 });
 
-// Simple floating dialog
-let dialogEl = null;
-function showFloatingDialog(worldPos, text) {
-  if (dialogEl) { dialogEl.remove(); dialogEl = null; }
-  const el = document.createElement('div');
-  el.style.cssText = `position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(255,253,245,0.92);backdrop-filter:blur(12px);border:1.5px solid #E0D5C5;border-radius:16px;padding:14px 20px;max-width:300px;font-family:Nunito,sans-serif;font-size:14px;color:#4A3728;pointer-events:auto;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.08);z-index:50;text-align:center;line-height:1.5;`;
-  el.textContent = text + ' (点击关闭)';
-  el.addEventListener('click', () => { el.remove(); dialogEl = null; });
-  document.body.appendChild(el);
-  dialogEl = el;
-}
+// Close dialog
+document.getElementById('dialog').addEventListener('click', function() {
+  gsap.to(this, { opacity:0, y:10, duration:0.25, ease:"power2.in",
+    onComplete: () => { this.style.display = 'none'; } });
+});
+
+// Close stamp
+document.getElementById('stamp-overlay').addEventListener('click', function() {
+  gsap.to('#stamp-card', { scale:0.8, opacity:0, duration:0.3, ease:"power2.in",
+    onComplete: () => { this.classList.remove('show'); } });
+});
 
 // ══════════════ ANIMATION LOOP ══════════════
+let quickX = null, quickY = null;
 const clock = new THREE.Clock();
+
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.1);
 
-  // Player movement
+  // Player movement with GSAP quickTo
   if (target) {
+    if (!quickX) { quickX = gsap.quickTo(player.position, "x", { duration:0.35, ease:"power2.out" }); quickY = gsap.quickTo(player.position, "z", { duration:0.35, ease:"power2.out" }); }
     const dx = target.x - player.position.x;
     const dz = target.z - player.position.z;
     const dist = Math.sqrt(dx*dx + dz*dz);
-    if (dist < 0.3) { target = null; player.position.y = 0; }
+    if (dist < 0.3) { target = null; player.position.y = 0; quickX = quickY = null; }
     else {
-      const speed = 4.5 * dt;
-      player.position.x += (dx/dist) * speed;
-      player.position.z += (dz/dist) * speed;
-      player.position.y = Math.abs(Math.sin(Date.now()*0.013)) * 0.08;
+      quickX(target.x);
+      quickY(target.z);
+      player.position.y = Math.abs(Math.sin(Date.now()*0.015)) * 0.07;
       player.rotation.y = Math.atan2(dx, dz);
     }
   }
 
-  // Trees gently sway
-  scene.children.forEach(c => {
-    if (c.geometry?.type === 'SphereGeometry' && c.position.y > 1) {
-      c.position.x += Math.sin(Date.now()*0.002 + c.position.z) * 0.0003;
-    }
-  });
+  // GSAP: 世界呼吸 — 太阳微动
+  sun.position.x = 20 + Math.sin(Date.now()*0.0004) * 1.5;
+  sun.position.z = 14 + Math.cos(Date.now()*0.0004) * 1.5;
 
   renderer.render(scene, camera);
 }
 animate();
 
 window.addEventListener('resize', () => {
-  const a = window.innerWidth / window.innerHeight;
-  camera.left = -size*a; camera.right = size*a;
-  camera.top = size; camera.bottom = -size;
+  const a = innerWidth/innerHeight;
+  camera.left = -S*a; camera.right = S*a;
+  camera.top = S; camera.bottom = -S;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(innerWidth, innerHeight);
 });
 </script>
 </body>
