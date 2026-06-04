@@ -104,7 +104,9 @@ function cloud(x,y,z,s){
   for(let i=0;i<n;i++){
     const r=.32+Math.random()*1.7;
     const m=new THREE.MeshStandardMaterial({roughness:.58,metalness:0,color:new THREE.Color().setHSL(.62+Math.random()*.18,.06+Math.random()*.14,.66+Math.random()*.28)});
-    g.add(new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m).translate((Math.random()-.5)*3.6,(Math.random()-.5)*1.9,(Math.random()-.5)*3.1));
+    const s=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),m);
+    s.position.set((Math.random()-.5)*3.6,(Math.random()-.5)*1.9,(Math.random()-.5)*3.1);
+    g.add(s);
   }
   g.position.set(x,y,z);g.scale.setScalar(s);clouds.add(g);
 }
@@ -112,10 +114,14 @@ for(let i=0;i<68;i++){const t=i/68;cloud((Math.random()-.5)*80,1+Math.random()*1
 
 // ═══ AIRCRAFT ═══
 const plane=new THREE.Group();
-plane.add(new THREE.Mesh(new THREE.CapsuleGeometry(.25,1.5,8,14),new THREE.MeshStandardMaterial({color:'#e8e2f0',roughness:.2,metalness:.52})).rotateX(Math.PI/2));
-plane.add(new THREE.Mesh(new THREE.BoxGeometry(3.2,.04,.62),new THREE.MeshStandardMaterial({color:'#d8d2e8',roughness:.2,metalness:.42})).translate(0,-.02,0));
-plane.add(new THREE.Mesh(new THREE.BoxGeometry(.62,.028,.34),new THREE.MeshStandardMaterial({color:'#d8d2e8',roughness:.2,metalness:.42})).translate(0,-.1,-.58));
-plane.add(new THREE.Mesh(new THREE.BoxGeometry(.035,.42,.34),new THREE.MeshStandardMaterial({color:'#d8d2e8',roughness:.2,metalness:.42})).translate(0,.2,-.48));
+const fuse=new THREE.Mesh(new THREE.CapsuleGeometry(.25,1.5,8,14),new THREE.MeshStandardMaterial({color:'#e8e2f0',roughness:.2,metalness:.52}));
+fuse.rotation.x=Math.PI/2;plane.add(fuse);
+const wng=new THREE.Mesh(new THREE.BoxGeometry(3.2,.04,.62),new THREE.MeshStandardMaterial({color:'#d8d2e8',roughness:.2,metalness:.42}));
+wng.position.set(0,-.02,0);plane.add(wng);
+const th=new THREE.Mesh(new THREE.BoxGeometry(.62,.028,.34),new THREE.MeshStandardMaterial({color:'#d8d2e8',roughness:.2,metalness:.42}));
+th.position.set(0,-.1,-.58);plane.add(th);
+const tv=new THREE.Mesh(new THREE.BoxGeometry(.035,.42,.34),new THREE.MeshStandardMaterial({color:'#d8d2e8',roughness:.2,metalness:.42}));
+tv.position.set(0,.2,-.48);plane.add(tv);
 const glow=new THREE.PointLight('#ffe8d0',.65,3);glow.position.set(0,-.02,-.62);plane.add(glow);
 plane.position.set(0,3.5,5);plane.rotation.set(0,0,-.025);scene.add(plane);
 
