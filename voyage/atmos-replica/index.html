@@ -179,7 +179,7 @@ const curve=new THREE.CatmullRomCurve3(pathPoints);
 const textPanels=[];
 function createTextPanel(text,subtext,t){
   const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128;
-  const ctx=canvas.getContext('2d')!;
+  const ctx=canvas.getContext('2d'); if(!ctx)return;
   ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='300 36px "Courier New",monospace';
   ctx.textAlign='center';ctx.fillText(text,256,48);
   ctx.fillStyle='rgba(200,200,220,0.7)';ctx.font='14px "Courier New",monospace';
