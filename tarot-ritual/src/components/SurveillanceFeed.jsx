@@ -8,7 +8,7 @@
  *   - 希斯失真效果（检测到手势时短暂红移）
  *
  * @param {Object} props
- * @param {React.RefObject<HTMLVideoElement>} props.videoRef
+ * @param {React.RefObject<HTMLVideoElement>} props.videoRef — 视频元素由 BioCalibration 管理
  * @param {boolean} props.isActive
  * @param {string}  props.gesture       — 'none'|'open'|'pinch'|'swipe'
  * @param {number}  props.confidence    — 0-1
@@ -113,19 +113,7 @@ export default function SurveillanceFeed({
 
   return (
     <div className="relative" style={{ width: 280, height: 210 }}>
-      {/* 视频画面 */}
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="w-full h-full object-cover"
-        style={{
-          transform: 'scaleX(-1)',
-          filter: isLocked ? 'brightness(0.9) contrast(1.1)' : 'brightness(0.7) contrast(1.3)',
-          transition: 'filter 0.3s ease',
-        }}
-      />
+      {/* 视频画面由 BioCalibration 托管，此处只渲染叠加层 */}
 
       {/* 希斯红移效果 */}
       <AnimatePresence>

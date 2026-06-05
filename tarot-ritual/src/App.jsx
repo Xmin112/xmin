@@ -42,7 +42,8 @@ export default function App() {
   const enableTouchMode = useCaseStore((s) => s.enableTouchMode)
 
   // ─── 摄像头追踪 ───
-  const cameraActive = phase !== 'IDLE' || touchMode
+  // 摄像头始终激活 — 手势检测需要从 IDLE 阶段开始工作
+  const cameraActive = true
   const { gesture, confidence, landmarks, isReady, videoRef, error } = useHandTracking(cameraActive)
 
   // ─── 手势事件（防抖 + 触发状态机） ───
@@ -122,7 +123,10 @@ export default function App() {
             transition={{ duration: 0.6 }}
           >
             <IdleScreen
-              onStart={touchMode ? handleTouchStart : undefined}
+              isReady={isReady}
+              cameraError={error}
+              onStart={handleTouchStart}
+              onEnableTouch={() => enableTouchMode()}
             />
           </motion.div>
         )}
