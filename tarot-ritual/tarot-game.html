@@ -1,538 +1,330 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TAROT · FBC Entity Archive</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TAROT</title>
 <style>
+:root{--bg:#050508;--red:#c0392b;--bone:#e8e0d5;--gray:#6b6b6b;--panel:rgba(18,18,24,.9)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#050508;overflow:hidden;font-family:'JetBrains Mono',monospace;width:100vw;height:100vh;color:#e8e0d5}
-canvas{display:block}
-#ui{position:fixed;inset:0;pointer-events:none;z-index:10}
+body{background:var(--bg);overflow:hidden;font-family:'JetBrains Mono',monospace;color:var(--bone);width:100vw;height:100vh;-webkit-font-smoothing:antialiased}
+canvas{display:block;position:fixed;inset:0;z-index:1}
+#ui{position:fixed;inset:0;z-index:10;pointer-events:none}
 #ui>*{pointer-events:auto}
-/* Header */
-#header{position:fixed;top:0;left:0;right:0;padding:16px 24px;background:linear-gradient(180deg,rgba(5,5,8,.95),transparent);display:flex;justify-content:space-between;align-items:center;z-index:20}
-#header h1{font-size:15px;font-weight:700;letter-spacing:.4em;background:linear-gradient(135deg,#e8e0d5,#c9a96e,#c0392b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-transform:uppercase}
-/* Gesture status */
-#gesture-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(18,18,24,.9);border:1px solid rgba(192,57,43,.2);padding:8px 20px;display:flex;align-items:center;gap:12px;z-index:20;backdrop-filter:blur(12px)}
-#gesture-dot{width:8px;height:8px;border-radius:50%;background:#444;transition:background .3s}
-#gesture-dot.active{background:#c0392b;box-shadow:0 0 10px rgba(192,57,43,.6)}
-#gesture-text{font-size:9px;letter-spacing:.15em;color:#6b6b6b;text-transform:uppercase}
-#gesture-text.active{color:#e8e0d5}
-/* Mode toggle */
-#mode-toggle{position:fixed;top:80px;right:20px;background:rgba(18,18,24,.9);border:1px solid rgba(107,107,107,.15);color:#6b6b6b;padding:6px 14px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;z-index:20;backdrop-filter:blur(12px);transition:all .3s}
-#mode-toggle:hover{border-color:rgba(192,57,43,.4);color:#c0392b}
-/* Card hover info */
-#hover-info{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(18,18,24,.95);border:1px solid rgba(192,57,43,.3);padding:12px 20px;text-align:center;z-index:20;backdrop-filter:blur(12px);display:none;max-width:320px}
-#hover-info .name{font-size:14px;font-weight:700;letter-spacing:.15em;color:#e8e0d5;text-transform:uppercase;margin-bottom:4px}
-#hover-info .tags{font-size:8px;color:#6b6b6b;letter-spacing:.1em}
-/* History panel */
-#history{position:fixed;right:16px;top:120px;width:200px;max-height:60vh;overflow-y:auto;z-index:20;display:flex;flex-direction:column;gap:6px}
-#history .entry{background:rgba(18,18,24,.85);border:1px solid rgba(107,107,107,.1);padding:8px 10px;font-size:8px;backdrop-filter:blur(8px)}
-#history .entry .cn{color:#e8e0d5;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
-#history .entry .st{color:#6b6b6b}
-#history .entry.rev{border-left:2px solid #c0392b}
-#history .entry.up{border-left:2px solid #c9a96e}
-/* Error overlay */
-#err{position:fixed;bottom:0;left:0;right:0;background:rgba(100,0,0,.9);color:#f66;padding:6px 12px;font-size:9px;z-index:999;display:none;cursor:pointer}
-/* Cursor */
-#cursor3d{position:fixed;width:24px;height:24px;pointer-events:none;z-index:100;transform:translate(-50%,-50%);display:none}
-</style>
-</head>
-<body>
+
+#header{position:fixed;top:0;left:0;right:0;padding:12px 20px;background:linear-gradient(180deg,rgba(5,5,8,.98),transparent);display:flex;justify-content:space-between;align-items:center;z-index:20}
+#header h1{font-size:14px;font-weight:700;letter-spacing:.5em;background:linear-gradient(135deg,var(--bone),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+#gesture{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid rgba(192,57,43,.2);padding:6px 16px;display:flex;align-items:center;gap:8px;z-index:20;backdrop-filter:blur(12px);font-size:8px;letter-spacing:.2em;text-transform:uppercase}
+#gesture .dot{width:6px;height:6px;border-radius:50%;background:#333;transition:all .3s}
+#gesture .dot.on{background:var(--red);box-shadow:0 0 8px rgba(192,57,43,.5)}
+
+#toggle{position:fixed;top:60px;right:16px;background:var(--panel);border:1px solid rgba(107,107,107,.15);color:var(--gray);padding:5px 12px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:.2em;text-transform:uppercase;z-index:20;backdrop-filter:blur(12px);transition:all .3s}
+#toggle:hover{border-color:rgba(192,57,43,.4);color:var(--red)}
+
+#info{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid rgba(192,57,43,.25);padding:10px 18px;text-align:center;z-index:20;backdrop-filter:blur(12px);pointer-events:none}
+#info .n{font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:2px}
+#info .t{font-size:7px;color:var(--gray);letter-spacing:.1em}
+
+#history{position:fixed;right:12px;top:100px;width:180px;max-height:50vh;overflow-y:auto;z-index:20;display:flex;flex-direction:column;gap:4px}
+#history div{background:var(--panel);border-left:2px solid var(--red);padding:6px 8px;font-size:7px;backdrop-filter:blur(8px)}
+#history div.up{border-left-color:#c9a96e}
+#history div .cn{color:var(--bone);font-weight:600;text-transform:uppercase}
+#history div .tx{color:var(--gray);margin-top:2px}
+
+#cursor{position:fixed;width:20px;height:20px;pointer-events:none;z-index:100;transform:translate(-50%,-50%);display:none}
+#err{position:fixed;bottom:0;left:0;right:0;background:rgba(100,0,0,.9);color:#f66;padding:5px 10px;font-size:8px;z-index:999;display:none;cursor:pointer}
+</style></head><body>
 
 <div id="ui">
-  <div id="header"><h1>TAROT</h1><span style="font-size:7px;color:#6b6b6b;letter-spacing:.2em">FBC·CASE 22</span></div>
-  <button id="mode-toggle" onclick="toggleMode()">🖐 GESTURE</button>
-  <div id="gesture-bar"><div id="gesture-dot"></div><span id="gesture-text">STANDBY</span></div>
-  <div id="hover-info"><div class="name"></div><div class="tags"></div></div>
-  <div id="history"></div>
-  <div id="err" onclick="this.style.display='none'"></div>
-  <div id="cursor3d"><svg width="24" height="24"><circle cx="12" cy="12" r="9" fill="none" stroke="rgba(192,57,43,.7)" stroke-width="1"/><circle cx="12" cy="12" r="2" fill="rgba(192,57,43,.8)"/></svg></div>
+<div id="header"><h1>TAROT</h1><span style="font-size:7px;color:var(--gray);letter-spacing:.2em">CASE 22</span></div>
+<button id="toggle">🖐 GESTURE</button>
+<div id="gesture"><div class="dot"></div><span>STANDBY</span></div>
+<div id="info"><div class="n"></div><div class="t"></div></div>
+<div id="history"></div>
+<div id="cursor"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="rgba(192,57,43,.7)" stroke-width="1"/><circle cx="10" cy="10" r="1.5" fill="rgba(192,57,43,.8)"/></svg></div>
+<div id="err" onclick="this.style.display='none'"></div>
 </div>
 
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
-</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 
 <script type="module">
 import * as THREE from 'three'
 
-// ═══════════════════════════════════════
-// 数据：22 大阿尔卡纳
-// ═══════════════════════════════════════
-const CARDS = [
-  {id:0,en:'The Fool',cn:'愚者',tags:['开始','冒险'],up:'新的旅程，纯真无畏',rev:'鲁莽冒险，不计后果'},
-  {id:1,en:'The Magician',cn:'魔术师',tags:['创造','意志'],up:'创造力，技能，意志力',rev:'操控欺骗，浪费才能'},
-  {id:2,en:'The High Priestess',cn:'女祭司',tags:['直觉','智慧'],up:'直觉，潜意识，内在智慧',rev:'忽视直觉，表面化'},
-  {id:3,en:'The Empress',cn:'女皇',tags:['丰盛','母性'],up:'丰盛自然，母性之美',rev:'依赖，过度保护'},
-  {id:4,en:'The Emperor',cn:'皇帝',tags:['权威','结构'],up:'权威结构，稳定领导',rev:'专制僵化，控制欲'},
-  {id:5,en:'The Hierophant',cn:'教皇',tags:['传统','信仰'],up:'传统信仰，精神指导',rev:'打破常规，个人信念'},
-  {id:6,en:'The Lovers',cn:'恋人',tags:['爱情','选择'],up:'爱情和谐，重要选择',rev:'不和谐，错误选择'},
-  {id:7,en:'The Chariot',cn:'战车',tags:['决心','胜利'],up:'决心意志，胜利在望',rev:'方向失控，缺乏动力'},
-  {id:8,en:'Strength',cn:'力量',tags:['勇气','耐心'],up:'温柔坚定，内在力量',rev:'自我怀疑，暴力压制'},
-  {id:9,en:'The Hermit',cn:'隐士',tags:['内省','独处'],up:'内省独处，寻找真理',rev:'孤立逃避，自我封闭'},
-  {id:10,en:'Wheel of Fortune',cn:'命运之轮',tags:['转变','机遇'],up:'命运转折，好运降临',rev:'厄运连连，抗拒改变'},
-  {id:11,en:'Justice',cn:'正义',tags:['公正','因果'],up:'公正真相，因果回报',rev:'不公正，不负责任'},
-  {id:12,en:'The Hanged Man',cn:'倒吊人',tags:['牺牲','视角'],up:'牺牲放手，新视角',rev:'拖延抗拒，自我牺牲'},
-  {id:13,en:'Death',cn:'死神',tags:['终结','重生'],up:'结束转变，新的开始',rev:'抗拒改变，停滞不前'},
-  {id:14,en:'Temperance',cn:'节制',tags:['平衡','耐心'],up:'平衡耐心，和谐共处',rev:'失衡过度，缺乏耐心'},
-  {id:15,en:'The Devil',cn:'恶魔',tags:['束缚','欲望'],up:'认识束缚，解放自我',rev:'否认束缚，物质主义'},
-  {id:16,en:'The Tower',cn:'塔',tags:['突变','觉醒'],up:'突变破坏，真正自由',rev:'逃避恐惧，延长痛苦'},
-  {id:17,en:'The Star',cn:'星星',tags:['希望','治愈'],up:'希望灵感，暴风已过',rev:'绝望失信，看不到光'},
-  {id:18,en:'The Moon',cn:'月亮',tags:['幻象','直觉'],up:'幻象恐惧，直觉导航',rev:'被假象蒙蔽，沉溺恐惧'},
-  {id:19,en:'The Sun',cn:'太阳',tags:['快乐','成功'],up:'快乐成功，温暖活力',rev:'暂时挫折，过度乐观'},
-  {id:20,en:'Judgement',cn:'审判',tags:['觉醒','召唤'],up:'觉醒重生，更高使命',rev:'拒绝反思，自我怀疑'},
-  {id:21,en:'The World',cn:'世界',tags:['完成','圆满'],up:'完成圆满，周期终结',rev:'未完成，缺乏闭合'},
+// ═══════════════════ DATA ═══════════════════
+const CARDS=[
+  {id:0,en:'The Fool',cn:'愚者',up:'新的旅程·纯真无畏',rev:'鲁莽冒险·不计后果'},
+  {id:1,en:'The Magician',cn:'魔术师',up:'创造力·技能·意志',rev:'操控欺骗·浪费才能'},
+  {id:2,en:'The High Priestess',cn:'女祭司',up:'直觉·潜意识·内在智慧',rev:'忽视直觉·表面化'},
+  {id:3,en:'The Empress',cn:'女皇',up:'丰盛自然·母性之美',rev:'依赖·过度保护'},
+  {id:4,en:'The Emperor',cn:'皇帝',up:'权威结构·稳定领导',rev:'专制僵化·控制欲'},
+  {id:5,en:'The Hierophant',cn:'教皇',up:'传统信仰·精神指导',rev:'打破常规·个人信念'},
+  {id:6,en:'The Lovers',cn:'恋人',up:'爱情和谐·重要选择',rev:'不和谐·错误选择'},
+  {id:7,en:'The Chariot',cn:'战车',up:'决心意志·胜利在望',rev:'方向失控·缺乏动力'},
+  {id:8,en:'Strength',cn:'力量',up:'温柔坚定·内在力量',rev:'自我怀疑·暴力压制'},
+  {id:9,en:'The Hermit',cn:'隐士',up:'内省独处·寻找真理',rev:'孤立逃避·自我封闭'},
+  {id:10,en:'Wheel of Fortune',cn:'命运之轮',up:'命运转折·好运降临',rev:'厄运连连·抗拒改变'},
+  {id:11,en:'Justice',cn:'正义',up:'公正真相·因果回报',rev:'不公正·不负责任'},
+  {id:12,en:'The Hanged Man',cn:'倒吊人',up:'牺牲放手·新视角',rev:'拖延抗拒·自我牺牲'},
+  {id:13,en:'Death',cn:'死神',up:'结束转变·新的开始',rev:'抗拒改变·停滞不前'},
+  {id:14,en:'Temperance',cn:'节制',up:'平衡耐心·和谐共处',rev:'失衡过度·缺乏耐心'},
+  {id:15,en:'The Devil',cn:'恶魔',up:'认识束缚·解放自我',rev:'否认束缚·物质主义'},
+  {id:16,en:'The Tower',cn:'塔',up:'突变破坏·真正自由',rev:'逃避恐惧·延长痛苦'},
+  {id:17,en:'The Star',cn:'星星',up:'希望灵感·暴风已过',rev:'绝望失信·看不到光'},
+  {id:18,en:'The Moon',cn:'月亮',up:'幻象恐惧·直觉导航',rev:'被假象蒙蔽·沉溺恐惧'},
+  {id:19,en:'The Sun',cn:'太阳',up:'快乐成功·温暖活力',rev:'暂时挫折·过度乐观'},
+  {id:20,en:'Judgement',cn:'审判',up:'觉醒重生·更高使命',rev:'拒绝反思·自我怀疑'},
+  {id:21,en:'The World',cn:'世界',up:'完成圆满·周期终结',rev:'未完成·缺乏闭合'},
 ]
 
-// ═══════════════════════════════════════
-// 状态机
-// ═══════════════════════════════════════
-const STATE = {
-  phase: 'IDLE',        // IDLE | READY | HOVER | GRABBED | CONFIRMED | DISSOLVING
-  deck: [...CARDS],
-  drawn: [],
-  currentCard: null,
-  orientation: null,    // 'upright' | 'reversed'
-  hoveredCard: null,
-  grabbedCard: null,
+// ═══════════════════ STATE ═══════════════════
+const S={phase:'idle',deck:[...CARDS],drawn:[],hovered:null,grabbed:null,current:null,orient:null}
+let gestureMode='camera',curGesture='none',cursor={x:.5,y:.5},handOn=false
+
+// ═══════════════════ THREE.JS ═══════════════════
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true})
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ReinhardToneMapping;document.body.prepend(renderer.domElement)
+
+const scene=new THREE.Scene()
+scene.background=new THREE.Color(0x050508)
+const cam=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,30)
+cam.position.set(0,.2,6);cam.lookAt(0,0,0)
+
+scene.add(new THREE.AmbientLight(0x1a1a2e,.7))
+const light=new THREE.DirectionalLight(0xe8e0d5,1);light.position.set(3,4,5);scene.add(light)
+const rim=new THREE.DirectionalLight(0x8b0000,.3);rim.position.set(-2,-1,-3);scene.add(rim)
+
+// Stars
+const sg=new THREE.BufferGeometry();const sp=new Float32Array(400*3)
+for(let i=0;i<400;i++){const t=Math.random()*Math.PI*2,p=Math.acos(2*Math.random()-1),r=8+Math.random()*5;sp[i*3]=r*Math.sin(p)*Math.cos(t);sp[i*3+1]=r*Math.sin(p)*Math.sin(t);sp[i*3+2]=r*Math.cos(p)}
+sg.setAttribute('position',new THREE.BufferAttribute(sp,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({size:.02,color:0xe8e0d5,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false})))
+
+// ═══════════════════ CARD SYSTEM ═══════════════════
+const CW=.72,CH=1.15,loader=new THREE.TextureLoader()
+const backTex=(()=>{const c=document.createElement('canvas');c.width=256;c.height=400;const x=c.getContext('2d');x.fillStyle='#0a0a10';x.fillRect(0,0,256,400);x.strokeStyle='rgba(192,57,43,.25)';x.lineWidth=2;x.strokeRect(8,8,240,384);x.strokeStyle='rgba(192,57,43,.1)';x.lineWidth=1;x.strokeRect(18,18,220,364);x.beginPath();x.moveTo(128,30);x.lineTo(220,200);x.lineTo(36,200);x.closePath();x.strokeStyle='rgba(192,57,43,.35)';x.stroke();x.beginPath();x.moveTo(128,170);x.lineTo(185,65);x.lineTo(71,65);x.closePath();x.strokeStyle='rgba(192,57,43,.12)';x.stroke();x.fillStyle='rgba(192,57,43,.5)';x.beginPath();x.arc(128,130,3.5,0,Math.PI*2);x.fill();x.font='bold 16px "JetBrains Mono",monospace';x.fillStyle='#c0392b';x.textAlign='center';x.fillText('CLASSIFIED',128,270);x.font='8px "JetBrains Mono",monospace';x.fillStyle='rgba(107,107,107,.5)';x.fillText('FBC·PARANATURAL DIV',128,288);for(let y=20;y<380;y+=14){x.fillStyle='rgba(139,0,0,.03)';x.fillRect(12,y,5,1.5);x.fillRect(239,y,5,1.5)}return new THREE.CanvasTexture(c)})()
+
+const cards=[]
+function makeCardPlane(cardData){
+  const g=new THREE.PlaneGeometry(CW,CH)
+  // Front: tarot image
+  const frontMat=new THREE.MeshStandardMaterial({map:loader.load(`/cards/major_${String(cardData.id).padStart(2,'0')}.png`),roughness:.5,metalness:.1,side:THREE.FrontSide})
+  // Back: FBC design
+  const backMat=new THREE.MeshStandardMaterial({map:backTex,roughness:.4,metalness:.15,side:THREE.FrontSide})
+  const mesh=new THREE.Mesh(g,frontMat)
+  mesh.castShadow=true;mesh.receiveShadow=true
+  mesh.userData={card:cardData,frontMat,backMat,flipped:false,rotY:0,rotZ:0,targetRotY:0,targetRotZ:0,grabbed:false,hovered:false}
+  return mesh
 }
 
-// ═══════════════════════════════════════
-// Three.js 初始化
-// ═══════════════════════════════════════
-const W = () => window.innerWidth
-const H = () => window.innerHeight
-
-const renderer = new THREE.WebGLRenderer({antialias:true,alpha:true})
-renderer.setPixelRatio(Math.min(devicePixelRatio,2))
-renderer.setSize(W(),H())
-renderer.toneMapping = THREE.ReinhardToneMapping
-renderer.shadowMap.enabled = true
-document.body.prepend(renderer.domElement)
-
-const scene = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(50,W()/H(),0.1,50)
-camera.position.set(0,0.5,7)
-camera.lookAt(0,0,0)
-
-// 灯光
-const ambient = new THREE.AmbientLight(0x1a1a2e,0.6)
-scene.add(ambient)
-const key = new THREE.DirectionalLight(0xe8e0d5,1.2)
-key.position.set(3,4,5)
-scene.add(key)
-const rim = new THREE.DirectionalLight(0x8b0000,0.4)
-rim.position.set(-2,-1,-3)
-scene.add(rim)
-
-// 星空
-const starGeo = new THREE.BufferGeometry()
-const starPos = new Float32Array(600*3)
-for(let i=0;i<600;i++){const t=Math.random()*Math.PI*2,p=Math.acos(2*Math.random()-1),r=9+Math.random()*5;starPos[i*3]=r*Math.sin(p)*Math.cos(t);starPos[i*3+1]=r*Math.sin(p)*Math.sin(t);starPos[i*3+2]=r*Math.cos(p)}
-starGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3))
-const stars = new THREE.Points(starGeo,new THREE.PointsMaterial({size:.02,color:0xe8e0d5,transparent:true,opacity:.6,blending:THREE.AdditiveBlending,depthWrite:false}))
-scene.add(stars)
-
-// 地面网格（FBC蓝图）
-const grid = new THREE.GridHelper(8,20,0x8b0000,0x1a1a2e)
-grid.position.y = -2.5
-grid.material.opacity = 0.15
-grid.material.transparent = true
-scene.add(grid)
-
-// 卡牌材质缓存
-const texLoader = new THREE.TextureLoader()
-const texCache = {}
-function loadCardTex(id){if(!texCache[id]){texCache[id]=texLoader.load(`/cards/major_${String(id).padStart(2,'0')}.png`,undefined,undefined,()=>{})}return texCache[id]}
-const backTex = texLoader.load('/cards/major_00.png') // 用第一张做临时背面
-// 创建专用背面纹理
-const backCanvas = document.createElement('canvas')
-backCanvas.width=256;backCanvas.height=400
-const bctx=backCanvas.getContext('2d')
-bctx.fillStyle='#0a0a10';bctx.fillRect(0,0,256,400)
-bctx.strokeStyle='rgba(192,57,43,.3)';bctx.lineWidth=2;bctx.strokeRect(8,8,240,384)
-bctx.strokeStyle='rgba(192,57,43,.15)';bctx.lineWidth=1;bctx.strokeRect(18,18,220,364)
-bctx.beginPath();bctx.moveTo(128,30);bctx.lineTo(220,200);bctx.lineTo(36,200);bctx.closePath();bctx.strokeStyle='rgba(192,57,43,.35)';bctx.stroke()
-bctx.beginPath();bctx.moveTo(128,180);bctx.lineTo(190,70);bctx.lineTo(66,70);bctx.closePath();bctx.strokeStyle='rgba(192,57,43,.15)';bctx.stroke()
-bctx.fillStyle='rgba(192,57,43,.6)';bctx.beginPath();bctx.arc(128,136,4,0,Math.PI*2);bctx.fill()
-bctx.font='bold 14px "JetBrains Mono",monospace';bctx.fillStyle='#c0392b';bctx.textAlign='center';bctx.fillText('CLASSIFIED',128,260)
-bctx.font='8px "JetBrains Mono",monospace';bctx.fillStyle='rgba(107,107,107,.6)';bctx.fillText('FBC · PARANATURAL DIVISION',128,280)
-for(let y=20;y<380;y+=12){bctx.fillStyle=`rgba(139,0,0,${.03})`;bctx.fillRect(12,y,6,2);bctx.fillRect(238,y,6,2)}
-const backTexFinal = new THREE.CanvasTexture(backCanvas)
-
-// 卡片对象池
-const cardMeshes = []
-const CARD_W = 0.7; const CARD_H = 1.1; const CARD_D = 0.01
-const cardGeo = new THREE.BoxGeometry(CARD_W,CARD_H,CARD_D)
-const CARD_RING_R = 3.5; const CARD_RING_Y = -0.3
-
-function createCards(){
-  // 清除旧卡片
-  cardMeshes.forEach(m=>{scene.remove(m.group);m.group.traverse(c=>{if(c.material&&Array.isArray(c.material))c.material.forEach(m=>m.dispose());else if(c.material)c.material.dispose()})})
-  cardMeshes.length=0
-
-  STATE.deck.forEach((card,i)=>{
-    const group = new THREE.Group()
-    const angle = (i/STATE.deck.length)*Math.PI*2 - Math.PI/2
-    const rx = Math.cos(angle)*CARD_RING_R
-    const rz = Math.sin(angle)*CARD_RING_R
-    const ry = CARD_RING_Y + Math.sin(angle)*0.3
-
-    group.position.set(rx,ry,rz)
-    group.rotation.y = -angle + Math.PI/2
-    group.userData = {card,index:i,baseAngle:angle,baseX:rx,baseY:ry,baseZ:rz,targetX:rx,targetY:ry,targetZ:rz,targetRotY:group.rotation.y,velocity:0,grabbed:false}
-
-    // 材质：6面盒子
-    const frontTex = loadCardTex(card.id)
-    const mats = [
-      new THREE.MeshStandardMaterial({color:0x1a1a1f,roughness:.9}), // +X side
-      new THREE.MeshStandardMaterial({color:0x1a1a1f,roughness:.9}), // -X side
-      new THREE.MeshStandardMaterial({color:0x1a1a1f,roughness:.9}), // +Y side
-      new THREE.MeshStandardMaterial({color:0x1a1a1f,roughness:.9}), // -Y side
-      new THREE.MeshStandardMaterial({map:backTexFinal,roughness:.6,metalness:.1}), // +Z = 正面（初始朝相机）
-      new THREE.MeshStandardMaterial({map:frontTex,roughness:.6,metalness:.1}), // -Z = 背面（塔罗面）
-    ]
-    const mesh = new THREE.Mesh(cardGeo,mats)
-    mesh.castShadow=true;mesh.receiveShadow=true
-    group.add(mesh)
-    scene.add(group)
-
-    cardMeshes.push({group,mesh,card,index:i})
-  })
-}
-
-// 射线
-const raycaster = new THREE.Raycaster()
-const mouse = new THREE.Vector2()
-let finger3D = new THREE.Vector2(0.5,0.5) // 手指归一化坐标
-
-// 粒子系统
-const particles = []
-const particleGeo = new THREE.BufferGeometry()
-const particlePositions = new Float32Array(500*3)
-const particleAlphas = new Float32Array(500)
-particleGeo.setAttribute('position',new THREE.BufferAttribute(particlePositions,3))
-const particleMat = new THREE.PointsMaterial({size:.04,color:0xc0392b,transparent:true,opacity:.6,blending:THREE.AdditiveBlending,depthWrite:false})
-const particleSystem = new THREE.Points(particleGeo,particleMat)
-particleSystem.visible=false
-scene.add(particleSystem)
-
-function spawnAshParticles(worldPos,orientation){
-  const count = 200
-  for(let i=0;i<count;i++){
-    const vx=(Math.random()-.5)*.08;const vy=Math.random()*.06+.02;const vz=(Math.random()-.5)*.06
-    const isRed=orientation==='reversed'&&Math.random()>.5
-    particles.push({x:worldPos.x,y:worldPos.y,z:worldPos.z,vx,vy,vz,life:1,size:.02+Math.random()*.05,color:isRed?0xff1a1a:0xe8e0d5})
+function buildCardSpread(){
+  cards.forEach(m=>{scene.remove(m);m.geometry.dispose();m.userData.frontMat.dispose();m.userData.backMat.dispose()})
+  cards.length=0
+  const n=S.deck.length
+  const R=3.2,spreadAngle=Math.PI*.7
+  for(let i=0;i<n;i++){
+    const m=makeCardPlane(S.deck[i])
+    const a=-spreadAngle/2+(i/(n-1))*spreadAngle
+    m.position.set(Math.sin(a)*R,-.2+(i%3)*.05,Math.cos(a)*R-.5)
+    m.rotation.y=-a;m.rotation.x=-.15;m.rotation.z=(Math.random()-.5)*.05
+    m.userData.basePos=m.position.clone()
+    m.userData.baseRot={x:m.rotation.x,y:m.rotation.y,z:m.rotation.z}
+    m.userData.angle=a
+    scene.add(m);cards.push(m)
   }
-  particleSystem.visible=true
 }
 
-// ═══════════════════════════════════════
-// 手势系统
-// ═══════════════════════════════════════
-let gestureMode = 'camera' // 'camera' | 'mouse'
-let currentGesture = 'none'
-let gestureConfidence = 0
-let indexTip3D = {x:0.5,y:0.5}
-let handPresent = false
+function flipCard(m,toFace){
+  // toFace='front'|'back'
+  if(toFace==='front'){m.material=m.userData.frontMat;m.userData.flipped=false}
+  else{m.material=m.userData.backMat;m.userData.flipped=true}
+}
 
-// MediaPipe
-let handsInstance=null,cameraInstance=null
-const videoEl = document.createElement('video')
-videoEl.autoplay=true;videoEl.playsInline=true;videoEl.muted=true
-videoEl.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none'
-document.body.appendChild(videoEl)
+// ═══════════════════ PARTICLES ═══════════════════
+const ashGeo=new THREE.BufferGeometry();const ashPos=new Float32Array(300*3);const ashSizes=new Float32Array(300)
+ashGeo.setAttribute('position',new THREE.BufferAttribute(ashPos,3));ashGeo.setAttribute('size',new THREE.BufferAttribute(ashSizes,1))
+const ashMat=new THREE.PointsMaterial({size:.04,color:0xc0392b,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true})
+const ashSys=new THREE.Points(ashGeo,ashMat);ashSys.visible=false;scene.add(ashSys)
+const particles=[]
 
-async function initMediaPipe(){
+function spawnAsh(pos,orient){
+  const n=200
+  for(let i=0;i<n;i++){
+    const isRed=orient==='reversed'&&Math.random()>.4
+    particles.push({x:pos.x,y:pos.y,z:pos.z,vx:(Math.random()-.5)*.07,vy:Math.random()*.06+.02,vz:(Math.random()-.5)*.05,life:1,color:isRed?0xff1a1a:0xe8e0d5,size:.02+Math.random()*.05})
+  }
+  ashSys.visible=true
+}
+
+// ═══════════════════ RAYCASTER ═══════════════════
+const raycaster=new THREE.Raycaster()
+function raycast(x,y){
+  raycaster.setFromCamera(new THREE.Vector2(x*2-1,-y*2+1),cam)
+  const hits=raycaster.intersectObjects(cards.filter(m=>!m.userData.grabbed))
+  cards.forEach(m=>{m.userData.hovered=false;flipCard(m,'back')})
+  if(hits.length>0){
+    const m=hits[0].object
+    m.userData.hovered=true;flipCard(m,'front')
+    S.hovered=m.userData.card
+    document.getElementById('info').querySelector('.n').textContent=m.userData.card.cn
+    document.getElementById('info').querySelector('.t').textContent=m.userData.card.en
+    document.getElementById('info').style.display='block'
+  }else{S.hovered=null;document.getElementById('info').style.display='none'}
+}
+
+// ═══════════════════ GESTURES ═══════════════════
+let hands=null,camInst=null
+const vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;vid.muted=true;vid.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none';document.body.appendChild(vid)
+
+async function setupMediaPipe(){
   try{
     window.Module=window.Module||{}
-    const {Hands} = await import('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/+esm')
-    const {Camera} = await import('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/+esm')
-    handsInstance = new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${f}`})
-    handsInstance.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.5,minTrackingConfidence:.4})
-    handsInstance.onResults(r=>{
-      if(r.multiHandLandmarks?.length>0){
-        handPresent=true
-        const lm=r.multiHandLandmarks[0]
-        // 食指指尖
-        if(lm[8])indexTip3D={x:1-lm[8].x,y:lm[8].y} // 镜像纠正
-        // 手势检测
-        const tips=[4,8,12,16,20];const mcps=[2,5,9,13,17]
-        let ext=0
-        tips.forEach((t,i)=>{if(lm[t]&&lm[mcps[i]]){if(i===0)ext+=Math.abs(lm[t].x-lm[mcps[i]].x)>.05?1:0;else ext+=lm[t].y<lm[mcps[i]].y?1:0}})
-        const pinchDist=lm[4]&&lm[8]?Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y):1
-        if(ext<=1)currentGesture='fist'
-        else if(pinchDist<.06&&ext>=2)currentGesture='pinch'
-        else if(ext>=4)currentGesture='open'
-        else currentGesture='none'
-        gestureConfidence=ext/5
-      }else{handPresent=false;currentGesture='none';gestureConfidence=0}
+    const m=await import('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/+esm')
+    const c=await import('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/+esm')
+    hands=new m.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${f}`})
+    hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.5,minTrackingConfidence:.4})
+    hands.onResults(r=>{
+      if(r.multiHandLandmarks?.length>0){handOn=true;const lm=r.multiHandLandmarks[0];if(lm[8])cursor={x:1-lm[8].x,y:lm[8].y};const tips=[4,8,12,16,20],mcps=[2,5,9,13,17];let ext=0;tips.forEach((t,i)=>{if(lm[t]&&lm[mcps[i]]){ext+=i===0?Math.abs(lm[t].x-lm[mcps[i]].x)>.05?1:0:lm[t].y<lm[mcps[i]].y?1:0}});const d=lm[4]&&lm[8]?Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y):1;if(ext<=1)curGesture='fist';else if(d<.06&&ext>=2)curGesture='pinch';else if(ext>=4)curGesture='open';else curGesture='none'}else{handOn=false;curGesture='none'}
+      updateGestureUI()
     })
-    cameraInstance=new Camera(videoEl,{onFrame:async()=>{if(handsInstance)await handsInstance.send({image:videoEl})},width:320,height:240})
-    await cameraInstance.start()
-    updateGestureUI()
-  }catch(e){console.warn('MediaPipe init failed:',e.message);switchToMouse()}
-}
-
-function switchToMouse(){gestureMode='mouse';document.getElementById('mode-toggle').textContent='🖱 MOUSE';document.getElementById('cursor3d').style.display='block'}
-window.toggleMode=function(){
-  if(gestureMode==='camera'){switchToMouse()}
-  else{gestureMode='camera';document.getElementById('mode-toggle').textContent='🖐 GESTURE';document.getElementById('cursor3d').style.display='none';if(!handsInstance)initMediaPipe()}
+    camInst=new c.Camera(vid,{onFrame:async()=>{if(hands)await hands.send({image:vid})},width:320,height:240})
+    await camInst.start()
+    document.getElementById('toggle').textContent='🖐 GESTURE'
+  }catch(e){console.warn('Camera:',e.message);switchMode('mouse')}
 }
 
 function updateGestureUI(){
-  const dot=document.getElementById('gesture-dot');const txt=document.getElementById('gesture-text')
-  const active=currentGesture!=='none'
-  dot.className=active?'active':''
-  txt.className=active?'active':''
-  const map={open:'PALM · READY',pinch:'PINCH · GRAB',fist:'FIST · CONFIRM',none:gestureMode==='mouse'?'MOUSE MODE':'STANDBY'}
-  txt.textContent=map[currentGesture]||'STANDBY'
+  const dot=document.querySelector('#gesture .dot');const txt=document.querySelector('#gesture span')
+  const on=curGesture!=='none';dot.className='dot'+(on?' on':'');txt.style.color=on?'var(--bone)':'var(--gray)'
+  txt.textContent={open:'PALM',pinch:'PINCH',fist:'FIST',none:gestureMode==='mouse'?'MOUSE':'STANDBY'}[curGesture]
 }
 
-// ═══════════════════════════════════════
-// 鼠标/手势 → 射线
-// ═══════════════════════════════════════
-function updateRaycaster(x,y){
-  finger3D.set(x*2-1,-y*2+1)
-  raycaster.setFromCamera(finger3D,camera)
-  const targets=cardMeshes.filter(m=>!m.group.userData.grabbed).map(m=>m.mesh)
-  const hits=raycaster.intersectObjects(targets)
+function switchMode(m){gestureMode=m;document.getElementById('toggle').textContent=m==='mouse'?'🖱 MOUSE':'🖐 GESTURE';document.getElementById('cursor').style.display=m==='mouse'?'block':'none'}
+window.toggleMode=()=>{if(gestureMode==='camera')switchMode('mouse');else{switchMode('camera');if(!hands)setupMediaPipe()}}
 
-  // 清除所有高亮
-  cardMeshes.forEach(m=>{m.mesh.material.forEach(mat=>{mat.emissive?.setHex(0);mat.emissiveIntensity=0})})
-  document.getElementById('hover-info').style.display='none'
-
-  if(hits.length>0){
-    const obj=hits[0].object
-    const cardData=cardMeshes.find(m=>m.mesh===obj)
-    if(cardData&&!cardData.group.userData.grabbed){
-      // 高亮
-      obj.material.forEach(mat=>{if(mat.emissive){mat.emissive.setHex(0x330000);mat.emissiveIntensity=.5}})
-      STATE.hoveredCard=cardData
-      // 显示信息
-      const hi=document.getElementById('hover-info')
-      hi.querySelector('.name').textContent=cardData.card.cn+' · '+cardData.card.en
-      hi.querySelector('.tags').textContent=cardData.card.tags.join(' / ')
-      hi.style.display='block'
-    }
-  }else{STATE.hoveredCard=null}
+// ═══════════════════ GAME ACTIONS ═══════════════════
+function grabCard(){
+  if(S.phase!=='ready'||!S.hovered)return
+  S.phase='grabbed';S.current=S.hovered
+  const m=cards.find(c=>c.userData.card.id===S.hovered.id)
+  if(!m)return;m.userData.grabbed=true;S.grabbed=m
+  // 确定正逆位
+  S.orient=Math.random()<.5?'upright':'reversed'
 }
 
-// ═══════════════════════════════════════
-// 游戏逻辑
-// ═══════════════════════════════════════
-function grabCard(cardData){
-  if(STATE.phase!=='READY')return
-  STATE.phase='GRABBED'
-  STATE.grabbedCard=cardData
-  cardData.group.userData.grabbed=true
-  // 目标位置：镜头前悬停
-  cardData.group.userData.targetX=0
-  cardData.group.userData.targetY=.3
-  cardData.group.userData.targetZ=1.5
-  cardData.group.userData.targetRotY=0
+function confirmCard(){
+  if(S.phase!=='grabbed'||!S.grabbed)return
+  S.phase='ash'
+  const m=S.grabbed
+  S.drawn.push({...S.current,orientation:S.orient})
+  S.deck=S.deck.filter(c=>c.id!==S.current.id)
+  updateHistory()
+  // Ash
+  spawnAsh(m.position.clone(),S.orient)
+  scene.remove(m)
+  m.geometry.dispose();m.userData.frontMat.dispose();m.userData.backMat.dispose()
+  cards.splice(cards.indexOf(m),1)
+  S.grabbed=null;S.current=null
+  // Rebuild after delay
+  setTimeout(()=>{S.phase='idle';S.orient=null;if(S.deck.length>0)buildCardSpread()},2500)
 }
 
-function confirmCard(cardData){
-  if(STATE.phase!=='GRABBED'||!cardData)return
-  STATE.phase='CONFIRMED'
-  STATE.currentCard=cardData.card
-  STATE.orientation=Math.random()<0.5?'upright':'reversed'
-
-  // 逆位 → Z轴旋转180°
-  if(STATE.orientation==='reversed'){
-    cardData.group.userData.targetRotY=Math.PI
-  }
-
-  // 记录历史
-  STATE.drawn.push({...cardData.card,orientation:STATE.orientation})
-  STATE.deck=STATE.deck.filter(c=>c.id!==cardData.card.id)
-  updateHistoryUI()
-
-  // 灰烬粒子
-  setTimeout(()=>{
-    STATE.phase='DISSOLVING'
-    spawnAshParticles(cardData.group.position.clone(),STATE.orientation)
-    // 隐藏卡片
-    cardData.group.visible=false
-    // 2秒后清理并生成新牌
-    setTimeout(()=>{
-      particles.length=0
-      particleSystem.visible=false
-      // 如果还有牌，重新洗牌
-      if(STATE.deck.length>0){
-        STATE.phase='IDLE'
-        STATE.grabbedCard=null
-        STATE.currentCard=null
-        createCards()
-      }
-    },2000)
-  },600)
+function releaseCard(){
+  if(S.phase!=='grabbed'||!S.grabbed)return
+  S.grabbed.userData.grabbed=false;S.grabbed=null;S.phase='ready'
 }
 
-function updateHistoryUI(){
+function updateHistory(){
   const el=document.getElementById('history')
-  el.innerHTML=STATE.drawn.slice(-10).reverse().map(d=>`
-    <div class="entry ${d.orientation==='reversed'?'rev':'up'}">
+  el.innerHTML=S.drawn.slice(-10).reverse().map(d=>`
+    <div class="${d.orientation==='upright'?'up':''}">
       <div class="cn">${d.cn} ${d.orientation==='reversed'?'⟲':''}</div>
-      <div class="st">${d.orientation==='reversed'?d.rev:d.up}</div>
-    </div>
-  `).join('')
+      <div class="tx">${d.orientation==='reversed'?d.rev:d.up}</div>
+    </div>`).join('')
 }
 
-// ═══════════════════════════════════════
-// 主循环
-// ═══════════════════════════════════════
-const clock = new THREE.Clock()
+// ═══════════════════ MOUSE ═══════════════════
+document.addEventListener('mousemove',e=>{if(gestureMode==='mouse')cursor={x:e.clientX/innerWidth,y:e.clientY/innerHeight};document.getElementById('cursor').style.left=e.clientX+'px';document.getElementById('cursor').style.top=e.clientY+'px'})
+document.addEventListener('click',()=>{
+  if(gestureMode!=='mouse')return
+  if(S.phase==='idle'){S.phase='ready';updateGestureUI()}
+  else if(S.phase==='ready'&&S.hovered)grabCard()
+  else if(S.phase==='grabbed')confirmCard()
+})
+document.addEventListener('contextmenu',e=>{e.preventDefault();if(S.phase==='grabbed')releaseCard()})
 
-function animate(){
-  requestAnimationFrame(animate)
-  const dt=Math.min(clock.getDelta(),.1)
+// ═══════════════════ LOOP ═══════════════════
+let prevGesture='none',gestureTimer=0
+function loop(t){
+  requestAnimationFrame(loop)
+  const dt=Math.min((t-(loop._last||t))/1000,.1);loop._last=t
 
-  stars.rotation.y+=.0002
-  stars.rotation.x+=.0001
-
-  // 手势更新
-  if(gestureMode==='mouse'){
-    updateGestureUI()
-  }
-
-  // 射线检测
-  if(gestureMode==='mouse'){
-    updateRaycaster(finger3D.x*.5+.5,finger3D.y*.5+.5)
-  }else if(handPresent&&indexTip3D){
-    updateRaycaster(indexTip3D.x,indexTip3D.y)
-  }
-
-  // 卡片物理
-  cardMeshes.forEach(m=>{
-    const ud=m.group.userData
-    if(ud.grabbed)return // 被抓取的卡片不参与惯性
-
-    // 惯性旋转
-    if(STATE.phase==='READY'||STATE.phase==='IDLE'){
-      const inertia=.0003
-      const homeAngle=ud.baseAngle
-      // 手指靠近时减速
-      if(STATE.hoveredCard===m){
-        ud.velocity*=.9
-      }else{
-        ud.velocity+=inertia*(Math.random()-.5)*.1
-        ud.velocity=Math.max(-.01,Math.min(.01,ud.velocity))
-      }
-      const newAngle=Math.atan2(ud.baseZ,ud.baseX)+ud.velocity
-      const dist=Math.sqrt(ud.baseX**2+ud.baseZ**2)
-      ud.targetX=Math.cos(newAngle)*dist
-      ud.targetZ=Math.sin(newAngle)*dist
-      ud.targetY=ud.baseY+Math.sin(newAngle)*.3
-      ud.targetRotY=-newAngle+Math.PI/2
+  // Gesture state machine
+  if(gestureMode==='camera'){
+    if(curGesture!==prevGesture){prevGesture=curGesture;gestureTimer=0}
+    else gestureTimer+=dt
+    const debounced=gestureTimer>.3 // 300ms debounce
+    if(debounced){
+      if(curGesture==='open'&&S.phase==='idle')S.phase='ready'
+      if(curGesture==='pinch'&&S.phase==='ready'&&S.hovered)grabCard()
+      if(curGesture==='fist'&&S.phase==='grabbed')confirmCard()
     }
+  }
 
-    // 平滑插值
-    const lerp=.08
-    m.group.position.x+=(ud.targetX-m.group.position.x)*lerp
-    m.group.position.y+=(ud.targetY-m.group.position.y)*lerp
-    m.group.position.z+=(ud.targetZ-m.group.position.z)*lerp
-    m.group.rotation.y+=(ud.targetRotY-m.group.rotation.y)*lerp
+  // Raycast
+  const cx=gestureMode==='camera'&&handOn?cursor.x:cursor.x
+  const cy=gestureMode==='camera'&&handOn?cursor.y:cursor.y
+  raycast(cx,cy)
+
+  // Animate grabbed card to camera
+  if(S.grabbed){
+    const m=S.grabbed;const tgt={x:0,y:.4,z:1.8}
+    m.position.lerp(new THREE.Vector3(tgt.x,tgt.y,tgt.z),.1)
+    m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,0,.15)
+    m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,0,.15)
+    // Rotate Z for reversed
+    if(S.orient==='reversed')m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,Math.PI,.1)
+    else m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,0,.1)
+    m.scale.lerp(new THREE.Vector3(1.8,1.8,1),.1)
+  }
+
+  // Return non-grabbed cards to base
+  cards.forEach(m=>{
+    if(m.userData.grabbed)return
+    m.position.lerp(m.userData.basePos,.06)
+    m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,m.userData.baseRot.x,.06)
+    m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,m.userData.baseRot.y,.06)
+    m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,m.userData.baseRot.z,.06)
+    m.scale.lerp(new THREE.Vector3(1,1,1),.06)
+    // Highlight hovered
+    if(m.userData.hovered)m.position.y=THREE.MathUtils.lerp(m.position.y,m.userData.basePos.y+.15,.2)
   })
 
-  // 手势状态机
-  if(gestureMode==='camera'){
-    if(currentGesture==='open'&&(STATE.phase==='IDLE')){
-      STATE.phase='READY'
-    }
-    if(currentGesture==='pinch'&&STATE.phase==='READY'&&STATE.hoveredCard){
-      grabCard(STATE.hoveredCard)
-    }
-    if(currentGesture==='fist'&&STATE.phase==='GRABBED'&&STATE.grabbedCard){
-      confirmCard(STATE.grabbedCard)
-    }
-    if(currentGesture==='none'&&STATE.phase==='GRABBED'&&STATE.grabbedCard&&!handPresent){
-      // 手离开→释放卡片
-      STATE.grabbedCard.group.userData.grabbed=false
-      STATE.grabbedCard.group.userData.targetX=STATE.grabbedCard.group.userData.baseX
-      STATE.grabbedCard.group.userData.targetY=STATE.grabbedCard.group.userData.baseY
-      STATE.grabbedCard.group.userData.targetZ=STATE.grabbedCard.group.userData.baseZ
-      STATE.grabbedCard=null
-      STATE.phase='READY'
-    }
-  }
-
-  // 粒子更新
+  // Particles
   for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i]
-    p.x+=p.vx;p.y+=p.vy;p.z+=p.vz
-    p.vx+=((Math.random()-.5)*.003) // 湍流
-    p.vy+=.0005
-    p.life-=.008
+    const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.z+=p.vz
+    p.vx+=(Math.random()-.5)*.002;p.life-=.006
     if(p.life<=0)particles.splice(i,1)
   }
-  if(particleSystem.visible){
-    for(let i=0;i<Math.min(particles.length,500);i++){
-      const p=particles[i]
-      particlePositions[i*3]=p.x;particlePositions[i*3+1]=p.y;particlePositions[i*3+2]=p.z
-      particleAlphas[i]=p.life
-    }
-    particleGeo.attributes.position.needsUpdate=true
-    particleMat.opacity=Math.max(...particles.slice(0,100).map(p=>p.life))*.6
-    if(particles.length===0)particleSystem.visible=false
+  if(ashSys.visible){
+    const n=Math.min(particles.length,300)
+    for(let i=0;i<n;i++){const p=particles[i];ashPos[i*3]=p.x;ashPos[i*3+1]=p.y;ashPos[i*3+2]=p.z;ashSizes[i]=p.size*p.life}
+    ashGeo.attributes.position.needsUpdate=true;ashGeo.attributes.size.needsUpdate=true
+    ashMat.opacity=Math.min(.7,particles.length/50)
+    if(particles.length===0){ashSys.visible=false;S.phase='idle'}
   }
 
-  // 相机呼吸
-  camera.position.y=.5+Math.sin(Date.now()*.0005)*.1
-
-  renderer.render(scene,camera)
+  // Camera sway
+  cam.position.x=Math.sin(t*.0003)*.3
+  renderer.render(scene,cam)
 }
+requestAnimationFrame(loop)
 
-// ═══════════════════════════════════════
-// 鼠标事件（鼠标模式 + 通用降级）
-// ═══════════════════════════════════════
-document.addEventListener('mousemove',e=>{
-  if(gestureMode==='mouse'){
-    finger3D.set(e.clientX/W(),e.clientY/H())
-  }
-  const cursor=document.getElementById('cursor3d')
-  cursor.style.left=e.clientX+'px'
-  cursor.style.top=e.clientY+'px'
-})
+// Resize
+window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()})
 
-document.addEventListener('click',()=>{
-  if(gestureMode==='mouse'){
-    if(STATE.phase==='IDLE'){STATE.phase='READY';updateGestureUI()}
-    else if(STATE.phase==='READY'&&STATE.hoveredCard){grabCard(STATE.hoveredCard)}
-    else if(STATE.phase==='GRABBED'&&STATE.grabbedCard){confirmCard(STATE.grabbedCard)}
-  }
-})
+// Errors
+window.addEventListener('error',e=>{const el=document.getElementById('err');el.textContent=e.message;el.style.display='block'})
+window.addEventListener('unhandledrejection',e=>{const el=document.getElementById('err');el.textContent=e.reason?.message||e.reason;el.style.display='block'})
 
-// 右键取消抓取
-document.addEventListener('contextmenu',e=>{
-  e.preventDefault()
-  if(STATE.phase==='GRABBED'&&STATE.grabbedCard){
-    STATE.grabbedCard.group.userData.grabbed=false
-    STATE.grabbedCard.group.userData.targetX=STATE.grabbedCard.group.userData.baseX
-    STATE.grabbedCard.group.userData.targetY=STATE.grabbedCard.group.userData.baseY
-    STATE.grabbedCard.group.userData.targetZ=STATE.grabbedCard.group.userData.baseZ
-    STATE.grabbedCard=null
-    STATE.phase='READY'
-  }
-})
-
-// 窗口大小
-window.addEventListener('resize',()=>{renderer.setSize(W(),H());camera.aspect=W()/H();camera.updateProjectionMatrix()})
-
-// 全局错误
-window.addEventListener('error',e=>{const el=document.getElementById('err');el.textContent='[JS] '+e.message;el.style.display='block'})
-window.addEventListener('unhandledrejection',e=>{const el=document.getElementById('err');el.textContent='[Promise] '+(e.reason?.message||e.reason);el.style.display='block'})
-
-// ═══════════════════════════════════════
-// 启动
-// ═══════════════════════════════════════
-createCards()
-initMediaPipe()
-animate()
-console.log('🃏 TAROT · FBC Entity Archive · Gesture/Mouse Mode Ready')
+// ═══════════════════ START ═══════════════════
+buildCardSpread()
+setupMediaPipe()
+document.getElementById('cursor').style.display=gestureMode==='mouse'?'block':'none'
+console.log('🃏 TAROT ready — OPEN palm to draw / PINCH to grab / FIST to confirm')
 </script>
-</body>
-</html>
+</body></html>
