@@ -1,16 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FBC · 阈域实体档案</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TAROT · FBC Entity Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>body{margin:0;padding:0;background:#050508;overflow:hidden;font-family:'JetBrains Mono',monospace;width:100vw;height:100vh}</style>
+  <script>
+    // 全局错误捕获
+    window.__errors = []
+    window.addEventListener('error', function(e) {
+      window.__errors.push({type:'js', msg:e.message, file:e.filename, line:e.lineno, time:Date.now()})
+      updateErrorOverlay()
+    })
+    window.addEventListener('unhandledrejection', function(e) {
+      window.__errors.push({type:'promise', msg:e.reason?.message||String(e.reason), time:Date.now()})
+      updateErrorOverlay()
+    })
+    function updateErrorOverlay() {
+      var el = document.getElementById('err-overlay')
+      if (!el) { el = document.createElement('div'); el.id = 'err-overlay'; document.body.appendChild(el) }
+      el.innerHTML = window.__errors.slice(-3).map(function(e) {
+        return '<div style="margin-bottom:4px;border-left:2px solid #ff4444;padding-left:8px;font-size:10px">['+e.type+'] '+e.msg+'</div>'
+      }).join('')
+      el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(100,0,0,0.9);color:#ff6666;padding:8px 12px;font-family:monospace;max-height:120px;overflow-y:auto;pointer-events:auto'
+      el.onclick = function(){ el.style.display = 'none' }
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
 </html>

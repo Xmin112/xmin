@@ -1,182 +1,166 @@
 /**
- * App — FBC 阈域实体档案系统 · 主编排器 v3
+ * App v4 — Three.js + GSAP + MediaPipe 架构
  *
- * 新增：3D 卡片环 + 手指位置追踪驱动旋转 + 粒子爆发特效
+ * 阶段: IDLE → CALIBRATING → SHUFFLING → SCANNING → REVEAL → DOSSIER
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import useCaseStore from './core/caseMachine'
 import { useHandTracking } from './hooks/useHandTracking'
 import { useGestureEvents } from './hooks/useGestureEvents'
 import { analyzeEntity } from './core/astralAnalysis'
 
-import ConcreteDust from './components/ConcreteDust'
-import BioCalibration from './components/BioCalibration'
-import IdleScreen from './components/IdleScreen'
+import ThreeScene from './components/ThreeScene'
+import LoadingScreen from './components/LoadingScreen'
+import IntroOverlay from './components/IntroOverlay'
+import FloatingHeader from './components/FloatingHeader'
+import StatsPanel from './components/StatsPanel'
+import GestureCursor from './components/GestureCursor'
 import EntityRing from './components/EntityRing'
 import ResonanceProtocol from './components/ResonanceProtocol'
-import EntityReveal from './components/EntityReveal'
-import AnalysisScreen from './components/AnalysisScreen'
-import DossierView from './components/DossierView'
+import CardReveal from './components/CardReveal'
+import DossierPanel from './components/DossierPanel'
 
 export default function App() {
-  const phase         = useCaseStore((s) => s.phase)
-  const entities      = useCaseStore((s) => s.entities)
+  const phase = useCaseStore((s) => s.phase)
+  const entities = useCaseStore((s) => s.entities)
   const selectedEntity = useCaseStore((s) => s.selectedEntity)
-  const orientation   = useCaseStore((s) => s.orientation)
-  const reading       = useCaseStore((s) => s.reading)
-  const touchMode     = useCaseStore((s) => s.touchMode)
+  const orientation = useCaseStore((s) => s.orientation)
+  const reading = useCaseStore((s) => s.reading)
 
-  const initCase       = useCaseStore((s) => s.initCase)
+  const initCase = useCaseStore((s) => s.initCase)
   const startCalibration = useCaseStore((s) => s.startCalibration)
   const triggerResonance = useCaseStore((s) => s.triggerResonance)
   const resonanceComplete = useCaseStore((s) => s.resonanceComplete)
-  const locateEntity   = useCaseStore((s) => s.locateEntity)
+  const locateEntity = useCaseStore((s) => s.locateEntity)
   const revealComplete = useCaseStore((s) => s.revealComplete)
   const analysisComplete = useCaseStore((s) => s.analysisComplete)
-  const resetCase      = useCaseStore((s) => s.resetCase)
+  const resetCase = useCaseStore((s) => s.resetCase)
   const setCameraReady = useCaseStore((s) => s.setCameraReady)
-  const enableTouchMode = useCaseStore((s) => s.enableTouchMode)
 
-  // 摄像头追踪（包含食指指尖位置）
-  const {
-    gesture, confidence, landmarks, indexTip, isReady, videoRef, error,
-  } = useHandTracking(true)
+  // 摄像头
+  const { gesture, confidence, landmarks, indexTip, isReady, videoRef, error } = useHandTracking(true)
+  useGestureEvents({ gesture, confidence })
 
-  // 手势事件（防抖 + 触发状态机）
-  const { isDebouncing, progress } = useGestureEvents({ gesture, confidence })
+  // 加载 → 入场
+  const [loaded, setLoaded] = useState(false)
+  const [introDone, setIntroDone] = useState(false)
 
-  // 初始化
   const initialized = useRef(false)
-  useEffect(() => { if (!initialized.current) { initCase(); initialized.current = true } }, [initCase])
+  useEffect(() => {
+    if (!initialized.current) { initCase(); initialized.current = true }
+  }, [initCase])
 
-  // 摄像头就绪
   useEffect(() => { setCameraReady(isReady) }, [isReady, setCameraReady])
 
-  // ANALYZING → Gemini 调用（带超时保护）
+  // ANALYZING → Gemini（带超时）
   useEffect(() => {
     if (phase !== 'ANALYZING' || !selectedEntity) return
     let cancelled = false
-    const timeout = setTimeout(() => {
-      if (!cancelled) analysisComplete(null) // 5 秒超时，用回退数据
-    }, 5000)
-
-    analyzeEntity(selectedEntity, orientation).then((result) => {
-      clearTimeout(timeout)
-      if (!cancelled) analysisComplete(result)
-    }).catch(() => {
-      clearTimeout(timeout)
-      if (!cancelled) analysisComplete(null)
-    })
+    const timeout = setTimeout(() => { if (!cancelled) analysisComplete(null) }, 5000)
+    analyzeEntity(selectedEntity, orientation).then((r) => {
+      clearTimeout(timeout); if (!cancelled) analysisComplete(r)
+    }).catch(() => { clearTimeout(timeout); if (!cancelled) analysisComplete(null) })
     return () => { cancelled = true; clearTimeout(timeout) }
   }, [phase, selectedEntity, orientation, analysisComplete])
 
-  // 触控回调
-  const handleTouchStart = useCallback(() => startCalibration(), [startCalibration])
-
-  // 粒子强度
-  const particleIntensity =
-    phase === 'SHUFFLING' || phase === 'REVEAL' ? 'high'
-    : phase === 'IDLE' ? 'low' : 'medium'
-
   return (
-    <div
-      className="relative w-screen h-screen overflow-hidden noise-overlay"
-      style={{
-        background: `
-          radial-gradient(ellipse 60% 40% at 50% 40%, rgba(139,0,0,0.06) 0%, transparent 50%),
-          radial-gradient(ellipse 40% 30% at 30% 70%, rgba(192,57,43,0.03) 0%, transparent 50%),
-          #050508
-        `,
-        fontFamily: "'JetBrains Mono', monospace",
-      }}
-    >
-      <ConcreteDust active={true} intensity={particleIntensity} burst={phase === 'SHUFFLING'} />
+    <div className="relative w-screen h-screen overflow-hidden" style={{ background: '#050508', fontFamily: "'JetBrains Mono', monospace" }}>
+      {/* 加载 */}
+      {!loaded && <LoadingScreen onComplete={() => setLoaded(true)} />}
 
-      <AnimatePresence mode="wait">
-        {phase === 'IDLE' && (
-          <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <IdleScreen isReady={isReady} cameraError={error}
-              onStart={handleTouchStart} onEnableTouch={() => enableTouchMode()} />
-          </motion.div>
-        )}
+      {/* 入场 */}
+      {loaded && !introDone && <IntroOverlay onDismiss={() => setIntroDone(true)} />}
 
-        {/* CALIBRATING + SCANNING 共用 3D 卡片环 */}
-        {(phase === 'CALIBRATING' || phase === 'SCANNING') && (
-          <motion.div key={phase} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <EntityRing
-              entities={entities}
-              indexTip={indexTip}
-              onSelect={(i) => locateEntity(i)}
-              mode={phase === 'SCANNING' ? 'select' : 'browse'}
-            />
-          </motion.div>
-        )}
+      {/* 3D 背景 */}
+      {loaded && introDone && <ThreeScene />}
 
-        {phase === 'SHUFFLING' && (
-          <motion.div key="shuffling" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ResonanceProtocol entities={entities} onComplete={() => resonanceComplete()} />
-          </motion.div>
-        )}
+      {/* UI 叠加层 */}
+      {loaded && introDone && (
+        <>
+          <FloatingHeader />
+          <StatsPanel drawCount={phase === 'DOSSIER' ? 1 : 0} />
 
-        {phase === 'REVEAL' && selectedEntity && (
-          <motion.div key="reveal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <EntityReveal entity={selectedEntity} orientation={orientation}
-              onComplete={() => revealComplete()} />
-          </motion.div>
-        )}
+          {/* 阶段组件 */}
+          <AnimatePresence mode="wait">
+            {(phase === 'CALIBRATING' || phase === 'SCANNING') && (
+              <motion.div key={phase} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <EntityRing entities={entities} indexTip={indexTip}
+                  onSelect={(i) => locateEntity(i)}
+                  mode={phase === 'SCANNING' ? 'select' : 'browse'} />
+              </motion.div>
+            )}
 
-        {phase === 'ANALYZING' && selectedEntity && (
-          <motion.div key="analyzing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <AnalysisScreen entity={selectedEntity} orientation={orientation} />
-          </motion.div>
-        )}
+            {phase === 'SHUFFLING' && (
+              <motion.div key="shuffle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <ResonanceProtocol entities={entities} onComplete={() => resonanceComplete()} />
+              </motion.div>
+            )}
 
-        {phase === 'DOSSIER' && selectedEntity && (
-          <motion.div key="dossier" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <DossierView entity={selectedEntity} orientation={orientation}
-              reading={reading} onReset={() => resetCase()} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {phase === 'REVEAL' && selectedEntity && (
+              <motion.div key="reveal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <CardReveal entity={selectedEntity} orientation={orientation}
+                  onComplete={() => revealComplete()} />
+              </motion.div>
+            )}
 
-      {/* 顶部标题 */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 text-center pointer-events-none">
-        <h1 style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.6em', color: '#e8e0d5', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase' }}>
-          TAROT
-        </h1>
-        <div style={{ width: 24, height: 1, margin: '4px auto 0', background: 'linear-gradient(90deg, transparent, rgba(192,57,43,0.5), transparent)' }} />
-        <div className="fbc-label" style={{ fontSize: 6, marginTop: 4 }}>FBC · CASE 22</div>
-      </div>
+            {phase === 'ANALYZING' && selectedEntity && (
+              <motion.div key="analyzing" className="absolute inset-0 flex items-center justify-center"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="text-center flex flex-col items-center gap-4">
+                  <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.2em', color: '#e8e0d5', fontFamily: "'JetBrains Mono', monospace" }}>
+                    {selectedEntity.codename}
+                  </div>
+                  <div className="fbc-label" style={{ fontSize: 9 }}>ASTRAL ANALYSIS IN PROGRESS</div>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {[0, 1, 2].map(i => (
+                      <motion.div key={i} style={{ width: 6, height: 16, background: '#c0392b' }}
+                        animate={{ opacity: [0.3, 1, 0.3], height: [8, 16, 8] }}
+                        transition={{ duration: 1, delay: i * 0.2, repeat: Infinity }} />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-      {/* 阶段指示器 */}
-      <PhaseIndicator currentPhase={phase} />
+            {phase === 'DOSSIER' && selectedEntity && (
+              <motion.div key="dossier" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <DossierPanel entity={selectedEntity} orientation={orientation}
+                  reading={reading} onReset={() => resetCase()} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      {/* 摄像头 + 诊断面板 */}
-      <BioCalibration gesture={gesture} confidence={confidence} videoRef={videoRef}
-        landmarks={landmarks} isReady={isReady} error={error}
-        isDebouncing={isDebouncing} touchMode={touchMode}
-        onEnableTouch={() => enableTouchMode()} />
+          {/* IDLE 手势唤醒按钮 */}
+          {phase === 'IDLE' && (
+            <motion.div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 text-center"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
+              <div className="fbc-label" style={{ fontSize: 9, marginBottom: 10 }}>
+                PLACE OPEN PALM TOWARD CAMERA
+              </div>
+              <motion.div style={{ width: 60, height: 60, border: '1px solid rgba(192,57,43,0.3)', borderRadius: '50%', margin: '0 auto' }}
+                animate={{ boxShadow: ['0 0 0px rgba(192,57,43,0)', '0 0 20px rgba(192,57,43,0.3)', '0 0 0px rgba(192,57,43,0)'] }}
+                transition={{ duration: 2, repeat: Infinity }}>
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 8, height: 8, background: '#c0392b', borderRadius: '50%' }} />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* 手势光标 */}
+          <GestureCursor videoRef={videoRef} indexTip={indexTip}
+            gesture={gesture} confidence={confidence} isReady={isReady} error={error} />
+        </>
+      )}
 
       {/* Deerflow */}
       <a href="https://deerflow.tech" target="_blank" rel="noopener noreferrer"
-        className="absolute bottom-3 right-4 z-30 opacity-30 hover:opacity-60 transition-opacity duration-500"
+        className="fixed bottom-3 right-4 z-50 opacity-30 hover:opacity-60"
         style={{ fontSize: 7, color: '#6b6b6b', letterSpacing: '0.2em', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', textDecoration: 'none' }}>
         DF
       </a>
-    </div>
-  )
-}
-
-function PhaseIndicator({ currentPhase }) {
-  const phases = ['IDLE', 'CALIBRATING', 'SHUFFLING', 'SCANNING', 'REVEAL', 'ANALYZING', 'DOSSIER']
-  const idx = phases.indexOf(currentPhase)
-  return (
-    <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-none">
-      {phases.map((_, i) => (
-        <div key={i} style={{ width: 10, height: 2, background: i <= idx ? '#c0392b' : 'rgba(107,107,107,0.2)', transition: 'background 0.5s ease' }} />
-      ))}
     </div>
   )
 }

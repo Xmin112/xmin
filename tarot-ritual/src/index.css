@@ -1,294 +1,56 @@
-/* ═══════════════════════════════════════════════════════
-   FBC · 阈域实体档案 — Control 美学全局样式
-   ═══════════════════════════════════════════════════════ */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── 基础重置 ── */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; overflow: hidden; }
+body { background: #050508; color: #e8e0d5; }
 
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #050508; }
+::-webkit-scrollbar-thumb { background: rgba(192,57,43,0.3); }
 
-body {
-  background: #050508;
-  color: #e8e0d5;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── FBC 选择色 ── */
-::selection {
-  background: rgba(192, 57, 43, 0.4);
-  color: #e8e0d5;
-}
-
-/* ── FBC 红色扫描线 ── */
-.fbc-scanline {
-  position: relative;
-}
-.fbc-scanline::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(192, 57, 43, 0.03) 2px,
-    rgba(192, 57, 43, 0.03) 4px
-  );
-  pointer-events: none;
-  z-index: 90;
-}
-
-/* ── FBC 噪点纹理（fixed 层） ── */
-.noise-overlay::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* ── FBC 面板（锐利矩形 + 红线边框） ── */
 .fbc-panel {
-  background: #121218;
-  border: 1px solid rgba(192, 57, 43, 0.25);
-  position: relative;
+  background: rgba(18,18,24,0.85);
+  border: 1px solid rgba(192,57,43,0.2);
+  backdrop-filter: blur(12px);
 }
-.fbc-panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 12px;
-  height: 1px;
-  background: rgba(192, 57, 43, 0.5);
-}
-
-/* ── FBC 红条头部 ── */
 .fbc-header {
-  background: #8b0000;
-  color: #e8e0d5;
+  background: #8b0000; color: #e8e0d5;
   font-family: 'JetBrains Mono', monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  text-transform: uppercase; letter-spacing: 0.25em;
+  font-size: 11px; font-weight: 600; padding: 8px 16px;
 }
-.fbc-header::before {
-  content: '■■■';
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: rgba(232, 224, 213, 0.5);
-}
-
-/* ── FBC 标签 ── */
 .fbc-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: #6b6b6b;
+  font-size: 9px; font-weight: 500;
+  letter-spacing: 0.3em; text-transform: uppercase; color: #6b6b6b;
 }
-
-/* ── FBC 数据值 ── */
-.fbc-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  font-weight: 400;
-  color: #e8e0d5;
-  letter-spacing: 0.05em;
-}
-
-/* ── FBC 按钮 ── */
-.fbc-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 32px;
-  background: #121218;
-  border: 1px solid rgba(192, 57, 43, 0.4);
-  color: #e8e0d5;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-  position: relative;
-  overflow: hidden;
-}
-.fbc-btn::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: rgba(192, 57, 43, 0);
-  transition: background 0.3s ease;
-}
-.fbc-btn:hover {
-  background: #8b0000;
-  border-color: #c0392b;
-}
-.fbc-btn:hover::after {
-  background: rgba(192, 57, 43, 0.8);
-}
-.fbc-btn:active {
-  transform: scale(0.97);
-}
-
-/* ── FBC 分类印章 ── */
 .fbc-stamp {
-  display: inline-block;
-  padding: 4px 12px;
-  border: 1px solid rgba(192, 57, 43, 0.6);
-  color: #c0392b;
+  display: inline-block; padding: 4px 12px;
+  border: 1px solid rgba(192,57,43,0.6); color: #c0392b;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  transform: rotate(-2deg);
+  font-size: 8px; font-weight: 700;
+  letter-spacing: 0.3em; text-transform: uppercase;
 }
-
-/* ── FBC 打字机文字 ── */
 .fbc-typewriter {
   font-family: 'JetBrains Mono', monospace;
-  line-height: 1.9;
-  letter-spacing: 0.03em;
-  color: #e8e0d5;
+  line-height: 1.9; letter-spacing: 0.03em; color: #e8e0d5;
 }
-
-/* ── FBC 董事会文本 ── */
 .fbc-board {
   font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #c9a96e;
-  text-transform: uppercase;
+  font-weight: 700; letter-spacing: 0.1em;
+  color: #c9a96e; text-transform: uppercase;
 }
-
-/* ── L 形准星角 ── */
-.retical-corner {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-color: #c0392b;
-  border-style: solid;
+.fbc-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 32px;
+  background: rgba(18,18,24,0.9); border: 1px solid rgba(192,57,43,0.4);
+  color: #e8e0d5; font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.2em;
+  text-transform: uppercase; cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.32,0.72,0,1);
 }
-.retical-corner.tl { top: 8px; left: 8px;   border-width: 2px 0 0 2px; }
-.retical-corner.tr { top: 8px; right: 8px;  border-width: 2px 2px 0 0; }
-.retical-corner.bl { bottom: 8px; left: 8px;  border-width: 0 0 2px 2px; }
-.retical-corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
-
-/* ── 实体卡片 3D 翻转 ── */
-.entity-card {
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-.entity-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-}
-.card-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-}
-.card-face-back {
-  transform: rotateY(180deg);
-}
-
-/* ── 卡背：CLASSIFIED ── */
-.card-classified {
-  background:
-    linear-gradient(135deg, #1a1a1f 0%, #121218 50%, #0d0d14 100%);
-  border: 1px solid rgba(192, 57, 43, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.card-classified::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border: 1px solid rgba(192, 57, 43, 0.15);
-}
-.card-classified-lines {
-  position: absolute;
-  inset: 14px;
-  border-top: 3px solid rgba(192, 57, 43, 0.6);
-  border-bottom: 3px solid rgba(192, 57, 43, 0.6);
-}
-
-/* ── 卡面：档案 ── */
-.card-dossier {
-  background: linear-gradient(180deg, #0a0a10 0%, #121218 100%);
-  border: 1px solid rgba(192, 57, 43, 0.4);
-  display: flex;
-  flex-direction: column;
-}
-.card-dossier-header {
-  background: #8b0000;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 7px;
-  letter-spacing: 0.2em;
-  color: rgba(232, 224, 213, 0.8);
-  text-transform: uppercase;
-}
-
-/* ── 动画 ── */
-@keyframes scanline-move {
-  0%   { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.3; }
-}
-@keyframes hiss-glitch {
-  0%   { transform: translate(0); }
-  20%  { transform: translate(-3px, 1px); }
-  40%  { transform: translate(3px, -1px); }
-  60%  { transform: translate(-1px, -2px); }
-  80%  { transform: translate(2px, 1px); }
-  100% { transform: translate(0); }
-}
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes concrete-float {
-  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
-  10%      { opacity: 0.6; }
-  90%      { opacity: 0.1; }
-  100%     { transform: translateY(-100px) translateX(20px) rotate(10deg); opacity: 0; }
-}
+.fbc-btn:hover { background: #8b0000; border-color: #c0392b; }
+.fbc-btn:active { transform: scale(0.97); }
