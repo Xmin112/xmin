@@ -20,6 +20,7 @@ import { detectGesture, filterGesture } from '../core/gestureController'
  *   gesture: Gesture,
  *   confidence: number,
  *   landmarks: Array<{x:number,y:number,z:number}> | null,
+ *   indexTip: {x:number,y:number} | null,
  *   isReady: boolean,
  *   videoRef: React.RefObject<HTMLVideoElement | null>,
  *   error: string | null,
@@ -29,6 +30,7 @@ export function useHandTracking(active) {
   const [gesture, setGesture]     = useState(/** @type {Gesture} */ ('none'))
   const [confidence, setConf]     = useState(0)
   const [landmarks, setLandmarks] = useState(null)
+  const [indexTip, setIndexTip]   = useState(null)
   const [isReady, setIsReady]     = useState(false)
   const [error, setError]         = useState(null)
 
@@ -45,6 +47,8 @@ export function useHandTracking(active) {
     if (results.multiHandLandmarks?.length > 0) {
       const lm = results.multiHandLandmarks[0]
       setLandmarks(lm)
+      // 食指指尖位置（用于卡片光标追踪）
+      if (lm[8]) setIndexTip({ x: lm[8].x, y: lm[8].y })
 
       // 更新位置历史
       const wrist = lm[0] // 手腕 = 关键点 0
@@ -60,6 +64,7 @@ export function useHandTracking(active) {
       setConf(filtered.confidence)
     } else {
       setLandmarks(null)
+      setIndexTip(null)
       // 无手时清空历史
       gestureHistory.current = []
       positionHistory.current = []
@@ -151,11 +156,6 @@ export function useHandTracking(active) {
   }, [active, onResults])
 
   return {
-    gesture,
-    confidence,
-    landmarks,
-    isReady,
-    videoRef,
-    error,
+    gesture, confidence, landmarks, indexTip, isReady, videoRef, error,
   }
 }

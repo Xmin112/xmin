@@ -6,7 +6,7 @@
  *
  * @param {Object} props
  * @param {boolean} [props.active=true]
- * @param {'low'|'medium'|'high'} [props.intensity='medium']
+ * @param {boolean} [props.burst=false] — 爆发模式（洗牌/翻转时触发）
  */
 
 import { useEffect, useRef } from 'react'
@@ -17,7 +17,9 @@ const INTENSITY_MAP = {
   high:   { spawnRate: 0.8,  maxParticles: 200 },
 }
 
-export default function ConcreteDust({ active = true, intensity = 'medium' }) {
+export default function ConcreteDust({ active = true, intensity = 'medium', burst = false }) {
+  const burstRef = useRef(false)
+  useEffect(() => { if (burst) burstRef.current = true }, [burst])
   const canvasRef = useRef(/** @type {HTMLCanvasElement | null} */ (null))
   const particlesRef = useRef([])
   const frameRef = useRef(0)
@@ -100,6 +102,25 @@ export default function ConcreteDust({ active = true, intensity = 'medium' }) {
       // ── 生成粒子 ──
       if (Math.random() < spawnRate && particlesRef.current.length < maxParticles) {
         particlesRef.current.push(spawnParticle(cx, cy))
+      }
+      // 爆发粒子（洗牌/翻转时触发一次）
+      if (burstRef.current) {
+        burstRef.current = false
+        for (let i = 0; i < 40; i++) {
+          const a = Math.random() * Math.PI * 2
+          const dist = 50 + Math.random() * 100
+          particlesRef.current.push({
+            x: cx + Math.cos(a) * dist,
+            y: cy + Math.sin(a) * dist,
+            vx: Math.cos(a) * (1 + Math.random() * 3),
+            vy: Math.sin(a) * (1 + Math.random() * 3) - 1,
+            size: Math.random() * 3 + 1,
+            alpha: 0.8,
+            life: 0,
+            maxLife: 40 + Math.random() * 30,
+            type: Math.random() > 0.6 ? 'red-flash' : 'dust',
+          })
+        }
       }
 
       // ── 更新和绘制 ──
