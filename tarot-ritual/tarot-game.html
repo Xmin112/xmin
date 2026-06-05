@@ -106,13 +106,13 @@ scene.add((()=>{const g=new THREE.GridHelper(10,30,0x331111,0x111118);g.position
 
 // ═══════ CARDS ═══════
 const ld=new THREE.TextureLoader(),tx={}
-function gt(id){if(!tx[id])tx[id]=ld.load(`/cards/major_${String(id).padStart(2,'0')}.png`);return tx[id]}
+const getTex=(id)=>{if(!tx[id])tx[id]=ld.load(`/cards/major_${String(id).padStart(2,'0')}.png`);return tx[id]}
 const bt=(()=>{const c=document.createElement('canvas');c.width=256;c.height=400;const x=c.getContext('2d');x.fillStyle='#0a0a10';x.fillRect(0,0,256,400);x.strokeStyle='rgba(192,57,43,.25)';x.lineWidth=2;x.strokeRect(8,8,240,384);x.strokeStyle='rgba(192,57,43,.1)';x.strokeRect(18,18,220,364);x.beginPath();x.moveTo(128,28);x.lineTo(222,200);x.lineTo(34,200);x.closePath();x.strokeStyle='rgba(192,57,43,.35)';x.stroke();x.beginPath();x.moveTo(128,170);x.lineTo(186,65);x.lineTo(70,65);x.closePath();x.strokeStyle='rgba(192,57,43,.12)';x.stroke();x.fillStyle='rgba(192,57,43,.5)';x.beginPath();x.arc(128,130,3.5,0,Math.PI*2);x.fill();x.font='bold 16px monospace';x.fillStyle='#c0392b';x.textAlign='center';x.fillText('CLASSIFIED',128,270);x.font='8px monospace';x.fillStyle='rgba(107,107,107,.5)';x.fillText('FBC·PARANATURAL',128,288);return new THREE.CanvasTexture(c)})()
 
 let cards=[]
 function mkCard(d){
   const g=new THREE.PlaneGeometry(.68,1.1)
-  const f=new THREE.MeshStandardMaterial({map:gt(d.id),roughness:.45,metalness:.05,emissive:new THREE.Color(0x110000),emissiveIntensity:.15})
+  const f=new THREE.MeshStandardMaterial({map:getTex(d.id),roughness:.45,metalness:.05,emissive:new THREE.Color(0x110000),emissiveIntensity:.15})
   const b=new THREE.MeshStandardMaterial({map:bt,roughness:.35,metalness:.2,emissive:new THREE.Color(0x110000),emissiveIntensity:.1})
   const m=new THREE.Mesh(g,f);m.castShadow=true;m.receiveShadow=true
   m.userData={card:d,fm:f,bm:b,flipped:false,bp:new THREE.Vector3,br:new THREE.Euler,ang:0,grabbed:false,hov:false,ty:0}
