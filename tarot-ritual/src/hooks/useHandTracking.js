@@ -77,9 +77,6 @@ export function useHandTracking(active) {
     if (!active) return
     mountedRef.current = true
 
-    let handsModule = null
-    let cameraModule = null
-
     const init = async () => {
       try {
         // 修复 MediaPipe WASM 在新版浏览器中的兼容性
@@ -87,13 +84,22 @@ export function useHandTracking(active) {
           window.Module = window.Module || {}
         }
 
-        // 动态导入 MediaPipe
-        handsModule = await import('@mediapipe/hands')
-        cameraModule = await import('@mediapipe/camera_utils')
+        // 动态导入 MediaPipe（兼容 ESM/CJS 导出）
+        const handsMod = await import('@mediapipe/hands')
+        const cameraMod = await import('@mediapipe/camera_utils')
 
         if (!mountedRef.current) return
 
-        const hands = new handsModule.Hands({
+        // 兼容多种导出结构
+        const HandsClass = handsMod.Hands || handsMod.default?.Hands || handsMod.default
+        const CameraClass = cameraMod.Camera || cameraMod.default?.Camera || cameraMod.default
+
+        if (!HandsClass || !CameraClass) {
+          console.error('[FBC] MediaPipe 导入失败。handsMod keys:', Object.keys(handsMod))
+          throw new Error('MediaPipe 模块结构不兼容')
+        }
+
+        const hands = new HandsClass({
           locateFile: (file) =>
             `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`,
         })
@@ -109,7 +115,7 @@ export function useHandTracking(active) {
         handsRef.current = hands
 
         if (videoRef.current) {
-          const camera = new cameraModule.Camera(videoRef.current, {
+          const camera = new CameraClass(videoRef.current, {
             onFrame: async () => {
               if (handsRef.current && videoRef.current) {
                 await handsRef.current.send({ image: videoRef.current })
