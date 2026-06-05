@@ -81,10 +81,7 @@ const useCaseStore = create((set, get) => ({
    * 生物特征校准 — IDLE → CALIBRATING
    */
   startCalibration: () => {
-    if (!get().cameraReady && !get().touchMode) {
-      set({ error: 'CAMERA_NOT_READY' })
-      return false
-    }
+    // 放宽限制：摄像头未就绪时也允许进入（触控/超时按钮需可用）
     return get()._transition('CALIBRATING')
   },
 

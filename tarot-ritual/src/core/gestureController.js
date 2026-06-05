@@ -26,12 +26,12 @@ const FINGER_TIPS = [THUMB_TIP, INDEX_TIP, MIDDLE_TIP, RING_TIP, PINKY_TIP]
 const FINGER_MCPS = [THUMB_MCP, INDEX_MCP, MIDDLE_MCP, RING_MCP, PINKY_MCP]
 
 // ─── 阈值常量 ───
-const PINCH_DISTANCE_THRESHOLD = 0.06   // 拇指-食指归一化距离阈值
-const SWIPE_VELOCITY_THRESHOLD = 0.015  // 手腕 y 轴速度阈值（负值 = 向上）
-const SWIPE_DIRECTION_RATIO    = 2.0    // |dy| / |dx| > 此值 → 垂直主导
-const PALM_CENTER_Y_MIN        = 0.3    // 手掌中心 y 最小值
-const PALM_CENTER_Y_MAX        = 0.7    // 手掌中心 y 最大值
-const EXTENDED_FINGER_MIN      = 4      // OPEN 手势最少伸展手指数
+const PINCH_DISTANCE_THRESHOLD = 0.08   // 拇指-食指归一化距离阈值
+const SWIPE_VELOCITY_THRESHOLD = 0.010  // 手腕 y 轴速度阈值（负值 = 向上）
+const SWIPE_DIRECTION_RATIO    = 1.5    // |dy| / |dx| > 此值 → 垂直主导
+const PALM_CENTER_Y_MIN        = 0.15   // 手掌中心 y 最小值（放宽）
+const PALM_CENTER_Y_MAX        = 0.85   // 手掌中心 y 最大值（放宽）
+const EXTENDED_FINGER_MIN      = 3      // OPEN 手势最少伸展手指数（放宽，适配小指不灵活者）
 const SMOOTHING_WINDOW         = 5      // 平滑窗口帧数
 const SWIPE_HISTORY_SIZE       = 8      // 滑动检测历史帧数
 

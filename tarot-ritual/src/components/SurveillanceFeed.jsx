@@ -8,13 +8,11 @@
  *   - 希斯失真效果（检测到手势时短暂红移）
  *
  * @param {Object} props
- * @param {React.RefObject<HTMLVideoElement>} props.videoRef — 视频元素由 BioCalibration 管理
  * @param {boolean} props.isActive
- * @param {string}  props.gesture       — 'none'|'open'|'pinch'|'swipe'
- * @param {number}  props.confidence    — 0-1
+ * @param {string}  props.gesture
+ * @param {number}  props.confidence
  * @param {boolean} props.isDebouncing
  * @param {Array<{x:number,y:number,z:number}>|null} props.landmarks
- * @param {string|null} props.errorMessage
  */
 
 import { useRef, useEffect } from 'react'
@@ -31,7 +29,7 @@ const CONNECTIONS = [
 ]
 
 export default function SurveillanceFeed({
-  videoRef, isActive, gesture, confidence, isDebouncing, landmarks, errorMessage,
+  isActive, gesture, confidence, isDebouncing, landmarks,
 }) {
   const skeletonCanvasRef = useRef(/** @type {HTMLCanvasElement | null} */ (null))
 
@@ -83,33 +81,7 @@ export default function SurveillanceFeed({
 
   if (!isActive) return null
 
-  // 错误状态
-  if (errorMessage) {
-    return (
-      <div className="relative" style={{ width: 280, height: 210 }}>
-        <div
-          className="w-full h-full flex flex-col items-center justify-center gap-3 fbc-panel"
-          style={{ width: 280, height: 210 }}
-        >
-          {/* L 形角标 */}
-          <div className="retical-corner tl" />
-          <div className="retical-corner tr" />
-          <div className="retical-corner bl" />
-          <div className="retical-corner br" />
-
-          <div style={{ color: '#c0392b', fontSize: 24 }}>⚠</div>
-          <div className="fbc-label text-center px-4" style={{ fontSize: 9 }}>
-            {errorMessage === 'CAMERA_DENIED' && '摄像头权限被拒'}
-            {errorMessage === 'CAMERA_NOT_FOUND' && '未检测到摄像头设备'}
-            {errorMessage === 'MEDIAPIPE_ERROR' && '生物特征模块异常'}
-            {errorMessage === 'UNKNOWN' && '监控系统异常'}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const isLocked = gesture !== 'none' && confidence >= 0.7
+  const isLocked = gesture !== 'none' && confidence >= 0.4
 
   return (
     <div className="relative" style={{ width: 280, height: 210 }}>

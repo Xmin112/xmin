@@ -91,8 +91,8 @@ export function useHandTracking(active) {
         hands.setOptions({
           maxNumHands: 1,
           modelComplexity: 0,        // 轻量模型
-          minDetectionConfidence: 0.7,
-          minTrackingConfidence: 0.5,
+          minDetectionConfidence: 0.5, // 降低阈值以适配更多环境
+          minTrackingConfidence: 0.4,
         })
 
         hands.onResults(onResults)

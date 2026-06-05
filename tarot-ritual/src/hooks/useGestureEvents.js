@@ -1,63 +1,39 @@
 /**
- * useGestureEvents — 手势事件桥接 Hook
+ * useGestureEvents — 手势→状态机桥接 Hook
  *
- * 将原始的手势/置信度数据通过防抖处理后，
- * 触发 Zustand 状态机的阶段转换。
- *
- * 防抖参数：
- *   OPEN:  500ms — 需要稳定展示手掌
- *   SWIPE: 300ms — 滑动动作快，需要短窗
- *   PINCH: 500ms — 捏合需要故意保持
+ * 防抖 + 手势→阶段映射。返回响应式状态供 UI 反馈使用。
  */
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import useCaseStore from '../core/caseMachine'
 
-/** @type {Record<string, number>} */
-const DEBOUNCE_MS = {
-  open:  500,
-  swipe: 300,
-  pinch: 500,
-}
+const DEBOUNCE_MS = { open: 400, swipe: 200, pinch: 400 }
+const MIN_CONFIDENCE = { open: 0.4, swipe: 0.4, pinch: 0.5 }
 
-const MIN_CONFIDENCE = {
-  open:  0.7,
-  swipe: 0.6,
-  pinch: 0.7,
-}
-
-/**
- * @param {Object} opts
- * @param {string}  opts.gesture    — 当前手势标签
- * @param {number}  opts.confidence — 置信度 0-1
- */
 export function useGestureEvents({ gesture, confidence }) {
-  const phase = useCaseStore((s) => s.phase)
+  const phase     = useCaseStore((s) => s.phase)
   const touchMode = useCaseStore((s) => s.touchMode)
 
   const timerRef   = useRef(null)
-  const lastGestureRef = useRef(null)
-  const progressRef = useRef(0) // 0-1 进度条
-
-  // 暴露给 UI 的状态
-  const stateRef = useRef({
-    isDebouncing: false,
-    progress: 0,
-  })
+  const lastGestureRef = useRef('none')
+  const [isDebouncing, setIsDebouncing] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   const clearDebounce = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
-    stateRef.current.isDebouncing = false
-    stateRef.current.progress = 0
+    setIsDebouncing(false)
+    setProgress(0)
   }, [])
 
   useEffect(() => {
     if (touchMode) return
-    if (gesture === 'none' || confidence < (MIN_CONFIDENCE[gesture] || 0.7)) {
-      // 手势丢失或置信度不足，取消防抖
+
+    // 手势丢失或置信度不足 → 取消防抖
+    const minConf = MIN_CONFIDENCE[gesture] || 0.5
+    if (gesture === 'none' || confidence < minConf) {
       if (lastGestureRef.current !== 'none') {
         clearDebounce()
         lastGestureRef.current = 'none'
@@ -65,68 +41,51 @@ export function useGestureEvents({ gesture, confidence }) {
       return
     }
 
-    // 同一手势持续中
+    // 同一手势持续中，不重复触发
     if (gesture === lastGestureRef.current) return
 
+    // 新手势出现
     lastGestureRef.current = gesture
 
-    const ms = DEBOUNCE_MS[gesture] || 500
-
-    // 检查该手势在当前阶段是否有效
-    const valid = isValidTrigger(gesture, phase)
-    if (!valid) return
+    const ms = DEBOUNCE_MS[gesture] || 400
+    if (!isValidTrigger(gesture, phase)) return
 
     clearDebounce()
-    stateRef.current.isDebouncing = true
-    stateRef.current.progress = 0
+    setIsDebouncing(true)
+    setProgress(0)
 
-    // 模拟进度更新（用于 UI 显示防抖进度环）
+    // 进度动画
     const startTime = Date.now()
     const tick = () => {
       const elapsed = Date.now() - startTime
-      stateRef.current.progress = Math.min(elapsed / ms, 1)
-      if (elapsed < ms) {
+      const p = Math.min(elapsed / ms, 1)
+      setProgress(p)
+      if (p < 1 && timerRef.current !== null) {
         requestAnimationFrame(tick)
       }
     }
     requestAnimationFrame(tick)
 
     timerRef.current = setTimeout(() => {
-      stateRef.current.isDebouncing = false
-      stateRef.current.progress = 0
-      lastGestureRef.current = null
+      setIsDebouncing(false)
+      setProgress(0)
+      lastGestureRef.current = 'none'
       triggerAction(gesture)
     }, ms)
   }, [gesture, confidence, phase, touchMode, clearDebounce])
 
-  useEffect(() => {
-    return clearDebounce
-  }, [clearDebounce])
+  useEffect(() => clearDebounce, [clearDebounce])
 
-  return {
-    isDebouncing: stateRef.current.isDebouncing,
-    progress: stateRef.current.progress,
-  }
+  return { isDebouncing, progress }
 }
 
-/**
- * 检查手势在当前阶段是否有效
- */
-function isValidTrigger(gesture, phase) {
-  const map = {
-    open:  ['IDLE'],
-    swipe: ['CALIBRATING'],
-    pinch: ['SCANNING'],
-  }
-  return (map[gesture] || []).includes(phase)
-}
+const VALID_MAP = { open: ['IDLE'], swipe: ['CALIBRATING'], pinch: ['SCANNING'] }
 
-/**
- * 触发 Zustand action
- */
+function isValidTrigger(g, p) { return (VALID_MAP[g] || []).includes(p) }
+
 function triggerAction(gesture) {
   const store = useCaseStore.getState()
-
+  console.log('[FBC::GESTURE] 触发:', gesture, '当前阶段:', store.phase)
   switch (gesture) {
     case 'open':
       store.startCalibration()
@@ -135,11 +94,9 @@ function triggerAction(gesture) {
       store.triggerResonance()
       break
     case 'pinch': {
-      // 选一张随机实体（捏合手势触发）
-      const { entities } = store
-      if (entities.length > 0) {
-        const idx = Math.floor(Math.random() * entities.length)
-        store.locateEntity(idx)
+      const ents = store.entities
+      if (ents.length > 0) {
+        store.locateEntity(Math.floor(Math.random() * ents.length))
       }
       break
     }
