@@ -1,63 +1,93 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TAROT · FBC</title>
-<style>:root{--bg:#050508;--r:#c0392b;--b:#e8e0d5;--g:#6b6b6b;--p:rgba(14,14,20,.9)}
-*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);overflow:hidden;font-family:'JetBrains Mono',monospace;color:var(--b);width:100vw;height:100vh}canvas{display:block;position:fixed;inset:0;z-index:0}
-#u{position:fixed;inset:0;z-index:10;pointer-events:none}#u>*{pointer-events:auto}
-#hd{position:fixed;top:0;left:0;right:0;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;z-index:30;background:linear-gradient(180deg,rgba(5,5,8,.97),transparent)}
-#hd .t{font-size:15px;font-weight:700;letter-spacing:.5em;background:linear-gradient(135deg,var(--b),var(--r));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-transform:uppercase}
-#hd .v{font-size:7px;color:var(--g);letter-spacing:.25em}
-#s{position:fixed;right:14px;top:65px;z-index:30;display:flex;flex-direction:column;gap:3px}
-#s .r{display:flex;justify-content:space-between;gap:14px;padding:5px 9px;background:var(--p);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(12px);font-size:7px;cursor:pointer}
-#s .r .l{color:var(--g);text-transform:uppercase;letter-spacing:.15em}
-#s .r .v{color:var(--b);font-weight:500}
-#gb{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:8px;padding:6px 16px;background:var(--p);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(12px)}
-#gb .d{width:6px;height:6px;border-radius:50%;background:#222;flex-shrink:0;transition:all .3s}
-#gb .d.on{background:var(--r);box-shadow:0 0 10px rgba(192,57,43,.7)}
-#gb .l{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--g);transition:color .3s}
-#gb .l.on{color:var(--b)}
-#tg{position:fixed;top:65px;right:14px;background:var(--p);border:1px solid rgba(255,255,255,.06);color:var(--g);padding:6px 12px;cursor:pointer;font-size:7px;letter-spacing:.2em;text-transform:uppercase;z-index:31;backdrop-filter:blur(12px);transition:all .3s}
-#tg:hover{border-color:rgba(192,57,43,.4);color:var(--r)}
-#tp{position:fixed;bottom:65px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 16px;background:var(--p);border:1px solid rgba(192,57,43,.2);backdrop-filter:blur(12px);text-align:center;display:none}
-#tp .n{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
-#tp .e{font-size:7px;color:var(--g);letter-spacing:.1em;margin-top:2px}
-#hi{position:fixed;right:10px;top:140px;width:160px;max-height:45vh;overflow-y:auto;z-index:30;display:flex;flex-direction:column;gap:2px}
-#hi .x{background:var(--p);border-left:3px solid var(--r);padding:5px 7px;font-size:7px;backdrop-filter:blur(8px)}
-#hi .x.u{border-left-color:#c9a96e}
-#hi .x .c{color:var(--b);font-weight:600;text-transform:uppercase}
-#hi .x .t{color:var(--g);margin-top:2px;line-height:1.3}
-#rs{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:12px;pointer-events:none}
-#rs .rn{font-size:18px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
-#rs .rf{font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:3px 10px;border:1px solid}
-#rs .rf.u{color:#c9a96e;border-color:rgba(201,169,110,.4)}
-#rs .rf.v{color:var(--r);border-color:rgba(192,57,43,.5)}
-#rs .rd{font-size:9px;color:var(--g);text-align:center;max-width:260px;line-height:1.7}
-#cur{position:fixed;width:20px;height:20px;pointer-events:none;z-index:100;display:none}
-#er{position:fixed;bottom:0;left:0;right:0;background:rgba(80,0,0,.95);color:#f66;padding:5px 10px;font-size:8px;z-index:999;display:none;cursor:pointer;font-family:monospace}
-</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TAROT · FBC Entity Archive</title>
+<style>
+:root{--bg:#050508;--r:#c0392b;--b:#e8e0d5;--g:#6b6b6b;--p:rgba(14,14,20,.88)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);overflow:hidden;font-family:'JetBrains Mono',monospace;color:var(--b);width:100vw;height:100vh}
+canvas{display:block;position:fixed;inset:0;z-index:0}
 
-<div id="u">
-<div id="hd"><span class="t">TAROT</span><span class="v">FBC · CASE 22</span></div>
-<button id="tg" onclick="window._tg()">🖐 GESTURE</button>
-<div id="s"><div class="r"><span class="l">CARDS</span><span class="v" id="sc">22/22</span></div><div class="r" onclick="document.documentElement.requestFullscreen()"><span class="l">FULL</span><span class="v">OFF</span></div></div>
-<div id="gb"><div class="d"></div><span class="l">STANDBY</span></div>
-<div id="tp"><div class="n"></div><div class="e"></div></div>
-<div id="hi"></div>
-<div id="rs"><div class="rn"></div><div class="rf"></div><div class="rd"></div></div>
-<div id="cur"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="rgba(192,57,43,.7)" stroke-width="1"/><line x1="10" y1="1" x2="10" y2="6" stroke="rgba(192,57,43,.4)"/><line x1="10" y1="14" x2="10" y2="19" stroke="rgba(192,57,43,.4)"/><line x1="1" y1="10" x2="6" y2="10" stroke="rgba(192,57,43,.4)"/><line x1="14" y1="10" x2="19" y2="10" stroke="rgba(192,57,43,.4)"/><circle cx="10" cy="10" r="1.5" fill="rgba(192,57,43,.8)"/></svg></div>
-<div id="er" onclick="this.style.display='none'"></div>
+/* Header */
+#hdr{position:fixed;top:0;left:0;right:0;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;z-index:30;background:linear-gradient(180deg,rgba(5,5,8,.97),transparent)}
+#hdr h1{font-size:15px;font-weight:700;letter-spacing:.5em;background:linear-gradient(135deg,var(--b) 0%,#c9a96e 40%,var(--r) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-transform:uppercase}
+#hdr span{font-size:7px;color:var(--g);letter-spacing:.25em}
+
+/* Stats */
+#stats{position:fixed;right:14px;top:68px;z-index:30;display:flex;flex-direction:column;gap:3px}
+#stats .row{display:flex;justify-content:space-between;gap:16px;padding:5px 10px;background:var(--p);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(14px);font-size:7px;cursor:pointer;transition:border-color .3s}
+#stats .row:hover{border-color:rgba(192,57,43,.25)}
+#stats .lbl{color:var(--g);text-transform:uppercase;letter-spacing:.15em}
+#stats .val{color:var(--b);font-weight:500}
+
+/* Toggle */
+#tgl{position:fixed;top:68px;right:14px;background:var(--p);border:1px solid rgba(255,255,255,.06);color:var(--g);padding:6px 12px;cursor:pointer;font-size:7px;letter-spacing:.2em;text-transform:uppercase;z-index:31;backdrop-filter:blur(14px);transition:all .3s}
+#tgl:hover{border-color:rgba(192,57,43,.4);color:var(--r)}
+
+/* Gesture bar */
+#gbar{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:10px;padding:7px 18px;background:var(--p);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(14px)}
+#gbar .dot{width:7px;height:7px;border-radius:50%;background:#222;flex-shrink:0;transition:all .3s}
+#gbar .dot.on{background:var(--r);box-shadow:0 0 12px rgba(192,57,43,.7)}
+#gbar .txt{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--g);transition:color .3s}
+#gbar .txt.on{color:var(--b)}
+
+/* Tooltip */
+#tip{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:30;padding:9px 18px;background:var(--p);border:1px solid rgba(192,57,43,.2);backdrop-filter:blur(14px);text-align:center;display:none}
+#tip .nm{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+#tip .en{font-size:7px;color:var(--g);letter-spacing:.1em;margin-top:3px}
+
+/* Result */
+#res{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:14px;pointer-events:none}
+#res .rn{font-size:22px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--b)}
+#res .rf{font-size:9px;letter-spacing:.25em;text-transform:uppercase;padding:4px 14px;border:1px solid}
+#res .rf.up{color:#c9a96e;border-color:rgba(201,169,110,.4)}
+#res .rf.rv{color:var(--r);border-color:rgba(192,57,43,.5)}
+#res .rd{font-size:10px;color:var(--g);text-align:center;max-width:280px;line-height:1.8}
+
+/* History */
+#hist{position:fixed;right:10px;top:145px;width:165px;max-height:42vh;overflow-y:auto;z-index:30;display:flex;flex-direction:column;gap:2px}
+#hist .ent{background:var(--p);border-left:3px solid var(--r);padding:6px 8px;font-size:7px;backdrop-filter:blur(8px)}
+#hist .ent.up{border-left-color:#c9a96e}
+#hist .ent .cn{color:var(--b);font-weight:600;text-transform:uppercase}
+#hist .ent .tx{color:var(--g);margin-top:2px;line-height:1.3}
+
+/* Cursor */
+#cur{position:fixed;width:22px;height:22px;pointer-events:none;z-index:100;display:none}
+#cur svg{width:100%;height:100%}
+
+/* Error */
+#err{position:fixed;bottom:0;left:0;right:0;background:rgba(80,0,0,.95);color:#f66;padding:6px 12px;font-size:8px;z-index:999;display:none;cursor:pointer;font-family:monospace}
+</style>
+</head>
+<body>
+
+<div id="hdr"><h1>TAROT</h1><span>FBC · CASE 22</span></div>
+<button id="tgl">🖐 GESTURE</button>
+<div id="stats">
+  <div class="row"><span class="lbl">CARDS</span><span class="val" id="sc">22/22</span></div>
+  <div class="row" onclick="document.documentElement.requestFullscreen()"><span class="lbl">FULLSCREEN</span><span class="val">OFF</span></div>
 </div>
+<div id="gbar"><div class="dot"></div><span class="txt">STANDBY</span></div>
+<div id="tip"><div class="nm"></div><div class="en"></div></div>
+<div id="res"><div class="rn"></div><div class="rf"></div><div class="rd"></div></div>
+<div id="hist"></div>
+<div id="cur"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8" fill="none" stroke="rgba(192,57,43,.7)" stroke-width="1"/><circle cx="11" cy="11" r="1.5" fill="rgba(192,57,43,.8)"/></svg></div>
+<div id="err" onclick="this.style.display='none'"></div>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 
 <script type="module">
 import * as THREE from 'three'
 
-// Show errors visibly
-window._showErr=function(m){const e=document.getElementById('er');e.textContent=m;e.style.display='block'}
-window.addEventListener('error',e=>window._showErr('[JS] '+e.message))
-window.addEventListener('unhandledrejection',e=>window._showErr('[P] '+(e.reason?.message||e.reason)))
+const $=id=>document.getElementById(id)
+const err=(m)=>{const e=$('err');e.textContent=m;e.style.display='block'}
+window.addEventListener('error',ev=>err('[JS] '+ev.message))
+window.addEventListener('unhandledrejection',ev=>err('[P] '+(ev.reason?.message||ev.reason)))
 
-// ═══════ DATA ═══════
-const D=[{id:0,en:'The Fool',cn:'愚者',up:'新的旅程·纯真无畏',rv:'鲁莽冒险·不计后果'},
+/* ═════════ DATA ═════════ */
+const CD=[{id:0,en:'The Fool',cn:'愚者',up:'新的旅程·纯真无畏',rv:'鲁莽冒险·不计后果'},
 {id:1,en:'The Magician',cn:'魔术师',up:'创造力·技能·意志',rv:'操控欺骗·浪费才能'},
 {id:2,en:'The High Priestess',cn:'女祭司',up:'直觉·潜意识·内在智慧',rv:'忽视直觉·表面化'},
 {id:3,en:'The Empress',cn:'女皇',up:'丰盛自然·母性之美',rv:'依赖·过度保护'},
@@ -80,120 +110,431 @@ const D=[{id:0,en:'The Fool',cn:'愚者',up:'新的旅程·纯真无畏',rv:'鲁
 {id:20,en:'Judgement',cn:'审判',up:'觉醒重生·更高使命',rv:'拒绝反思·自我怀疑'},
 {id:21,en:'The World',cn:'世界',up:'完成圆满·周期终结',rv:'未完成·缺乏闭合'}]
 
-// ═══════ STATE ═══════
-const S={phase:'idle',deck:[...D],drawn:[],hovered:null,grabbed:null,current:null,orient:null,count:0}
-let mode='camera',gesture='none',cursor={x:.5,y:.5},handOn=false,gt=0,prev='none'
+/* ═════════ STATE ═════════ */
+const state={phase:'idle',deck:[...CD],drawn:[],hovered:null,grabbedMesh:null,curCard:null,orient:null,drawCount:0}
+let inputMode='camera',curGesture='none',pointerPos={x:.5,y:.5},handVisible=false
+let gestureTick=0,lastGesture='none'
 
-// ═══════ THREE ═══════
-const r=new THREE.WebGLRenderer({antialias:true,alpha:false})
-r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(innerWidth,innerHeight);r.toneMapping=THREE.ReinhardToneMapping;r.toneMappingExposure=1.3
-document.body.prepend(r.domElement)
+/* ═════════ THREE.JS SETUP ═════════ */
+const renderer=new THREE.WebGLRenderer({antialias:true})
+renderer.setPixelRatio(Math.min(devicePixelRatio,2))
+renderer.setSize(innerWidth,innerHeight)
+renderer.toneMapping=THREE.ReinhardToneMapping
+renderer.toneMappingExposure=1.4
+document.body.prepend(renderer.domElement)
 
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x050508);scene.fog=new THREE.FogExp2(0x050508,.0006)
-const cam=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,40);cam.position.set(0,.3,6);cam.lookAt(0,-.1,0)
+const scene=new THREE.Scene()
+scene.background=new THREE.Color(0x050508)
+scene.fog=new THREE.FogExp2(0x050508,0.0005)
 
-scene.add(new THREE.AmbientLight(0x1a1a2e,.6))
-const kl=new THREE.DirectionalLight(0xe8e0d5,1.6);kl.position.set(4,6,5);scene.add(kl)
-const rl=new THREE.DirectionalLight(0x8b0000,.5);rl.position.set(-3,-2,-4);scene.add(rl)
-scene.add((()=>{const p=new THREE.PointLight(0xc0392b,.5,10);p.position.set(0,3.5,0);return p})())
+const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,0.1,35)
+camera.position.set(0,0.35,6.2)
+camera.lookAt(0,-0.05,0)
 
-// Stars
-const st=new THREE.Points((()=>{const g=new THREE.BufferGeometry();const p=new Float32Array(600*3);const c=new Float32Array(600*3);for(let i=0;i<600;i++){const t=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),rd=9+Math.random()*7;p[i*3]=rd*Math.sin(ph)*Math.cos(t);p[i*3+1]=rd*Math.sin(ph)*Math.sin(t);p[i*3+2]=rd*Math.cos(ph);const rr=Math.random()>.88;c[i*3]=rr?.7:.25+Math.random()*.4;c[i*3+1]=rr?.05:.2+Math.random()*.3;c[i*3+2]=rr?.05:.2+Math.random()*.3}g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('color',new THREE.BufferAttribute(c,3));return g})(),new THREE.PointsMaterial({size:.04,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.65}))
-scene.add(st)
+/* Lighting */
+scene.add(new THREE.AmbientLight(0x1a1a2e,0.55))
+const keyLight=new THREE.DirectionalLight(0xe8e0d5,1.8)
+keyLight.position.set(4,6,5)
+scene.add(keyLight)
+const rimLight=new THREE.DirectionalLight(0x8b0000,0.55)
+rimLight.position.set(-3,-2,-4)
+scene.add(rimLight)
+const pointLight=new THREE.PointLight(0xc0392b,0.5,12)
+pointLight.position.set(0,3.5,0)
+scene.add(pointLight)
 
-// Grid
-scene.add((()=>{const g=new THREE.GridHelper(10,30,0x331111,0x111118);g.position.y=-3;g.material.opacity=.1;g.material.transparent=true;return g})())
+/* Stars */
+const starGeo=new THREE.BufferGeometry()
+const starPos=new Float32Array(600*3)
+const starCol=new Float32Array(600*3)
+for(let i=0;i<600;i++){
+  const theta=Math.random()*Math.PI*2,phi=Math.acos(2*Math.random()-1),rad=9+Math.random()*7
+  starPos[i*3]=rad*Math.sin(phi)*Math.cos(theta)
+  starPos[i*3+1]=rad*Math.sin(phi)*Math.sin(theta)
+  starPos[i*3+2]=rad*Math.cos(phi)
+  const isRed=Math.random()>0.88
+  starCol[i*3]=isRed?0.7:0.25+Math.random()*0.4
+  starCol[i*3+1]=isRed?0.05:0.2+Math.random()*0.3
+  starCol[i*3+2]=isRed?0.05:0.2+Math.random()*0.3
+}
+starGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3))
+starGeo.setAttribute('color',new THREE.BufferAttribute(starCol,3))
+const starsMesh=new THREE.Points(starGeo,new THREE.PointsMaterial({size:0.04,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.7}))
+scene.add(starsMesh)
 
-// ═══════ CARDS ═══════
-const ld=new THREE.TextureLoader(),tx={}
-const getTex=(id)=>{if(!tx[id])tx[id]=ld.load(`/cards/major_${String(id).padStart(2,'0')}.png`);return tx[id]}
-const bt=(()=>{const c=document.createElement('canvas');c.width=256;c.height=400;const x=c.getContext('2d');x.fillStyle='#0a0a10';x.fillRect(0,0,256,400);x.strokeStyle='rgba(192,57,43,.25)';x.lineWidth=2;x.strokeRect(8,8,240,384);x.strokeStyle='rgba(192,57,43,.1)';x.strokeRect(18,18,220,364);x.beginPath();x.moveTo(128,28);x.lineTo(222,200);x.lineTo(34,200);x.closePath();x.strokeStyle='rgba(192,57,43,.35)';x.stroke();x.beginPath();x.moveTo(128,170);x.lineTo(186,65);x.lineTo(70,65);x.closePath();x.strokeStyle='rgba(192,57,43,.12)';x.stroke();x.fillStyle='rgba(192,57,43,.5)';x.beginPath();x.arc(128,130,3.5,0,Math.PI*2);x.fill();x.font='bold 16px monospace';x.fillStyle='#c0392b';x.textAlign='center';x.fillText('CLASSIFIED',128,270);x.font='8px monospace';x.fillStyle='rgba(107,107,107,.5)';x.fillText('FBC·PARANATURAL',128,288);return new THREE.CanvasTexture(c)})()
+/* Grid */
+const gridHelper=new THREE.GridHelper(10,30,0x331111,0x111118)
+gridHelper.position.y=-3
+gridHelper.material.opacity=0.12
+gridHelper.material.transparent=true
+scene.add(gridHelper)
 
-let cards=[]
-function mkCard(d){
-  const g=new THREE.PlaneGeometry(.68,1.1)
-  const f=new THREE.MeshStandardMaterial({map:getTex(d.id),roughness:.45,metalness:.05,emissive:new THREE.Color(0x110000),emissiveIntensity:.15})
-  const b=new THREE.MeshStandardMaterial({map:bt,roughness:.35,metalness:.2,emissive:new THREE.Color(0x110000),emissiveIntensity:.1})
-  const m=new THREE.Mesh(g,f);m.castShadow=true;m.receiveShadow=true
-  m.userData={card:d,fm:f,bm:b,flipped:false,bp:new THREE.Vector3,br:new THREE.Euler,ang:0,grabbed:false,hov:false,ty:0}
-  return m
+/* ═════════ CARDS ═════════ */
+const texLoader=new THREE.TextureLoader()
+const texCache={}
+function loadCardTex(id){
+  if(!texCache[id])texCache[id]=texLoader.load(`/cards/major_${String(id).padStart(2,'0')}.png`)
+  return texCache[id]
 }
 
-function buildCards(){
-  cards.forEach(m=>{scene.remove(m);m.geometry.dispose();m.userData.fm.dispose();m.userData.bm.dispose()});cards=[]
-  const n=S.deck.length,R=3.4,A=Math.PI*.62
+/* FBC card back */
+const backCanvas=document.createElement('canvas')
+backCanvas.width=256;backCanvas.height=400
+const bctx=backCanvas.getContext('2d')
+bctx.fillStyle='#0a0a10';bctx.fillRect(0,0,256,400)
+bctx.strokeStyle='rgba(192,57,43,.28)';bctx.lineWidth=2;bctx.strokeRect(8,8,240,384)
+bctx.strokeStyle='rgba(192,57,43,.1)';bctx.lineWidth=1;bctx.strokeRect(18,18,220,364)
+bctx.beginPath();bctx.moveTo(128,28);bctx.lineTo(222,200);bctx.lineTo(34,200);bctx.closePath()
+bctx.strokeStyle='rgba(192,57,43,.38)';bctx.stroke()
+bctx.beginPath();bctx.moveTo(128,170);bctx.lineTo(186,65);bctx.lineTo(70,65);bctx.closePath()
+bctx.strokeStyle='rgba(192,57,43,.14)';bctx.stroke()
+bctx.fillStyle='rgba(192,57,43,.55)';bctx.beginPath();bctx.arc(128,128,4,0,Math.PI*2);bctx.fill()
+bctx.font='bold 16px monospace';bctx.fillStyle='#c0392b';bctx.textAlign='center';bctx.fillText('CLASSIFIED',128,270)
+bctx.font='8px monospace';bctx.fillStyle='rgba(107,107,107,.5)';bctx.fillText('FBC · PARANATURAL DIVISION',128,290)
+for(let y=20;y<385;y+=14){bctx.fillStyle=`rgba(139,0,0,${0.02+Math.random()*0.01})`;bctx.fillRect(12,y,6,1.5);bctx.fillRect(238,y,6,1.5)}
+const backTexture=new THREE.CanvasTexture(backCanvas)
+
+let cardMeshes=[]
+
+function createCardPlane(cardData){
+  const geo=new THREE.PlaneGeometry(0.68,1.1)
+  const frontMat=new THREE.MeshStandardMaterial({
+    map:loadCardTex(cardData.id),roughness:0.45,metalness:0.05,
+    emissive:new THREE.Color(0x110000),emissiveIntensity:0.15
+  })
+  const backMat=new THREE.MeshStandardMaterial({
+    map:backTexture,roughness:0.35,metalness:0.2,
+    emissive:new THREE.Color(0x110000),emissiveIntensity:0.1
+  })
+  const mesh=new THREE.Mesh(geo,backMat)
+  mesh.castShadow=true;mesh.receiveShadow=true
+  mesh.userData={
+    card:cardData,frontMat,backMat,
+    homePos:new THREE.Vector3,homeRot:new THREE.Euler,
+    angle:0,grabbed:false,highlighted:false,targetY:0
+  }
+  return mesh
+}
+
+function buildSpread(){
+  cardMeshes.forEach(m=>{
+    scene.remove(m);m.geometry.dispose()
+    m.userData.frontMat.dispose();m.userData.backMat.dispose()
+  })
+  cardMeshes=[]
+  const n=state.deck.length
+  const R=3.4
+  const spreadA=Math.PI*0.62
   for(let i=0;i<n;i++){
-    const mc=mkCard(S.deck[i]),a=-A/2+(i/Math.max(n-1,1))*A
-    mc.position.set(Math.sin(a)*R,(i%3)*.04-.15,Math.cos(a)*R-.7)
-    mc.rotation.set(-.16,-a,(Math.random()-.5)*.05)
-    mc.userData.bp.copy(mc.position);mc.userData.br.copy(mc.rotation);mc.userData.ang=a
-    scene.add(mc);cards.push(mc)
+    const m=createCardPlane(state.deck[i])
+    const a=-spreadA/2+(i/Math.max(n-1,1))*spreadA
+    m.position.set(Math.sin(a)*R,(i%3)*0.04-0.15,Math.cos(a)*R-0.7)
+    m.rotation.set(-0.16,-a,(Math.random()-0.5)*0.05)
+    m.userData.homePos.copy(m.position)
+    m.userData.homeRot.copy(m.rotation)
+    m.userData.angle=a
+    scene.add(m)
+    cardMeshes.push(m)
   }
 }
 
-// ═══════ PARTICLES ═══════
-const ag=new THREE.BufferGeometry();const ap=new Float32Array(300*3);const as=new Float32Array(300)
-ag.setAttribute('position',new THREE.BufferAttribute(ap,3));ag.setAttribute('size',new THREE.BufferAttribute(as,1))
-const asys=new THREE.Points(ag,new THREE.PointsMaterial({size:.05,color:0xff3333,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}))
-asys.visible=false;scene.add(asys);let pt=[]
+/* ═════════ ASH PARTICLES ═════════ */
+const ashGeometry=new THREE.BufferGeometry()
+const ashPositions=new Float32Array(300*3)
+const ashSizesArr=new Float32Array(300)
+ashGeometry.setAttribute('position',new THREE.BufferAttribute(ashPositions,3))
+ashGeometry.setAttribute('size',new THREE.BufferAttribute(ashSizesArr,1))
+const ashSystem=new THREE.Points(ashGeometry,new THREE.PointsMaterial({
+  size:0.05,color:0xff3333,transparent:true,opacity:0.8,
+  blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true
+}))
+ashSystem.visible=false;scene.add(ashSystem)
+let ashParticles=[]
 
-function ash(pos,orient){
-  for(let i=0;i<200;i++)pt.push({x:pos.x,y:pos.y,z:pos.z,vx:(Math.random()-.5)*.08,vy:Math.random()*.07+.02,vz:(Math.random()-.5)*.06,life:1,sz:.02+Math.random()*.06,rd:orient==='reversed'&&Math.random()>.35})
-  asys.visible=true
+function spawnAsh(worldPos,orientation){
+  for(let i=0;i<200;i++){
+    ashParticles.push({
+      x:worldPos.x,y:worldPos.y,z:worldPos.z,
+      vx:(Math.random()-0.5)*0.08,vy:Math.random()*0.07+0.02,vz:(Math.random()-0.5)*0.06,
+      life:1,size:0.02+Math.random()*0.06,isRed:orientation==='reversed'&&Math.random()>0.35
+    })
+  }
+  ashSystem.visible=true
 }
 
-// ═══════ RAYCASTER ═══════
-const rc=new THREE.Raycaster()
-function ray(x,y){
-  rc.setFromCamera(new THREE.Vector2(x*2-1,-y*2+1),cam)
-  cards.forEach(m=>{m.userData.hov=false;m.material=m.userData.bm;m.material.emissiveIntensity=.1})
-  const h=rc.intersectObjects(cards.filter(m=>!m.userData.grabbed))
-  const tp=document.getElementById('tp')
-  if(h.length>0&&!S.grabbed){const m=h[0].object;m.userData.hov=true;m.material=m.userData.fm;m.material.emissiveIntensity=.35;S.hovered=m.userData.card;if(S.phase!=='ash'){tp.querySelector('.n').textContent=m.userData.card.cn;tp.querySelector('.e').textContent=m.userData.card.en;tp.style.display='block'}}
-  else{if(S.phase!=='ash'){S.hovered=null;tp.style.display='none'}}
+/* ═════════ RAYCASTER ═════════ */
+const raycaster=new THREE.Raycaster()
+
+function doRaycast(x,y){
+  raycaster.setFromCamera(new THREE.Vector2(x*2-1,-y*2+1),camera)
+  cardMeshes.forEach(m=>{
+    m.userData.highlighted=false
+    m.material=m.userData.backMat
+    m.material.emissiveIntensity=0.1
+  })
+  const hits=raycaster.intersectObjects(cardMeshes.filter(m=>!m.userData.grabbed))
+  if(hits.length>0&&!state.grabbedMesh){
+    const m=hits[0].object
+    m.userData.highlighted=true
+    m.material=m.userData.frontMat
+    m.material.emissiveIntensity=0.38
+    state.hovered=m.userData.card
+    if(state.phase!=='ash'){
+      $('tip').querySelector('.nm').textContent=m.userData.card.cn
+      $('tip').querySelector('.en').textContent=m.userData.card.en
+      $('tip').style.display='block'
+    }
+  }else{
+    if(state.phase!=='ash'){$('tip').style.display='none'}
+    state.hovered=null
+  }
 }
 
-// ═══════ GESTURES ═══════
-let hands=null,ci=null
-const vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;vid.muted=true;vid.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none';document.body.appendChild(vid)
-
-async function startCam(){
-  try{window.Module=window.Module||{};const V='0.4.1675469240';const m=await import(`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${V}/+esm`);const c=await import('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/+esm');hands=new m.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${V}/${f}`});hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.5,minTrackingConfidence:.4});hands.onResults(r=>{if(r.multiHandLandmarks?.length>0){handOn=true;const lm=r.multiHandLandmarks[0];if(lm[8])cursor={x:1-lm[8].x,y:lm[8].y};const tips=[4,8,12,16,20],mcps=[2,5,9,13,17];let ext=0;tips.forEach((t,i)=>{if(lm[t]&&lm[mcps[i]])ext+=i===0?Math.abs(lm[t].x-lm[mcps[i]].x)>.05?1:0:lm[t].y<lm[mcps[i]].y?1:0});const d=lm[4]&&lm[8]?Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y):1;if(ext<=1)gesture='fist';else if(d<.06&&ext>=2)gesture='pinch';else if(ext>=4)gesture='open';else gesture='none'}else{handOn=false;gesture='none'};ui()});ci=new c.Camera(vid,{onFrame:async()=>{if(hands)await hands.send({image:vid})},width:320,height:240});await ci.start()}catch(e){console.warn('CAM:',e.message);sw('mouse')}
+/* ═════════ UI UPDATE ═════════ */
+function updateGestureUI(){
+  const dot=$('gbar').querySelector('.dot')
+  const txt=$('gbar').querySelector('.txt')
+  const active=curGesture!=='none'
+  dot.className='dot'+(active?' on':'')
+  txt.className='txt'+(active?' on':'')
+  const labels={open:'PALM · READY',pinch:'PINCH · GRAB',fist:'FIST · CONFIRM',none:inputMode==='mouse'?'MOUSE MODE':'STANDBY'}
+  txt.textContent=labels[curGesture]||'STANDBY'
 }
-function ui(){const d=document.querySelector('#gb .d'),l=document.querySelector('#gb .l');const a=gesture!=='none';d.className='d'+(a?' on':'');l.className='l'+(a?' on':'');l.textContent={open:'PALM',pinch:'PINCH',fist:'FIST',none:mode==='mouse'?'MOUSE':'STANDBY'}[gesture]}
-function sw(m){mode=m;document.getElementById('tg').textContent=m==='mouse'?'🖱 MOUSE':'🖐 GESTURE';document.getElementById('cur').style.display=m==='mouse'?'block':'none'}
-window._tg=()=>{if(mode==='camera')sw('mouse');else{sw('camera');if(!hands)startCam()}}
 
-// ═══════ ACTIONS ═══════
-function grab(){if(S.phase!=='ready'||!S.hovered)return;S.phase='grabbed';S.current=S.hovered;S.orient=Math.random()<.5?'upright':'reversed';const m=cards.find(c=>c.userData.card.id===S.hovered.id);if(!m)return;m.userData.grabbed=true;S.grabbed=m}
-function confirm(){if(S.phase!=='grabbed'||!S.grabbed)return;S.phase='ash';S.count++;const m=S.grabbed;S.drawn.push({...S.current,orientation:S.orient});S.deck=S.deck.filter(c=>c.id!==S.current.id);const rs=document.getElementById('rs'),d=S.current;rs.querySelector('.rn').textContent=d.cn;const rf=rs.querySelector('.rf');rf.textContent=S.orient==='upright'?'STABLE':'DECAYED';rf.className='rf '+(S.orient==='upright'?'u':'v');rs.querySelector('.rd').textContent=S.orient==='upright'?d.up:d.rv;rs.style.display='flex';hist();stats();ash(m.position.clone(),S.orient);scene.remove(m);m.geometry.dispose();m.userData.fm.dispose();m.userData.bm.dispose();const idx=cards.indexOf(m);if(idx>-1)cards.splice(idx,1);S.grabbed=null;setTimeout(()=>{rs.style.display='none';S.current=null;S.orient=null;S.phase='idle';if(S.deck.length>0)buildCards()},3000)}
-function release(){if(S.phase!=='grabbed'||!S.grabbed)return;S.grabbed.userData.grabbed=false;S.grabbed=null;S.phase='ready'}
-function hist(){document.getElementById('hi').innerHTML=S.drawn.slice(-10).reverse().map(d=>`<div class="x ${d.orientation==='upright'?'u':''}"><div class="c">${d.cn} ${d.orientation==='reversed'?'⟲':''}</div><div class="t">${d.orientation==='reversed'?d.rv:d.up}</div></div>`).join('')}
-function stats(){document.getElementById('sc').textContent=`${S.deck.length}/${D.length}`}
-
-// ═══════ MOUSE ═══════
-document.addEventListener('mousemove',e=>{if(mode==='mouse')cursor={x:e.clientX/innerWidth,y:e.clientY/innerHeight};document.getElementById('cur').style.left=e.clientX+'px';document.getElementById('cur').style.top=e.clientY+'px'})
-document.addEventListener('click',()=>{if(mode!=='mouse')return;if(S.phase==='idle')S.phase='ready';else if(S.phase==='ready'&&S.hovered)grab();else if(S.phase==='grabbed')confirm()})
-document.addEventListener('contextmenu',e=>{e.preventDefault();release()})
-
-// ═══════ LOOP ═══════
-function loop(t){
-  requestAnimationFrame(loop);const dt=Math.min((t-(loop._t||t))/1000,.1);loop._t=t
-  st.rotation.y+=.00015;st.rotation.x+=.00005
-  if(gesture!==prev){prev=gesture;gt=0}else gt+=dt
-  if(gt>.35&&mode==='camera'){if(gesture==='open'&&S.phase==='idle')S.phase='ready';if(gesture==='pinch'&&S.phase==='ready'&&S.hovered)grab();if(gesture==='fist'&&S.phase==='grabbed')confirm()}
-  const cx=mode==='camera'&&handOn?cursor.x:cursor.x,cy=mode==='camera'&&handOn?cursor.y:cursor.y
-  if(S.phase!=='ash')ray(cx,cy)
-  if(S.grabbed){const m=S.grabbed;m.position.lerp(new THREE.Vector3(0,.5,2),.1);m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,0,.12);m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,0,.12);m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,S.orient==='reversed'?Math.PI:0,.12);m.scale.lerp(new THREE.Vector3(1.9,1.9,1),.1)}
-  else cards.forEach(m=>{if(m.userData.grabbed)return;m.position.lerp(m.userData.bp,.05);m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,m.userData.br.x,.05);m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,m.userData.br.y,.05);m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,m.userData.br.z,.05);m.scale.lerp(new THREE.Vector3(1,1,1),.05);m.userData.ty=m.userData.hov?m.userData.bp.y+.2:m.userData.bp.y;m.position.y=THREE.MathUtils.lerp(m.position.y,m.userData.ty,.15)})
-  for(let i=pt.length-1;i>=0;i--){const p=pt[i];p.x+=p.vx;p.y+=p.vy;p.z+=p.vz;p.vx+=(Math.random()-.5)*.003;p.life-=.005;if(p.life<=0)pt.splice(i,1)}
-  if(asys.visible){const n=Math.min(pt.length,300);for(let i=0;i<n;i++){const p=pt[i];ap[i*3]=p.x;ap[i*3+1]=p.y;ap[i*3+2]=p.z;as[i]=p.sz*p.life}ag.attributes.position.needsUpdate=true;ag.attributes.size.needsUpdate=true;asys.material.opacity=Math.min(.8,pt.length/40);if(pt.length===0)asys.visible=false}
-  cam.position.x=Math.sin(t*.00025)*.4;r.render(scene,cam)
+function updateHistoryUI(){
+  $('hist').innerHTML=state.drawn.slice(-10).reverse().map(d=>
+    `<div class="ent ${d.orientation==='upright'?'up':''}">
+      <div class="cn">${d.cn} ${d.orientation==='reversed'?'⟲':''}</div>
+      <div class="tx">${d.orientation==='reversed'?d.rv:d.up}</div>
+    </div>`
+  ).join('')
 }
-loop._t=0;requestAnimationFrame(loop)
-window.addEventListener('resize',()=>{r.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()})
 
-// ═══════ START ═══════
-buildCards();startCam();document.getElementById('cur').style.display=mode==='mouse'?'block':'none'
-console.log('🃏 READY')
-</script></body></html>
+function updateStatsUI(){
+  $('sc').textContent=`${state.deck.length}/${CD.length}`
+}
+
+/* ═════════ GAME ACTIONS ═════════ */
+function actionGrab(){
+  if(state.phase!=='ready'||!state.hovered)return
+  state.phase='grabbed'
+  state.curCard=state.hovered
+  state.orient=Math.random()<0.5?'upright':'reversed'
+  const m=cardMeshes.find(c=>c.userData.card.id===state.hovered.id)
+  if(!m)return
+  m.userData.grabbed=true
+  state.grabbedMesh=m
+}
+
+function actionConfirm(){
+  if(state.phase!=='grabbed'||!state.grabbedMesh)return
+  state.phase='ash'
+  state.drawCount++
+  const m=state.grabbedMesh
+  state.drawn.push({...state.curCard,orientation:state.orient})
+  state.deck=state.deck.filter(c=>c.id!==state.curCard.id)
+  /* Show result */
+  $('res').querySelector('.rn').textContent=state.curCard.cn
+  const rf=$('res').querySelector('.rf')
+  rf.textContent=state.orient==='upright'?'STABLE FORM':'DECAYED FORM'
+  rf.className='rf '+(state.orient==='upright'?'up':'rv')
+  $('res').querySelector('.rd').textContent=state.orient==='upright'?state.curCard.up:state.curCard.rv
+  $('res').style.display='flex'
+  updateHistoryUI()
+  updateStatsUI()
+  spawnAsh(m.position.clone(),state.orient)
+  scene.remove(m)
+  m.geometry.dispose();m.userData.frontMat.dispose();m.userData.backMat.dispose()
+  cardMeshes.splice(cardMeshes.indexOf(m),1)
+  state.grabbedMesh=null
+  setTimeout(()=>{
+    $('res').style.display='none'
+    state.curCard=null;state.orient=null;state.phase='idle'
+    if(state.deck.length>0)buildSpread()
+  },3000)
+}
+
+function actionRelease(){
+  if(state.phase!=='grabbed'||!state.grabbedMesh)return
+  state.grabbedMesh.userData.grabbed=false
+  state.grabbedMesh=null
+  state.phase='ready'
+}
+
+/* ═════════ MEDIAPIPE ═════════ */
+let handsInstance=null,cameraInstance=null
+const hiddenVideo=document.createElement('video')
+hiddenVideo.autoplay=true;hiddenVideo.playsInline=true;hiddenVideo.muted=true
+hiddenVideo.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none'
+document.body.appendChild(hiddenVideo)
+
+async function initMediaPipe(){
+  try{
+    window.Module=window.Module||{}
+    const VER='0.4.1675469240'
+    const handsMod=await import(`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${VER}/+esm`)
+    const cameraMod=await import('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/+esm')
+    handsInstance=new handsMod.Hands({
+      locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${VER}/${f}`
+    })
+    handsInstance.setOptions({
+      maxNumHands:1,modelComplexity:0,
+      minDetectionConfidence:0.5,minTrackingConfidence:0.4
+    })
+    handsInstance.onResults(results=>{
+      if(results.multiHandLandmarks?.length>0){
+        handVisible=true
+        const lm=results.multiHandLandmarks[0]
+        if(lm[8])pointerPos={x:1-lm[8].x,y:lm[8].y}
+        /* Count extended fingers */
+        const tips=[4,8,12,16,20],mcps=[2,5,9,13,17]
+        let extended=0
+        tips.forEach((tip,i)=>{
+          if(lm[tip]&&lm[mcps[i]]){
+            if(i===0)extended+=Math.abs(lm[tip].x-lm[mcps[i]].x)>0.05?1:0
+            else extended+=lm[tip].y<lm[mcps[i]].y?1:0
+          }
+        })
+        /* Pinch distance */
+        const pinchDist=lm[4]&&lm[8]?Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y):1
+        if(extended<=1)curGesture='fist'
+        else if(pinchDist<0.06&&extended>=2)curGesture='pinch'
+        else if(extended>=4)curGesture='open'
+        else curGesture='none'
+      }else{handVisible=false;curGesture='none'}
+      updateGestureUI()
+    })
+    cameraInstance=new cameraMod.Camera(hiddenVideo,{
+      onFrame:async()=>{if(handsInstance)await handsInstance.send({image:hiddenVideo})},
+      width:320,height:240
+    })
+    await cameraInstance.start()
+    $('tgl').textContent='🖐 GESTURE'
+    console.log('CAMERA READY')
+  }catch(e){
+    console.warn('Camera init failed:',e.message)
+    switchToMouse()
+  }
+}
+
+/* ═════════ MODE SWITCH ═════════ */
+function switchToMouse(){
+  inputMode='mouse'
+  $('tgl').textContent='🖱 MOUSE'
+  $('cur').style.display='block'
+}
+function toggleMode(){
+  if(inputMode==='camera'){switchToMouse()}
+  else{inputMode='camera';$('cur').style.display='none';if(!handsInstance)initMediaPipe()}
+}
+$('tgl').onclick=toggleMode
+window._tg=toggleMode
+
+/* ═════════ MOUSE INPUT ═════════ */
+document.addEventListener('mousemove',e=>{
+  if(inputMode==='mouse')pointerPos={x:e.clientX/innerWidth,y:e.clientY/innerHeight}
+  $('cur').style.left=e.clientX+'px'
+  $('cur').style.top=e.clientY+'px'
+})
+document.addEventListener('click',()=>{
+  if(inputMode!=='mouse')return
+  if(state.phase==='idle'){state.phase='ready';updateGestureUI()}
+  else if(state.phase==='ready'&&state.hovered)actionGrab()
+  else if(state.phase==='grabbed')actionConfirm()
+})
+document.addEventListener('contextmenu',e=>{e.preventDefault();actionRelease()})
+
+/* ═════════ MAIN LOOP ═════════ */
+function animate(timestamp){
+  requestAnimationFrame(animate)
+  const dt=Math.min((timestamp-(animate._prev||timestamp))/1000,0.1)
+  animate._prev=timestamp
+
+  /* Stars rotation */
+  starsMesh.rotation.y+=0.00012
+  starsMesh.rotation.x+=0.00004
+
+  /* Gesture state machine */
+  const isCam=inputMode==='camera'
+  if(isCam){
+    if(curGesture!==lastGesture){lastGesture=curGesture;gestureTick=0}
+    else gestureTick+=dt
+    const triggered=gestureTick>0.35
+    if(triggered){
+      if(curGesture==='open'&&state.phase==='idle')state.phase='ready'
+      if(curGesture==='pinch'&&state.phase==='ready'&&state.hovered)actionGrab()
+      if(curGesture==='fist'&&state.phase==='grabbed')actionConfirm()
+    }
+  }
+
+  /* Raycast */
+  const rx=isCam&&handVisible?pointerPos.x:pointerPos.x
+  const ry=isCam&&handVisible?pointerPos.y:pointerPos.y
+  if(state.phase!=='ash')doRaycast(rx,ry)
+
+  /* Animate grabbed card towards camera */
+  if(state.grabbedMesh){
+    const m=state.grabbedMesh
+    m.position.lerp(new THREE.Vector3(0,0.55,2.2),0.09)
+    m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,0,0.1)
+    m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,0,0.1)
+    m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,state.orient==='reversed'?Math.PI:0,0.1)
+    m.scale.lerp(new THREE.Vector3(1.8,1.8,1),0.08)
+  }
+
+  /* Return non-grabbed cards to home */
+  cardMeshes.forEach(m=>{
+    if(m.userData.grabbed||state.phase==='ash')return
+    m.position.lerp(m.userData.homePos,0.05)
+    m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,m.userData.homeRot.x,0.05)
+    m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,m.userData.homeRot.y,0.05)
+    m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,m.userData.homeRot.z,0.05)
+    m.scale.lerp(new THREE.Vector3(1,1,1),0.05)
+    m.userData.targetY=m.userData.highlighted?m.userData.homePos.y+0.18:m.userData.homePos.y
+    m.position.y=THREE.MathUtils.lerp(m.position.y,m.userData.targetY,0.12)
+  })
+
+  /* Ash particles */
+  for(let i=ashParticles.length-1;i>=0;i--){
+    const p=ashParticles[i]
+    p.x+=p.vx;p.y+=p.vy;p.z+=p.vz
+    p.vx+=(Math.random()-0.5)*0.003
+    p.life-=0.005
+    if(p.life<=0)ashParticles.splice(i,1)
+  }
+  if(ashSystem.visible){
+    const n=Math.min(ashParticles.length,300)
+    for(let i=0;i<n;i++){
+      const p=ashParticles[i]
+      ashPositions[i*3]=p.x;ashPositions[i*3+1]=p.y;ashPositions[i*3+2]=p.z
+      ashSizesArr[i]=p.size*p.life
+    }
+    ashGeometry.attributes.position.needsUpdate=true
+    ashGeometry.attributes.size.needsUpdate=true
+    ashSystem.material.opacity=Math.min(0.85,ashParticles.length/40)
+    if(ashParticles.length===0)ashSystem.visible=false
+  }
+
+  /* Camera sway */
+  camera.position.x=Math.sin(timestamp*0.00022)*0.4
+  camera.lookAt(0,-0.05,0)
+
+  renderer.render(scene,camera)
+}
+animate._prev=0
+requestAnimationFrame(animate)
+
+/* Resize */
+window.addEventListener('resize',()=>{
+  renderer.setSize(innerWidth,innerHeight)
+  camera.aspect=innerWidth/innerHeight
+  camera.updateProjectionMatrix()
+})
+
+/* ═════════ START ═════════ */
+buildSpread()
+initMediaPipe()
+console.log('🃏 TAROT · FBC Entity Archive · Ready')
+</script>
+</body>
+</html>
