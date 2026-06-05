@@ -1,273 +1,199 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TAROT · FBC Entity Archive</title>
-<style>:root{--bg:#050508;--red:#c0392b;--dred:#8b0000;--bone:#e8e0d5;--gray:#6b6b6b;--gold:#c9a96e;--panel:rgba(14,14,20,.92)}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);overflow:hidden;font-family:'JetBrains Mono',monospace;color:var(--bone);width:100vw;height:100vh;-webkit-font-smoothing:antialiased}
-canvas{display:block;position:fixed;inset:0;z-index:0}
-#ui{position:fixed;inset:0;z-index:10;pointer-events:none}#ui>*{pointer-events:auto}
-/* Header */
-#hdr{position:fixed;top:0;left:0;right:0;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;z-index:30;background:linear-gradient(180deg,rgba(5,5,8,.98) 0%,transparent 100%)}
-#hdr .title{font-size:16px;font-weight:700;letter-spacing:.5em;background:linear-gradient(135deg,var(--bone) 0%,var(--gold) 40%,var(--red) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-transform:uppercase}
-#hdr .ver{font-size:7px;color:var(--gray);letter-spacing:.25em}
-/* Stats panel */
-#stats{position:fixed;right:16px;top:70px;z-index:30;display:flex;flex-direction:column;gap:3px}
-#stats .row{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:5px 10px;background:var(--panel);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(16px);font-size:7px;cursor:pointer;transition:border-color .3s}
-#stats .row:hover{border-color:rgba(192,57,43,.2)}
-#stats .row .lbl{color:var(--gray);letter-spacing:.15em;text-transform:uppercase}
-#stats .row .val{color:var(--bone);font-weight:500}
-#stats .row .val.on{color:var(--red)}
-/* Gesture bar */
-#gbar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:10px;padding:7px 18px;background:var(--panel);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(16px)}
-#gbar .dot{width:7px;height:7px;border-radius:50%;background:#222;transition:all .3s;flex-shrink:0}
-#gbar .dot.a{background:var(--red);box-shadow:0 0 12px rgba(192,57,43,.7)}
-#gbar .lbl{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--gray);transition:color .3s}
-#gbar .lbl.a{color:var(--bone)}
-/* Mode toggle */
-#tgl{position:fixed;top:70px;right:16px;background:var(--panel);border:1px solid rgba(255,255,255,.06);color:var(--gray);padding:6px 14px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:.2em;text-transform:uppercase;z-index:30;backdrop-filter:blur(16px);transition:all .3s}
-#tgl:hover{border-color:rgba(192,57,43,.4);color:var(--red)}
-/* Card info tooltip */
-#tip{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:30;padding:10px 20px;background:var(--panel);border:1px solid rgba(192,57,43,.2);backdrop-filter:blur(16px);text-align:center;display:none}
-#tip .nm{font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--bone)}
-#tip .en{font-size:8px;color:var(--gray);letter-spacing:.1em;margin-top:2px}
-#tip .tags{font-size:7px;color:var(--red);letter-spacing:.1em;margin-top:4px}
-/* History */
-#hist{position:fixed;right:12px;top:160px;width:170px;max-height:45vh;overflow-y:auto;z-index:30;display:flex;flex-direction:column;gap:3px}
-#hist .e{background:var(--panel);border-left:3px solid var(--dred);padding:6px 8px;font-size:7px;backdrop-filter:blur(8px)}
-#hist .e.up{border-left-color:var(--gold)}
-#hist .e .n{color:var(--bone);font-weight:600;text-transform:uppercase}
-#hist .e .t{color:var(--gray);margin-top:2px;line-height:1.4}
-/* Result card display */
-#result{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:16px;pointer-events:none}
-#result .rname{font-size:20px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--bone)}
-#result .rform{font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:3px 10px;border:1px solid}
-#result .rform.up{color:var(--gold);border-color:rgba(201,169,110,.4)}
-#result .rform.rev{color:var(--red);border-color:rgba(192,57,43,.5)}
-#result .rdesc{font-size:10px;color:var(--gray);text-align:center;max-width:280px;line-height:1.7}
-/* Cursor */
-#cur{position:fixed;width:24px;height:24px;pointer-events:none;z-index:100;transform:translate(-50%,-50%);display:none}
-/* Error */
-#err{position:fixed;bottom:0;left:0;right:0;background:rgba(100,0,0,.92);color:#f66;padding:6px 12px;font-size:8px;z-index:999;display:none;cursor:pointer;font-family:monospace}
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>TAROT · FBC</title>
+<style>:root{--bg:#050508;--r:#c0392b;--b:#e8e0d5;--g:#6b6b6b;--p:rgba(14,14,20,.9)}
+*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);overflow:hidden;font-family:'JetBrains Mono',monospace;color:var(--b);width:100vw;height:100vh}canvas{display:block;position:fixed;inset:0;z-index:0}
+#u{position:fixed;inset:0;z-index:10;pointer-events:none}#u>*{pointer-events:auto}
+#hd{position:fixed;top:0;left:0;right:0;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;z-index:30;background:linear-gradient(180deg,rgba(5,5,8,.97),transparent)}
+#hd .t{font-size:15px;font-weight:700;letter-spacing:.5em;background:linear-gradient(135deg,var(--b),var(--r));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-transform:uppercase}
+#hd .v{font-size:7px;color:var(--g);letter-spacing:.25em}
+#s{position:fixed;right:14px;top:65px;z-index:30;display:flex;flex-direction:column;gap:3px}
+#s .r{display:flex;justify-content:space-between;gap:14px;padding:5px 9px;background:var(--p);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(12px);font-size:7px;cursor:pointer}
+#s .r .l{color:var(--g);text-transform:uppercase;letter-spacing:.15em}
+#s .r .v{color:var(--b);font-weight:500}
+#gb{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:8px;padding:6px 16px;background:var(--p);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(12px)}
+#gb .d{width:6px;height:6px;border-radius:50%;background:#222;flex-shrink:0;transition:all .3s}
+#gb .d.on{background:var(--r);box-shadow:0 0 10px rgba(192,57,43,.7)}
+#gb .l{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--g);transition:color .3s}
+#gb .l.on{color:var(--b)}
+#tg{position:fixed;top:65px;right:14px;background:var(--p);border:1px solid rgba(255,255,255,.06);color:var(--g);padding:6px 12px;cursor:pointer;font-size:7px;letter-spacing:.2em;text-transform:uppercase;z-index:31;backdrop-filter:blur(12px);transition:all .3s}
+#tg:hover{border-color:rgba(192,57,43,.4);color:var(--r)}
+#tp{position:fixed;bottom:65px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 16px;background:var(--p);border:1px solid rgba(192,57,43,.2);backdrop-filter:blur(12px);text-align:center;display:none}
+#tp .n{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+#tp .e{font-size:7px;color:var(--g);letter-spacing:.1em;margin-top:2px}
+#hi{position:fixed;right:10px;top:140px;width:160px;max-height:45vh;overflow-y:auto;z-index:30;display:flex;flex-direction:column;gap:2px}
+#hi .x{background:var(--p);border-left:3px solid var(--r);padding:5px 7px;font-size:7px;backdrop-filter:blur(8px)}
+#hi .x.u{border-left-color:#c9a96e}
+#hi .x .c{color:var(--b);font-weight:600;text-transform:uppercase}
+#hi .x .t{color:var(--g);margin-top:2px;line-height:1.3}
+#rs{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:12px;pointer-events:none}
+#rs .rn{font-size:18px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+#rs .rf{font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:3px 10px;border:1px solid}
+#rs .rf.u{color:#c9a96e;border-color:rgba(201,169,110,.4)}
+#rs .rf.v{color:var(--r);border-color:rgba(192,57,43,.5)}
+#rs .rd{font-size:9px;color:var(--g);text-align:center;max-width:260px;line-height:1.7}
+#cur{position:fixed;width:20px;height:20px;pointer-events:none;z-index:100;display:none}
+#er{position:fixed;bottom:0;left:0;right:0;background:rgba(80,0,0,.95);color:#f66;padding:5px 10px;font-size:8px;z-index:999;display:none;cursor:pointer;font-family:monospace}
 </style></head><body>
 
-<div id="ui">
-<div id="hdr"><span class="title">TAROT</span><span class="ver">FBC · CASE 22</span></div>
-<button id="tgl">🖐 GESTURE</button>
-<div id="stats">
-<div class="row"><span class="lbl">CARDS</span><span class="val" id="sc">22/22</span></div>
-<div class="row" onclick="document.documentElement.requestFullscreen()"><span class="lbl">FULLSCREEN</span><span class="val">OFF</span></div>
-</div>
-<div id="gbar"><div class="dot"></div><span class="lbl">STANDBY</span></div>
-<div id="tip"><div class="nm"></div><div class="en"></div><div class="tags"></div></div>
-<div id="hist"></div>
-<div id="result"><div class="rname"></div><div class="rform"></div><div class="rdesc"></div></div>
-<div id="cur"><svg width="24" height="24"><circle cx="12" cy="12" r="9" fill="none" stroke="rgba(192,57,43,.7)" stroke-width="1"/><line x1="12" y1="2" x2="12" y2="7" stroke="rgba(192,57,43,.4)" stroke-width="1"/><line x1="12" y1="17" x2="12" y2="22" stroke="rgba(192,57,43,.4)" stroke-width="1"/><line x1="2" y1="12" x2="7" y2="12" stroke="rgba(192,57,43,.4)" stroke-width="1"/><line x1="17" y1="12" x2="22" y2="12" stroke="rgba(192,57,43,.4)" stroke-width="1"/><circle cx="12" cy="12" r="2" fill="rgba(192,57,43,.8)"/></svg></div>
-<div id="err" onclick="this.style.display='none'"></div>
+<div id="u">
+<div id="hd"><span class="t">TAROT</span><span class="v">FBC · CASE 22</span></div>
+<button id="tg" onclick="window._tg()">🖐 GESTURE</button>
+<div id="s"><div class="r"><span class="l">CARDS</span><span class="v" id="sc">22/22</span></div><div class="r" onclick="document.documentElement.requestFullscreen()"><span class="l">FULL</span><span class="v">OFF</span></div></div>
+<div id="gb"><div class="d"></div><span class="l">STANDBY</span></div>
+<div id="tp"><div class="n"></div><div class="e"></div></div>
+<div id="hi"></div>
+<div id="rs"><div class="rn"></div><div class="rf"></div><div class="rd"></div></div>
+<div id="cur"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="rgba(192,57,43,.7)" stroke-width="1"/><line x1="10" y1="1" x2="10" y2="6" stroke="rgba(192,57,43,.4)"/><line x1="10" y1="14" x2="10" y2="19" stroke="rgba(192,57,43,.4)"/><line x1="1" y1="10" x2="6" y2="10" stroke="rgba(192,57,43,.4)"/><line x1="14" y1="10" x2="19" y2="10" stroke="rgba(192,57,43,.4)"/><circle cx="10" cy="10" r="1.5" fill="rgba(192,57,43,.8)"/></svg></div>
+<div id="er" onclick="this.style.display='none'"></div>
 </div>
 
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 
 <script type="module">
 import * as THREE from 'three'
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js'
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js'
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js'
 
-// ═══════════════ DATA ═══════════════
-const CARDS=[{id:0,en:'The Fool',cn:'愚者',tags:'开始·冒险',up:'新的旅程，纯真无畏地迈向未知',rev:'鲁莽冒险，不计后果的冲动'},
-{id:1,en:'The Magician',cn:'魔术师',tags:'创造·意志',up:'创造力与技能，将想法变为现实',rev:'操控与欺骗，浪费天赋才能'},
-{id:2,en:'The High Priestess',cn:'女祭司',tags:'直觉·智慧',up:'倾听内心声音，直觉引领方向',rev:'忽视直觉，被表面现象蒙蔽'},
-{id:3,en:'The Empress',cn:'女皇',tags:'丰盛·母性',up:'丰饶与创造，享受生命的美好',rev:'过度依赖他人，创造力枯竭'},
-{id:4,en:'The Emperor',cn:'皇帝',tags:'权威·结构',up:'以理性和秩序引导前进',rev:'专制僵化，控制欲过强'},
-{id:5,en:'The Hierophant',cn:'教皇',tags:'传统·信仰',up:'向有经验者学习，回归传统',rev:'盲目追随教条，拒绝新思想'},
-{id:6,en:'The Lovers',cn:'恋人',tags:'爱情·选择',up:'遵从内心做出重要抉择',rev:'价值观冲突，做出错误选择'},
-{id:7,en:'The Chariot',cn:'战车',tags:'决心·胜利',up:'以意志力驾驭对立，胜利在望',rev:'方向失控，缺乏前进动力'},
-{id:8,en:'Strength',cn:'力量',tags:'勇气·耐心',up:'温柔中的坚定，真正的内在力量',rev:'自我怀疑，试图以暴力压制'},
-{id:9,en:'The Hermit',cn:'隐士',tags:'内省·独处',up:'独处中找到真正的答案',rev:'过度孤立，逃避现实互动'},
-{id:10,en:'Wheel of Fortune',cn:'命运之轮',tags:'转变·机遇',up:'命运转折，抓住当下的机遇',rev:'厄运连连，抗拒不可避免的变化'},
-{id:11,en:'Justice',cn:'正义',tags:'公正·因果',up:'你所做的都会得到公正回应',rev:'不公正的结果，逃避责任'},
-{id:12,en:'The Hanged Man',cn:'倒吊人',tags:'牺牲·视角',up:'暂停与放手，获得全新的领悟',rev:'拖延与抗拒，陷入自我牺牲'},
-{id:13,en:'Death',cn:'死神',tags:'终结·重生',up:'旧事物终结，新生的开始',rev:'抗拒改变，陷入停滞'},
-{id:14,en:'Temperance',cn:'节制',tags:'平衡·耐心',up:'保持平衡与耐心，找到生活节奏',rev:'失衡状态，过度或缺乏'},
-{id:15,en:'The Devil',cn:'恶魔',tags:'束缚·欲望',up:'认识束缚是解放自己的第一步',rev:'否认束缚存在，被欲望控制'},
-{id:16,en:'The Tower',cn:'塔',tags:'突变·觉醒',up:'虚假结构崩塌，获得真正自由',rev:'逃避恐惧，延长改变前的痛苦'},
-{id:17,en:'The Star',cn:'星星',tags:'希望·治愈',up:'暴风雨已过，希望之光照亮夜空',rev:'绝望与失信，看不到未来'},
-{id:18,en:'The Moon',cn:'月亮',tags:'幻象·直觉',up:'月光下的幻象，用直觉穿越迷雾',rev:'被假象蒙蔽，沉溺非理性恐惧'},
-{id:19,en:'The Sun',cn:'太阳',tags:'快乐·成功',up:'温暖与快乐，尽情享受光明时光',rev:'暂时的挫折，过度乐观'},
-{id:20,en:'Judgement',cn:'审判',tags:'觉醒·召唤',up:'觉醒与重生，接受更高的使命',rev:'拒绝反思过去，对召唤充耳不闻'},
-{id:21,en:'The World',cn:'世界',tags:'完成·圆满',up:'一个周期圆满完成，庆祝成就',rev:'未完成的感觉，循环无法闭合'}]
+// Show errors visibly
+window._showErr=function(m){const e=document.getElementById('er');e.textContent=m;e.style.display='block'}
+window.addEventListener('error',e=>window._showErr('[JS] '+e.message))
+window.addEventListener('unhandledrejection',e=>window._showErr('[P] '+(e.reason?.message||e.reason)))
 
-// ═══════════════ STATE ═══════════════
-const S={phase:'idle',deck:[...CARDS],drawn:[],hovered:null,grabbed:null,current:null,orient:null,drawCount:0}
-let mode='camera',gesture='none',cursor={x:.5,y:.5},handOn=false,gestureTimer=0,prevGesture='none'
+// ═══════ DATA ═══════
+const D=[{id:0,en:'The Fool',cn:'愚者',up:'新的旅程·纯真无畏',rv:'鲁莽冒险·不计后果'},
+{id:1,en:'The Magician',cn:'魔术师',up:'创造力·技能·意志',rv:'操控欺骗·浪费才能'},
+{id:2,en:'The High Priestess',cn:'女祭司',up:'直觉·潜意识·内在智慧',rv:'忽视直觉·表面化'},
+{id:3,en:'The Empress',cn:'女皇',up:'丰盛自然·母性之美',rv:'依赖·过度保护'},
+{id:4,en:'The Emperor',cn:'皇帝',up:'权威结构·稳定领导',rv:'专制僵化·控制欲'},
+{id:5,en:'The Hierophant',cn:'教皇',up:'传统信仰·精神指导',rv:'打破常规·个人信念'},
+{id:6,en:'The Lovers',cn:'恋人',up:'爱情和谐·重要选择',rv:'不和谐·错误选择'},
+{id:7,en:'The Chariot',cn:'战车',up:'决心意志·胜利在望',rv:'方向失控·缺乏动力'},
+{id:8,en:'Strength',cn:'力量',up:'温柔坚定·内在力量',rv:'自我怀疑·暴力压制'},
+{id:9,en:'The Hermit',cn:'隐士',up:'内省独处·寻找真理',rv:'孤立逃避·自我封闭'},
+{id:10,en:'Wheel of Fortune',cn:'命运之轮',up:'命运转折·好运降临',rv:'厄运连连·抗拒改变'},
+{id:11,en:'Justice',cn:'正义',up:'公正真相·因果回报',rv:'不公正·不负责任'},
+{id:12,en:'The Hanged Man',cn:'倒吊人',up:'牺牲放手·新视角',rv:'拖延抗拒·自我牺牲'},
+{id:13,en:'Death',cn:'死神',up:'结束转变·新的开始',rv:'抗拒改变·停滞不前'},
+{id:14,en:'Temperance',cn:'节制',up:'平衡耐心·和谐共处',rv:'失衡过度·缺乏耐心'},
+{id:15,en:'The Devil',cn:'恶魔',up:'认识束缚·解放自我',rv:'否认束缚·物质主义'},
+{id:16,en:'The Tower',cn:'塔',up:'突变破坏·真正自由',rv:'逃避恐惧·延长痛苦'},
+{id:17,en:'The Star',cn:'星星',up:'希望灵感·暴风已过',rv:'绝望失信·看不到光'},
+{id:18,en:'The Moon',cn:'月亮',up:'幻象恐惧·直觉导航',rv:'被假象蒙蔽·沉溺恐惧'},
+{id:19,en:'The Sun',cn:'太阳',up:'快乐成功·温暖活力',rv:'暂时挫折·过度乐观'},
+{id:20,en:'Judgement',cn:'审判',up:'觉醒重生·更高使命',rv:'拒绝反思·自我怀疑'},
+{id:21,en:'The World',cn:'世界',up:'完成圆满·周期终结',rv:'未完成·缺乏闭合'}]
 
-// ═══════════════ THREE.JS ═══════════════
-const W=innerWidth,H=innerHeight
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false})
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(W,H);renderer.toneMapping=THREE.ReinhardToneMapping;renderer.toneMappingExposure=1.2;document.body.prepend(renderer.domElement)
+// ═══════ STATE ═══════
+const S={phase:'idle',deck:[...D],drawn:[],hovered:null,grabbed:null,current:null,orient:null,count:0}
+let mode='camera',gesture='none',cursor={x:.5,y:.5},handOn=false,gt=0,prev='none'
 
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x050508);scene.fog=new THREE.FogExp2(0x050508,.0008)
-const cam=new THREE.PerspectiveCamera(50,W/H,.1,40);cam.position.set(0,.4,6.5);cam.lookAt(0,-.1,0)
+// ═══════ THREE ═══════
+const r=new THREE.WebGLRenderer({antialias:true,alpha:false})
+r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(innerWidth,innerHeight);r.toneMapping=THREE.ReinhardToneMapping;r.toneMappingExposure=1.3
+document.body.prepend(r.domElement)
 
-// Lighting
-scene.add(new THREE.AmbientLight(0x1a1a2e,.5))
-const key=new THREE.DirectionalLight(0xe8e0d5,1.5);key.position.set(4,6,5);key.castShadow=true;scene.add(key)
-const rim=new THREE.DirectionalLight(0x8b0000,.5);rim.position.set(-3,-2,-4);scene.add(rim)
-const top=new THREE.PointLight(0xc0392b,.4,12);top.position.set(0,3,0);scene.add(top)
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x050508);scene.fog=new THREE.FogExp2(0x050508,.0006)
+const cam=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,40);cam.position.set(0,.3,6);cam.lookAt(0,-.1,0)
+
+scene.add(new THREE.AmbientLight(0x1a1a2e,.6))
+const kl=new THREE.DirectionalLight(0xe8e0d5,1.6);kl.position.set(4,6,5);scene.add(kl)
+const rl=new THREE.DirectionalLight(0x8b0000,.5);rl.position.set(-3,-2,-4);scene.add(rl)
+scene.add((()=>{const p=new THREE.PointLight(0xc0392b,.5,10);p.position.set(0,3.5,0);return p})())
 
 // Stars
-const sg=new THREE.BufferGeometry();const sp=new Float32Array(800*3);const sc=new Float32Array(800*3)
-for(let i=0;i<800;i++){const t=Math.random()*Math.PI*2,p=Math.acos(2*Math.random()-1),r=10+Math.random()*8;sp[i*3]=r*Math.sin(p)*Math.cos(t);sp[i*3+1]=r*Math.sin(p)*Math.sin(t);sp[i*3+2]=r*Math.cos(p);const isRed=Math.random()>.88;sc[i*3]=isRed?.8:.2+Math.random()*.5;sc[i*3+1]=isRed?.05:.2+Math.random()*.4;sc[i*3+2]=isRed?.05:.2+Math.random()*.4}
-sg.setAttribute('position',new THREE.BufferAttribute(sp,3));sg.setAttribute('color',new THREE.BufferAttribute(sc,3))
-const stars=new THREE.Points(sg,new THREE.PointsMaterial({size:.04,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.7}))
-scene.add(stars)
+const st=new THREE.Points((()=>{const g=new THREE.BufferGeometry();const p=new Float32Array(600*3);const c=new Float32Array(600*3);for(let i=0;i<600;i++){const t=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),rd=9+Math.random()*7;p[i*3]=rd*Math.sin(ph)*Math.cos(t);p[i*3+1]=rd*Math.sin(ph)*Math.sin(t);p[i*3+2]=rd*Math.cos(ph);const rr=Math.random()>.88;c[i*3]=rr?.7:.25+Math.random()*.4;c[i*3+1]=rr?.05:.2+Math.random()*.3;c[i*3+2]=rr?.05:.2+Math.random()*.3}g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('color',new THREE.BufferAttribute(c,3));return g})(),new THREE.PointsMaterial({size:.04,vertexColors:true,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.65}))
+scene.add(st)
 
-// Floor grid
-const grid=new THREE.GridHelper(10,30,0x331111,0x111118);grid.position.y=-3;grid.material.opacity=.12;grid.material.transparent=true;scene.add(grid)
+// Grid
+scene.add((()=>{const g=new THREE.GridHelper(10,30,0x331111,0x111118);g.position.y=-3;g.material.opacity=.1;g.material.transparent=true;return g})())
 
-// Bloom
-const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,cam))
-const bloom=new UnrealBloomPass(new THREE.Vector2(W,H),.6,.4,.85);bloom.threshold=.15;bloom.strength=.6;bloom.radius=.5;composer.addPass(bloom)
+// ═══════ CARDS ═══════
+const ld=new THREE.TextureLoader(),tx={}
+function gt(id){if(!tx[id])tx[id]=ld.load(`/cards/major_${String(id).padStart(2,'0')}.png`);return tx[id]}
+const bt=(()=>{const c=document.createElement('canvas');c.width=256;c.height=400;const x=c.getContext('2d');x.fillStyle='#0a0a10';x.fillRect(0,0,256,400);x.strokeStyle='rgba(192,57,43,.25)';x.lineWidth=2;x.strokeRect(8,8,240,384);x.strokeStyle='rgba(192,57,43,.1)';x.strokeRect(18,18,220,364);x.beginPath();x.moveTo(128,28);x.lineTo(222,200);x.lineTo(34,200);x.closePath();x.strokeStyle='rgba(192,57,43,.35)';x.stroke();x.beginPath();x.moveTo(128,170);x.lineTo(186,65);x.lineTo(70,65);x.closePath();x.strokeStyle='rgba(192,57,43,.12)';x.stroke();x.fillStyle='rgba(192,57,43,.5)';x.beginPath();x.arc(128,130,3.5,0,Math.PI*2);x.fill();x.font='bold 16px monospace';x.fillStyle='#c0392b';x.textAlign='center';x.fillText('CLASSIFIED',128,270);x.font='8px monospace';x.fillStyle='rgba(107,107,107,.5)';x.fillText('FBC·PARANATURAL',128,288);return new THREE.CanvasTexture(c)})()
 
-// ═══════════════ CARD SYSTEM ═══════════════
-const CW=.7,CH=1.12,loader=new THREE.TextureLoader()
-const backTex=(()=>{const c=document.createElement('canvas');c.width=256;c.height=400;const x=c.getContext('2d');x.fillStyle='#0a0a10';x.fillRect(0,0,256,400);x.strokeStyle='rgba(192,57,43,.28)';x.lineWidth=2;x.strokeRect(8,8,240,384);x.strokeStyle='rgba(192,57,43,.12)';x.lineWidth=1;x.strokeRect(18,18,220,364);x.beginPath();x.moveTo(128,26);x.lineTo(225,200);x.lineTo(31,200);x.closePath();x.strokeStyle='rgba(192,57,43,.4)';x.stroke();x.beginPath();x.moveTo(128,170);x.lineTo(188,62);x.lineTo(68,62);x.closePath();x.strokeStyle='rgba(192,57,43,.15)';x.stroke();x.fillStyle='rgba(192,57,43,.55)';x.beginPath();x.arc(128,128,4,0,Math.PI*2);x.fill();x.font='bold 16px "JetBrains Mono",monospace';x.fillStyle='#c0392b';x.textAlign='center';x.fillText('CLASSIFIED',128,270);x.font='8px "JetBrains Mono",monospace';x.fillStyle='rgba(107,107,107,.55)';x.fillText('FBC · PARANATURAL DIVISION',128,290);for(let y=20;y<385;y+=14){x.fillStyle=`rgba(139,0,0,${.025+Math.random()*.01})`;x.fillRect(12,y,6,1.5);x.fillRect(238,y,6,1.5)}return new THREE.CanvasTexture(c)})()
-
-let cards=[],texCache={}
-function getTex(id){if(!texCache[id])texCache[id]=loader.load(`/cards/major_${String(id).padStart(2,'0')}.png`);return texCache[id]}
-
-function makeCard(data){
-  const g=new THREE.PlaneGeometry(CW,CH)
-  const f=new THREE.MeshStandardMaterial({map:getTex(data.id),roughness:.45,metalness:.05,emissive:new THREE.Color(0x110000),emissiveIntensity:.15})
-  const b=new THREE.MeshStandardMaterial({map:backTex,roughness:.35,metalness:.2,emissive:new THREE.Color(0x110000),emissiveIntensity:.1})
+let cards=[]
+function mkCard(d){
+  const g=new THREE.PlaneGeometry(.68,1.1)
+  const f=new THREE.MeshStandardMaterial({map:gt(d.id),roughness:.45,metalness:.05,emissive:new THREE.Color(0x110000),emissiveIntensity:.15})
+  const b=new THREE.MeshStandardMaterial({map:bt,roughness:.35,metalness:.2,emissive:new THREE.Color(0x110000),emissiveIntensity:.1})
   const m=new THREE.Mesh(g,f);m.castShadow=true;m.receiveShadow=true
-  m.userData={card:data,front:f,back:b,flipped:false,basePos:new THREE.Vector3,baseRot:new THREE.Euler,angle:0,grabbed:false,hovered:false,targetY:0}
+  m.userData={card:d,fm:f,bm:b,flipped:false,bp:new THREE.Vector3,br:new THREE.Euler,ang:0,grabbed:false,hov:false,ty:0}
   return m
 }
 
-function buildSpread(){
-  cards.forEach(m=>{scene.remove(m);m.geometry.dispose();m.userData.front.dispose();m.userData.back.dispose()});cards=[]
-  const n=S.deck.length,R=3.5,A=Math.PI*.65
+function buildCards(){
+  cards.forEach(m=>{scene.remove(m);m.geometry.dispose();m.userData.fm.dispose();m.userData.bm.dispose()});cards=[]
+  const n=S.deck.length,R=3.4,A=Math.PI*.62
   for(let i=0;i<n;i++){
-    const m=makeCard(S.deck[i]),a=-A/2+(i/Math.max(n-1,1))*A
-    m.position.set(Math.sin(a)*R,(i%3)*.04-.15,Math.cos(a)*R-.8)
-    m.rotation.set(-.18,-a,(Math.random()-.5)*.06)
-    m.userData.basePos.copy(m.position);m.userData.baseRot.copy(m.rotation);m.userData.angle=a
-    scene.add(m);cards.push(m)
+    const mc=mkCard(S.deck[i]),a=-A/2+(i/Math.max(n-1,1))*A
+    mc.position.set(Math.sin(a)*R,(i%3)*.04-.15,Math.cos(a)*R-.7)
+    mc.rotation.set(-.16,-a,(Math.random()-.5)*.05)
+    mc.userData.bp.copy(mc.position);mc.userData.br.copy(mc.rotation);mc.userData.ang=a
+    scene.add(mc);cards.push(mc)
   }
 }
 
-// ═══════════════ PARTICLES ═══════════════
-const ashGeo=new THREE.BufferGeometry();const ashPosArr=new Float32Array(300*3);const ashSizeArr=new Float32Array(300)
-ashGeo.setAttribute('position',new THREE.BufferAttribute(ashPosArr,3));ashGeo.setAttribute('size',new THREE.BufferAttribute(ashSizeArr,1))
-const ashSys=new THREE.Points(ashGeo,new THREE.PointsMaterial({size:.05,color:0xff3333,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}))
-ashSys.visible=false;scene.add(ashSys)
-let particles=[]
+// ═══════ PARTICLES ═══════
+const ag=new THREE.BufferGeometry();const ap=new Float32Array(300*3);const as=new Float32Array(300)
+ag.setAttribute('position',new THREE.BufferAttribute(ap,3));ag.setAttribute('size',new THREE.BufferAttribute(as,1))
+const asys=new THREE.Points(ag,new THREE.PointsMaterial({size:.05,color:0xff3333,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}))
+asys.visible=false;scene.add(asys);let pt=[]
 
-function spawnAsh(pos,orient){
-  for(let i=0;i<200;i++)particles.push({x:pos.x,y:pos.y,z:pos.z,vx:(Math.random()-.5)*.08,vy:Math.random()*.07+.02,vz:(Math.random()-.5)*.06,life:1,sz:.02+Math.random()*.06,red:orient==='reversed'&&Math.random()>.35})
-  ashSys.visible=true
+function ash(pos,orient){
+  for(let i=0;i<200;i++)pt.push({x:pos.x,y:pos.y,z:pos.z,vx:(Math.random()-.5)*.08,vy:Math.random()*.07+.02,vz:(Math.random()-.5)*.06,life:1,sz:.02+Math.random()*.06,rd:orient==='reversed'&&Math.random()>.35})
+  asys.visible=true
 }
 
-// ═══════════════ RAYCASTER ═══════════════
-const raycaster=new THREE.Raycaster()
-function raycast(x,y){
-  raycaster.setFromCamera(new THREE.Vector2(x*2-1,-y*2+1),cam)
-  cards.forEach(m=>{m.userData.hovered=false;m.material=m.userData.back;m.material.emissiveIntensity=.1})
-  const hits=raycaster.intersectObjects(cards.filter(m=>!m.userData.grabbed))
-  const tip=document.getElementById('tip');const res=document.getElementById('result')
-  if(hits.length>0&&!S.grabbed){
-    const m=hits[0].object;m.userData.hovered=true;m.material=m.userData.front;m.material.emissiveIntensity=.35
-    S.hovered=m.userData.card
-    if(S.phase!=='ash'){tip.querySelector('.nm').textContent=m.userData.card.cn;tip.querySelector('.en').textContent=m.userData.card.en;tip.querySelector('.tags').textContent=m.userData.card.tags;tip.style.display='block'}
-  }else{if(S.phase!=='ash'){S.hovered=null;tip.style.display='none'}}
+// ═══════ RAYCASTER ═══════
+const rc=new THREE.Raycaster()
+function ray(x,y){
+  rc.setFromCamera(new THREE.Vector2(x*2-1,-y*2+1),cam)
+  cards.forEach(m=>{m.userData.hov=false;m.material=m.userData.bm;m.material.emissiveIntensity=.1})
+  const h=rc.intersectObjects(cards.filter(m=>!m.userData.grabbed))
+  const tp=document.getElementById('tp')
+  if(h.length>0&&!S.grabbed){const m=h[0].object;m.userData.hov=true;m.material=m.userData.fm;m.material.emissiveIntensity=.35;S.hovered=m.userData.card;if(S.phase!=='ash'){tp.querySelector('.n').textContent=m.userData.card.cn;tp.querySelector('.e').textContent=m.userData.card.en;tp.style.display='block'}}
+  else{if(S.phase!=='ash'){S.hovered=null;tp.style.display='none'}}
 }
 
-// ═══════════════ GESTURES ═══════════════
-let hands=null,camInst=null
+// ═══════ GESTURES ═══════
+let hands=null,ci=null
 const vid=document.createElement('video');vid.autoplay=true;vid.playsInline=true;vid.muted=true;vid.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none';document.body.appendChild(vid)
 
-async function startCamera(){
-  try{window.Module=window.Module||{};const V='0.4.1675469240';const m=await import(`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${V}/+esm`);const c=await import('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/+esm');hands=new m.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${V}/${f}`});hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.5,minTrackingConfidence:.4});hands.onResults(r=>{if(r.multiHandLandmarks?.length>0){handOn=true;const lm=r.multiHandLandmarks[0];if(lm[8])cursor={x:1-lm[8].x,y:lm[8].y};const tips=[4,8,12,16,20],mcps=[2,5,9,13,17];let ext=0;tips.forEach((t,i)=>{if(lm[t]&&lm[mcps[i]])ext+=i===0?Math.abs(lm[t].x-lm[mcps[i]].x)>.05?1:0:lm[t].y<lm[mcps[i]].y?1:0});const d=lm[4]&&lm[8]?Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y):1;if(ext<=1)gesture='fist';else if(d<.06&&ext>=2)gesture='pinch';else if(ext>=4)gesture='open';else gesture='none'}else{handOn=false;gesture='none'};updateUI()});camInst=new c.Camera(vid,{onFrame:async()=>{if(hands)await hands.send({image:vid})},width:320,height:240});await camInst.start()}catch(e){console.warn('Camera:',e.message);switchMode('mouse')}
+async function startCam(){
+  try{window.Module=window.Module||{};const V='0.4.1675469240';const m=await import(`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${V}/+esm`);const c=await import('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/+esm');hands=new m.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@${V}/${f}`});hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.5,minTrackingConfidence:.4});hands.onResults(r=>{if(r.multiHandLandmarks?.length>0){handOn=true;const lm=r.multiHandLandmarks[0];if(lm[8])cursor={x:1-lm[8].x,y:lm[8].y};const tips=[4,8,12,16,20],mcps=[2,5,9,13,17];let ext=0;tips.forEach((t,i)=>{if(lm[t]&&lm[mcps[i]])ext+=i===0?Math.abs(lm[t].x-lm[mcps[i]].x)>.05?1:0:lm[t].y<lm[mcps[i]].y?1:0});const d=lm[4]&&lm[8]?Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y):1;if(ext<=1)gesture='fist';else if(d<.06&&ext>=2)gesture='pinch';else if(ext>=4)gesture='open';else gesture='none'}else{handOn=false;gesture='none'};ui()});ci=new c.Camera(vid,{onFrame:async()=>{if(hands)await hands.send({image:vid})},width:320,height:240});await ci.start()}catch(e){console.warn('CAM:',e.message);sw('mouse')}
 }
-function updateUI(){const d=document.querySelector('#gbar .dot'),l=document.querySelector('#gbar .lbl');const a=gesture!=='none';d.className='dot'+(a?' a':'');l.className='lbl'+(a?' a':'');l.textContent={open:'PALM · READY',pinch:'PINCH · GRAB',fist:'FIST · CONFIRM',none:mode==='mouse'?'MOUSE MODE':'STANDBY'}[gesture]}
-function switchMode(m){mode=m;document.getElementById('tgl').textContent=m==='mouse'?'🖱 MOUSE':'🖐 GESTURE';document.getElementById('cur').style.display=m==='mouse'?'block':'none'}
-window.toggleMode=()=>{if(mode==='camera')switchMode('mouse');else{switchMode('camera');if(!hands)startCamera()}}
+function ui(){const d=document.querySelector('#gb .d'),l=document.querySelector('#gb .l');const a=gesture!=='none';d.className='d'+(a?' on':'');l.className='l'+(a?' on':'');l.textContent={open:'PALM',pinch:'PINCH',fist:'FIST',none:mode==='mouse'?'MOUSE':'STANDBY'}[gesture]}
+function sw(m){mode=m;document.getElementById('tg').textContent=m==='mouse'?'🖱 MOUSE':'🖐 GESTURE';document.getElementById('cur').style.display=m==='mouse'?'block':'none'}
+window._tg=()=>{if(mode==='camera')sw('mouse');else{sw('camera');if(!hands)startCam()}}
 
-// ═══════════════ ACTIONS ═══════════════
-function doGrab(){
-  if(S.phase!=='ready'||!S.hovered)return
-  S.phase='grabbed';S.current=S.hovered;S.orient=Math.random()<.5?'upright':'reversed'
-  const m=cards.find(c=>c.userData.card.id===S.hovered.id);if(!m)return
-  m.userData.grabbed=true;S.grabbed=m
-}
+// ═══════ ACTIONS ═══════
+function grab(){if(S.phase!=='ready'||!S.hovered)return;S.phase='grabbed';S.current=S.hovered;S.orient=Math.random()<.5?'upright':'reversed';const m=cards.find(c=>c.userData.card.id===S.hovered.id);if(!m)return;m.userData.grabbed=true;S.grabbed=m}
+function confirm(){if(S.phase!=='grabbed'||!S.grabbed)return;S.phase='ash';S.count++;const m=S.grabbed;S.drawn.push({...S.current,orientation:S.orient});S.deck=S.deck.filter(c=>c.id!==S.current.id);const rs=document.getElementById('rs'),d=S.current;rs.querySelector('.rn').textContent=d.cn;const rf=rs.querySelector('.rf');rf.textContent=S.orient==='upright'?'STABLE':'DECAYED';rf.className='rf '+(S.orient==='upright'?'u':'v');rs.querySelector('.rd').textContent=S.orient==='upright'?d.up:d.rv;rs.style.display='flex';hist();stats();ash(m.position.clone(),S.orient);scene.remove(m);m.geometry.dispose();m.userData.fm.dispose();m.userData.bm.dispose();const idx=cards.indexOf(m);if(idx>-1)cards.splice(idx,1);S.grabbed=null;setTimeout(()=>{rs.style.display='none';S.current=null;S.orient=null;S.phase='idle';if(S.deck.length>0)buildCards()},3000)}
+function release(){if(S.phase!=='grabbed'||!S.grabbed)return;S.grabbed.userData.grabbed=false;S.grabbed=null;S.phase='ready'}
+function hist(){document.getElementById('hi').innerHTML=S.drawn.slice(-10).reverse().map(d=>`<div class="x ${d.orientation==='upright'?'u':''}"><div class="c">${d.cn} ${d.orientation==='reversed'?'⟲':''}</div><div class="t">${d.orientation==='reversed'?d.rv:d.up}</div></div>`).join('')}
+function stats(){document.getElementById('sc').textContent=`${S.deck.length}/${D.length}`}
 
-function doConfirm(){
-  if(S.phase!=='grabbed'||!S.grabbed)return
-  S.phase='ash';S.drawCount++
-  const m=S.grabbed;S.drawn.push({...S.current,orientation:S.orient})
-  S.deck=S.deck.filter(c=>c.id!==S.current.id)
-  // Show result
-  const res=document.getElementById('result');const d=S.current
-  res.querySelector('.rname').textContent=d.cn;const rf=res.querySelector('.rform');rf.textContent=S.orient==='upright'?'STABLE FORM':'DECAYED FORM';rf.className='rform '+(S.orient==='upright'?'up':'rev');res.querySelector('.rdesc').textContent=S.orient==='upright'?d.up:d.rev;res.style.display='flex'
-  updateHistory();updateStats()
-  spawnAsh(m.position.clone(),S.orient)
-  scene.remove(m);m.geometry.dispose();m.userData.front.dispose();m.userData.back.dispose()
-  const idx=cards.indexOf(m);if(idx>-1)cards.splice(idx,1)
-  S.grabbed=null
-  setTimeout(()=>{res.style.display='none';S.current=null;S.orient=null;S.phase='idle';if(S.deck.length>0)buildSpread()},3000)
-}
+// ═══════ MOUSE ═══════
+document.addEventListener('mousemove',e=>{if(mode==='mouse')cursor={x:e.clientX/innerWidth,y:e.clientY/innerHeight};document.getElementById('cur').style.left=e.clientX+'px';document.getElementById('cur').style.top=e.clientY+'px'})
+document.addEventListener('click',()=>{if(mode!=='mouse')return;if(S.phase==='idle')S.phase='ready';else if(S.phase==='ready'&&S.hovered)grab();else if(S.phase==='grabbed')confirm()})
+document.addEventListener('contextmenu',e=>{e.preventDefault();release()})
 
-function doRelease(){if(S.phase!=='grabbed'||!S.grabbed)return;S.grabbed.userData.grabbed=false;S.grabbed=null;S.phase='ready'}
-
-function updateHistory(){document.getElementById('hist').innerHTML=S.drawn.slice(-10).reverse().map(d=>`<div class="e ${d.orientation==='upright'?'up':''}"><div class="n">${d.cn} ${d.orientation==='reversed'?'⟲':''}</div><div class="t">${d.orientation==='reversed'?d.rev:d.up}</div></div>`).join('')}
-function updateStats(){document.getElementById('sc').textContent=`${S.deck.length}/${CARDS.length}`}
-
-// ═══════════════ MOUSE ═══════════════
-document.addEventListener('mousemove',e=>{if(mode==='mouse')cursor={x:e.clientX/W,y:e.clientY/H};document.getElementById('cur').style.left=e.clientX+'px';document.getElementById('cur').style.top=e.clientY+'px'})
-document.addEventListener('click',()=>{if(mode!=='mouse')return;if(S.phase==='idle'){S.phase='ready'}else if(S.phase==='ready'&&S.hovered)doGrab();else if(S.phase==='grabbed')doConfirm()})
-document.addEventListener('contextmenu',e=>{e.preventDefault();doRelease()})
-
-// ═══════════════ LOOP ═══════════════
+// ═══════ LOOP ═══════
 function loop(t){
-  requestAnimationFrame(loop)
-  const dt=Math.min((t-(loop._last||t))/1000,.1);loop._last=t
-
-  // Stars
-  stars.rotation.y+=.00015;stars.rotation.x+=.00005
-
-  // Gesture debounce
-  if(gesture!==prevGesture){prevGesture=gesture;gestureTimer=0}else gestureTimer+=dt
-  if(gestureTimer>.35&&mode==='camera'){
-    if(gesture==='open'&&S.phase==='idle')S.phase='ready'
-    if(gesture==='pinch'&&S.phase==='ready'&&S.hovered)doGrab()
-    if(gesture==='fist'&&S.phase==='grabbed')doConfirm()
-  }
-
-  // Raycast
-  const cx=mode==='camera'&&handOn?cursor.x:cursor.x
-  const cy=mode==='camera'&&handOn?cursor.y:cursor.y
-  if(S.phase!=='ash')raycast(cx,cy)
-
-  // Grabbed card → camera
-  if(S.grabbed){const m=S.grabbed;m.position.lerp(new THREE.Vector3(0,.5,2),.1);m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,0,.12);m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,0,.12);m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,S.orient==='reversed'?Math.PI:0,.12);m.scale.lerp(new THREE.Vector3(1.9,1.9,1),.1);continue}
-
-  // Card physics
-  cards.forEach(m=>{if(m.userData.grabbed||S.phase==='ash')return;m.position.lerp(m.userData.basePos,.05);m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,m.userData.baseRot.x,.05);m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,m.userData.baseRot.y,.05);m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,m.userData.baseRot.z,.05);m.scale.lerp(new THREE.Vector3(1,1,1),.05);m.userData.targetY=m.userData.hovered?m.userData.basePos.y+.18:m.userData.basePos.y;m.position.y=THREE.MathUtils.lerp(m.position.y,m.userData.targetY,.15)})
-
-  // Particles
-  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.z+=p.vz;p.vx+=(Math.random()-.5)*.003;p.life-=.005;if(p.life<=0)particles.splice(i,1)}
-  if(ashSys.visible){const n=Math.min(particles.length,300);for(let i=0;i<n;i++){const p=particles[i];ashPosArr[i*3]=p.x;ashPosArr[i*3+1]=p.y;ashPosArr[i*3+2]=p.z;ashSizeArr[i]=p.sz*p.life}ashGeo.attributes.position.needsUpdate=true;ashGeo.attributes.size.needsUpdate=true;ashSys.material.opacity=Math.min(.8,particles.length/40);if(particles.length===0)ashSys.visible=false}
-
-  // Camera
-  cam.position.x=Math.sin(t*.00025)*.4;renderer.toneMappingExposure=1.2+Math.sin(t*.0004)*.05
-  composer.render()
+  requestAnimationFrame(loop);const dt=Math.min((t-(loop._t||t))/1000,.1);loop._t=t
+  st.rotation.y+=.00015;st.rotation.x+=.00005
+  if(gesture!==prev){prev=gesture;gt=0}else gt+=dt
+  if(gt>.35&&mode==='camera'){if(gesture==='open'&&S.phase==='idle')S.phase='ready';if(gesture==='pinch'&&S.phase==='ready'&&S.hovered)grab();if(gesture==='fist'&&S.phase==='grabbed')confirm()}
+  const cx=mode==='camera'&&handOn?cursor.x:cursor.x,cy=mode==='camera'&&handOn?cursor.y:cursor.y
+  if(S.phase!=='ash')ray(cx,cy)
+  if(S.grabbed){const m=S.grabbed;m.position.lerp(new THREE.Vector3(0,.5,2),.1);m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,0,.12);m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,0,.12);m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,S.orient==='reversed'?Math.PI:0,.12);m.scale.lerp(new THREE.Vector3(1.9,1.9,1),.1)}
+  else cards.forEach(m=>{if(m.userData.grabbed)return;m.position.lerp(m.userData.bp,.05);m.rotation.x=THREE.MathUtils.lerp(m.rotation.x,m.userData.br.x,.05);m.rotation.y=THREE.MathUtils.lerp(m.rotation.y,m.userData.br.y,.05);m.rotation.z=THREE.MathUtils.lerp(m.rotation.z,m.userData.br.z,.05);m.scale.lerp(new THREE.Vector3(1,1,1),.05);m.userData.ty=m.userData.hov?m.userData.bp.y+.2:m.userData.bp.y;m.position.y=THREE.MathUtils.lerp(m.position.y,m.userData.ty,.15)})
+  for(let i=pt.length-1;i>=0;i--){const p=pt[i];p.x+=p.vx;p.y+=p.vy;p.z+=p.vz;p.vx+=(Math.random()-.5)*.003;p.life-=.005;if(p.life<=0)pt.splice(i,1)}
+  if(asys.visible){const n=Math.min(pt.length,300);for(let i=0;i<n;i++){const p=pt[i];ap[i*3]=p.x;ap[i*3+1]=p.y;ap[i*3+2]=p.z;as[i]=p.sz*p.life}ag.attributes.position.needsUpdate=true;ag.attributes.size.needsUpdate=true;asys.material.opacity=Math.min(.8,pt.length/40);if(pt.length===0)asys.visible=false}
+  cam.position.x=Math.sin(t*.00025)*.4;r.render(scene,cam)
 }
-loop._last=0;requestAnimationFrame(loop)
+loop._t=0;requestAnimationFrame(loop)
+window.addEventListener('resize',()=>{r.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()})
 
-window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();composer.setSize(innerWidth,innerHeight)})
-window.addEventListener('error',e=>{const el=document.getElementById('err');el.textContent='[JS] '+e.message;el.style.display='block'})
-window.addEventListener('unhandledrejection',e=>{const el=document.getElementById('err');el.textContent='[Promise] '+(e.reason?.message||e.reason);el.style.display='block'})
-
-// ═══════════════ INIT ═══════════════
-buildSpread();startCamera();document.getElementById('cur').style.display=mode==='mouse'?'block':'none'
-console.log('🃏 TAROT · FBC Entity Archive · EffectComposer+Bloom · Gesture/Mouse')
+// ═══════ START ═══════
+buildCards();startCam();document.getElementById('cur').style.display=mode==='mouse'?'block':'none'
+console.log('🃏 READY')
 </script></body></html>
