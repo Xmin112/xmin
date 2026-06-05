@@ -5,6 +5,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    host: true
-  }
+    host: true,
+  },
+  optimizeDeps: {
+    exclude: ['@mediapipe/hands', '@mediapipe/camera_utils'],
+  },
+  build: {
+    target: 'esnext',
+  },
 })

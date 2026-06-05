@@ -12,17 +12,9 @@ import { motion } from 'framer-motion'
 export default function GestureCursor({
   videoRef, indexTip, gesture, confidence, isReady, error,
 }) {
-  // 摄像头隐藏 video（始终在 DOM）
+  // video 元素由 App.jsx 管理（始终在 DOM）
   return (
     <>
-      <video
-        ref={videoRef}
-        autoPlay playsInline muted
-        style={{
-          position: 'fixed', top: 0, left: 0,
-          width: 1, height: 1, opacity: 0, pointerEvents: 'none',
-        }}
-      />
 
       {/* 发光光标 */}
       {isReady && indexTip && (

@@ -73,6 +73,10 @@ export default function App() {
       {/* 入场 */}
       {loaded && !introDone && <IntroOverlay onDismiss={() => setIntroDone(true)} />}
 
+      {/* video 始终在 DOM（MediaPipe 需要） */}
+      <video ref={videoRef} autoPlay playsInline muted
+        style={{ position: 'fixed', top: 0, left: 0, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
+
       {/* 3D 背景 */}
       {loaded && introDone && <ThreeScene />}
 

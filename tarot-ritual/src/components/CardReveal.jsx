@@ -52,43 +52,30 @@ export default function CardReveal({ entity, orientation, onComplete }) {
             width: 140, height: 220,
             transformStyle: 'preserve-3d',
           }}>
-            {/* 正面——CLASSIFIED */}
+            {/* 正面——塔罗贴图 */}
             <div style={{
-              position: 'absolute', inset: 0,
-              backfaceVisibility: 'hidden',
-              background: 'linear-gradient(135deg, #1a1a1f, #121218)',
-              border: '1px solid rgba(192,57,43,0.3)',
+              position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+              border: '1px solid rgba(192,57,43,0.4)', overflow: 'hidden',
+            }}>
+              <img src={`/cards/major_${String(entity.id).padStart(2,'0')}.png`}
+                alt={entity.codename}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            {/* 反面——FBC 档案 */}
+            <div style={{
+              position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              background: 'linear-gradient(135deg, #0d0d14 0%, #12121f 40%, #0a0a10 100%)',
+              border: '1px solid rgba(192,57,43,0.35)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             }}>
-              <div style={{
-                position: 'absolute', inset: 6,
-                border: '1px solid rgba(192,57,43,0.15)',
-              }} />
-              <div style={{ fontSize: 36 }}>▲</div>
-              <div className="fbc-stamp" style={{ marginTop: 8 }}>CLASSIFIED</div>
-              <div style={{ fontSize: 7, color: 'rgba(192,57,43,0.3)', marginTop: 12, letterSpacing: 2 }}>
-                {entity.designation}
-              </div>
-            </div>
-            {/* 反面——档案 */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
-              background: '#0a0a10',
-              border: '1px solid rgba(192,57,43,0.4)',
-              display: 'flex', flexDirection: 'column',
-            }}>
-              <div style={{ background: '#8b0000', padding: '4px 8px', fontSize: 7, letterSpacing: '0.2em', color: '#e8e0d5', display: 'flex', justifyContent: 'space-between' }}>
-                <span>FBC ARCHIVE</span><span>{entity.designation}</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center p-3">
-                <div style={{ fontSize: 38 }}>{entity.emoji}</div>
-                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: '#e8e0d5', marginTop: 6, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase' }}>
-                  {entity.codename}
-                </div>
-              </div>
-              <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(192,57,43,0.5), transparent)' }} />
+              <div style={{ position: 'absolute', inset: 5, border: '1px solid rgba(192,57,43,0.2)' }} />
+              <svg width="50" height="50" viewBox="0 0 40 40">
+                <polygon points="20,4 36,32 4,32" fill="none" stroke="rgba(192,57,43,0.4)" strokeWidth="1" />
+                <polygon points="20,28 30,10 10,10" fill="none" stroke="rgba(192,57,43,0.2)" strokeWidth="0.5" />
+                <circle cx="20" cy="20" r="2" fill="rgba(192,57,43,0.6)" />
+              </svg>
+              <div style={{ marginTop: 6, padding: '2px 10px', border: '1px solid rgba(192,57,43,0.5)', color: '#c0392b', fontSize: 8, fontWeight: 700, letterSpacing: '0.25em', fontFamily: "'JetBrains Mono', monospace" }}>CLASSIFIED</div>
             </div>
           </div>
         </div>

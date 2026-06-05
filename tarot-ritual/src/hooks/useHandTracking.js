@@ -82,6 +82,11 @@ export function useHandTracking(active) {
 
     const init = async () => {
       try {
+        // 修复 MediaPipe WASM 在新版浏览器中的兼容性
+        if (typeof window !== 'undefined') {
+          window.Module = window.Module || {}
+        }
+
         // 动态导入 MediaPipe
         handsModule = await import('@mediapipe/hands')
         cameraModule = await import('@mediapipe/camera_utils')
@@ -90,7 +95,7 @@ export function useHandTracking(active) {
 
         const hands = new handsModule.Hands({
           locateFile: (file) =>
-            `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+            `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`,
         })
 
         hands.setOptions({
