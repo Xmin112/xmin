@@ -30,19 +30,42 @@ export default function BioCalibration({
 
   return (
     <>
-      {/* ── Video（始终在 DOM，MediaPipe 需要）── */}
-      <video
-        ref={videoRef}
-        autoPlay playsInline muted
-        style={{
-          position: 'fixed',
-          top: 0, left: 0,
-          width: 1, height: 1,
-          opacity: 0,
-          pointerEvents: 'none',
-          transform: 'scaleX(-1)',
-        }}
-      />
+      {/* ── 单个 video 元素（始终在 DOM，MediaPipe 需要），CSS 控制可见性 ── */}
+      <div style={{
+        position: 'fixed',
+        bottom: 30,
+        left: '50%',
+        marginLeft: -140,
+        width: 280,
+        height: 210,
+        zIndex: showCamera ? 20 : -1,
+        opacity: showCamera ? 1 : 0,
+        pointerEvents: showCamera ? 'auto' : 'none',
+        transition: 'opacity 0.3s ease',
+        overflow: 'hidden',
+      }}>
+        <video
+          ref={videoRef}
+          autoPlay playsInline muted
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transform: 'scaleX(-1)',
+            filter: isLocked ? 'brightness(0.9) contrast(1.1)' : 'brightness(0.65) contrast(1.3)',
+            transition: 'filter 0.3s ease',
+          }}
+        />
+        {showCamera && (
+          <SurveillanceFeed
+            isActive={true}
+            gesture={gesture}
+            confidence={confidence}
+            isDebouncing={isDebouncing}
+            landmarks={landmarks}
+          />
+        )}
+      </div>
 
       {/* ── 右下角：诊断面板 ── */}
       <motion.div
@@ -178,39 +201,6 @@ export default function BioCalibration({
         </div>
       )}
 
-      {/* ── 摄像头就绪 + 叠加层 ── */}
-      {showCamera && (
-        <div style={{ position: 'fixed', bottom: 30, left: '50%', marginLeft: -140, zIndex: 20 }}>
-          <div style={{
-            width: 280, height: 210,
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            {/* 显示用 video */}
-            <video
-              ref={videoRef}
-              autoPlay playsInline muted
-              style={{
-                width: '100%', height: '100%',
-                objectFit: 'cover',
-                transform: 'scaleX(-1)',
-                filter: isLocked ? 'brightness(0.9) contrast(1.1)' : 'brightness(0.65) contrast(1.3)',
-                transition: 'filter 0.3s ease',
-              }}
-            />
-
-            {/* 叠加层 */}
-            <SurveillanceFeed
-              isActive={true}
-              gesture={gesture}
-              confidence={confidence}
-              isDebouncing={isDebouncing}
-              landmarks={landmarks}
-              errorMessage={null}
-            />
-          </div>
-        </div>
-      )}
 
       {/* ── 触控模式 ── */}
       {touchMode && (
