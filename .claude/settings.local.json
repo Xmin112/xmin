@@ -1,4 +1,28 @@
 {
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"UserPromptSubmit\", \"additionalContext\": \"⛔ 【强制规则】收到用户消息。在回复之前，必须检查所有可用 skill 是否适用——即使只有 1% 的可能也要用 Skill 工具。先调用 using-superpowers，由其导航到对应 skill。不可跳过。不可合理化绕过。\"}}'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"SessionStart\", \"additionalContext\": \"⛔ 【强制规则 - 新会话启动】本次对话的每一条回复之前，必须先调用 using-superpowers skill 检查是否有适用的 skill。不可跳过。\"}}'"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(npx skills *)",
@@ -15,7 +39,19 @@
       "WebFetch(domain:dev.to)",
       "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --use-npm)",
       "Bash(cd *)",
-      "Bash(timeout *)"
+      "Bash(timeout *)",
+      "Bash(dir /b)",
+      "WebFetch(domain:di.gameres.com)",
+      "WebFetch(domain:skills.sh)",
+      "Bash(python -c \"import requests; print\\('requests:', requests.__version__\\)\")",
+      "WebFetch(domain:platform.xiaomimimo.com)",
+      "WebFetch(domain:www.tarotapi.dev)",
+      "Bash(start *)",
+      "Bash(xargs grep -l -i \"superpower\\\\|animation\\\\|motion\\\\|effect\\\\|magic\\\\|particle\")",
+      "Bash(xargs grep -l -i \"superpower\")",
+      "Bash(Get-ChildItem *)",
+      "Bash(git rm *)",
+      "Bash(Remove-Item *)"
     ]
   }
 }

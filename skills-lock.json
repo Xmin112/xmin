@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "awwwards-animations": {
+      "source": "devmartinese/awwwards-animations-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "10574282bd24f42072059efa58cfce6ff3a80347505eb191af55544426fe4c3a"
+    },
+    "hand-tracking": {
+      "source": "alphaonedev/openclaw-graph",
+      "sourceType": "github",
+      "skillPath": "skills/ar-vr/hand-tracking/SKILL.md",
+      "computedHash": "86f91f6259436a52a9d56549d175ac335c07ccde081f836720f87f6d1a315b18"
+    }
+  }
+}
