@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --color-surface: #FAFAFA;
+  --color-surface-alt: #FFFFFF;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #8E8E93;
+  --color-text-tertiary: #C7C7CC;
+  --color-divider: rgba(0, 0, 0, 0.06);
+  --color-error-red: #FF3B30;
+  --color-success-green: #34C759;
+}
+
+@layer base {
+  body {
+    background-color: #FAFAFA;
+    color: #1A1A1A;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
