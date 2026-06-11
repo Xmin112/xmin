@@ -178,58 +178,13 @@ function generatePermutations<T>(arr: T[]): T[][] {
   return result;
 }
 
-/** 空间叙事动词库 */
-const ENTRY_VERBS = ["浮现", "坐落", "藏在", "矗立", "闪现"];
-const TRANSIT_VERBS: Record<string, string[]> = {
-  "咖啡": ["闻到咖啡香的时候——", "穿过门廊，", "推开玻璃门，", "阳光斜照进——"],
-  "买衣服": ["转角处，", "沿着橱窗走过，", "推开那扇不起眼的门，", "抬头看到——"],
-  "吃东西": ["空气里飘来食物的气味。", "顺着香味，", "穿过排队的人群，", "巷子深处——"],
-  "探店": ["路过一面涂鸦墙，", "不经意间抬头，", "沿着窄巷走到底，", "铁门后面——"],
-  "文化": ["沿着灰色外墙，", "穿过安静的庭院，", "拾阶而上，", "转角遇见——"],
-};
-
-/** 生成空间叙事文案 —— 电影感，不写时间，写感觉 */
+/** 生成路线开场白 —— 极简，只保留车站信息 */
 function buildNarrative(
   stops: RouteStop[],
   station: string,
   exit: string,
   _theme: RouteTheme,
-  district: string,
+  _district: string,
 ): string {
-  const lines: string[] = [];
-  const theme = stops[0]?.poi.subcategory ?? "探店";
-  const verbs = TRANSIT_VERBS[theme] ?? TRANSIT_VERBS["探店"]!;
-
-  // 开篇
-  lines.push(`${station}${exit}出来。`);
-  lines.push("");
-
-  for (let i = 0; i < stops.length; i++) {
-    const stop = stops[i]!;
-    const verb = i === 0
-      ? ENTRY_VERBS[i % ENTRY_VERBS.length]!
-      : verbs[i % verbs.length]!;
-
-    if (i === 0) {
-      // 第一站：从地铁站"发现"
-      lines.push(`${verb}${stop.poi.name}。`);
-    } else {
-      // 后续站：空间过渡 + 发现
-      lines.push(`${verb}${stop.poi.name}。`);
-    }
-    // 描述
-    lines.push(stop.poi.description);
-    lines.push("");
-  }
-
-  // 尾声
-  const closings: Record<string, string> = {
-    "买衣服": `\n这就是${district}。不是逛，是发现。`,
-    "吃东西": `\n${district}的味道，藏在每一条巷子里。`,
-    "探店": `\n${district}的故事，要走进来才听得见。`,
-    "咖啡": `\n在${district}，每一杯咖啡都是探索的借口。`,
-  };
-  const closing = closings[theme] ?? `\n${district}，远不止这些。`;
-
-  return lines.join("\n") + closing;
+  return `${station} ${exit}出发。${stops.length} 站，不回头。`;
 }
